@@ -1,0 +1,157 @@
+/* Contact Method Cards */
+.contact-method-card {
+    border: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.contact-method-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.contact-method-card.active {
+    border-left: 4px solid var(--primary);
+    background: var(--bg-secondary);
+}
+
+.icon-wrapper-lg {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+/* Center align text in contact cards */
+.contact-method-card .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-info-card {
+    border: none;
+    border-radius: 12px;
+    height: 100%;
+}
+
+.contact-method {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.contact-method:last-child {
+    border-bottom: none;
+}
+
+.contact-method:hover {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin: 0 -1rem;
+}
+
+.contact-method.active {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin: 0 -1rem;
+    border-left: 4px solid var(--primary);
+}
+
+.contact-form-card {
+    border: none;
+    border-radius: 12px;
+}
+
+.contact-form .form-control,
+.contact-form .form-select {
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.contact-form .form-control:focus,
+.contact-form .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(53, 168, 240, 0.25);
+}
+
+.contact-form textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.quick-solution-card {
+    border: none;
+    border-radius: 12px;
+}
+
+.quick-solution-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.quick-solution-item:hover {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.quick-solution-item:last-child {
+    border-bottom: none;
+}
+
+/* Form Validation Styles */
+.is-invalid {
+    border-color: var(--danger) !important;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--danger);
+}
+
+#formMessage {
+    animation: fadeInUp 0.5s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .contact-method-card {
+        margin-bottom: 1rem;
+    }
+    
+    .icon-wrapper-lg {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .icon-wrapper-lg i {
+        font-size: 1.5rem;
+    }
+    
+    .contact-form .form-control,
+    .contact-form .form-select {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .contact-form textarea {
+        min-height: 100px;
+    }
+}

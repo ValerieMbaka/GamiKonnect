@@ -1,0 +1,164 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} Terms & Conditions · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'core/css/legal/legal_styles.css' %}">
+	<link rel="stylesheet" href="{% static 'core/css/legal/terms.css' %}">
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5 legal-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="text-center mb-5 legal-header animate__animated fadeInUp">
+                    <h1 class="display-4 fw-bold mb-3">Terms & Conditions</h1>
+                    <p class="lead text-muted">Last updated: {% now "F j, Y" %}</p>
+                    <div class="alert alert-info legal-alert mt-3">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Please read these terms carefully before using our platform
+                    </div>
+                </div>
+
+                <!-- Agreement Section -->
+                <div class="card legal-card">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Agreement to Terms</h2>
+                        <p>By accessing and using {{ project_detail.title }},
+	                        you accept and agree to be bound by the terms and provision of this agreement.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- User Accounts -->
+                <div class="card legal-card terms-section" id="user-accounts">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">User Accounts</h2>
+
+                        <h5 class="mt-4">Eligibility</h5>
+                        <ul class="terms-list">
+                            <li>You must be at least 16 years old to use our platform</li>
+                            <li>Users under 18 need parental consent</li>
+                            <li>You must provide accurate registration information</li>
+                        </ul>
+
+                        <h5 class="mt-4">Account Security</h5>
+                        <ul class="terms-list">
+                            <li>You are responsible for maintaining account security</li>
+                            <li>Notify us immediately of any unauthorized use</li>
+                            <li>We reserve the right to disable accounts violating terms</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- User Conduct -->
+                <div class="card legal-card terms-section" id="user-conduct">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">User Conduct</h2>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="permitted-list mb-3">
+                                    <h6 class="text-success">Permitted</h6>
+                                    <ul class="small terms-list">
+                                        <li>Respectful communication</li>
+                                        <li>Fair gameplay</li>
+                                        <li>Constructive feedback</li>
+                                        <li>Community building</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="prohibited-list mb-3">
+                                    <h6 class="text-danger">Prohibited</h6>
+                                    <ul class="small terms-list">
+                                        <li>Cheating or hacking</li>
+                                        <li>Harassment or hate speech</li>
+                                        <li>Spamming or phishing</li>
+                                        <li>Impersonation</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intellectual Property -->
+                <div class="card legal-card terms-section" id="intellectual-property">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Intellectual Property</h2>
+                        <p>The Platform and its original features and functionality are owned by
+	                        {{ project_detail.title }} and are protected by international copyright, trademark,
+	                        and other intellectual property laws.
+                        </p>
+
+                        <h5 class="mt-4">User Content</h5>
+                        <p>By posting content on our platform, you grant us a license to use, modify, and
+	                        display that content for platform operation and improvement.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Payments & Refunds -->
+                <div class="card legal-card terms-section" id="payments-refunds">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Payments & Refunds</h2>
+
+                        <h5>Tournament Fees</h5>
+                        <ul class="terms-list">
+                            <li>All entry fees are <span class="terms-highlight">non-refundable</span>
+	                            once a tournament begins</li>
+                            <li>Refunds for cancelled tournaments will be processed automatically</li>
+                            <li>Payment processing is handled by secure third-party providers</li>
+                        </ul>
+
+                        <h5 class="mt-4">Prize Distribution</h5>
+                        <ul class="terms-list">
+                            <li>Prizes are distributed within 7 business days of tournament completion</li>
+                            <li>We reserve the right to withhold prizes for violations</li>
+                            <li>Tax responsibilities lie with the prize recipient</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Termination -->
+                <div class="card legal-card terms-section" id="termination">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Termination</h2>
+                        <p>We may terminate or suspend your account immediately, without prior notice or
+	                        liability, for any reason whatsoever, including without limitation if you breach
+	                        the Terms.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Limitation of Liability -->
+                <div class="card legal-card terms-section" id="limitation-liability">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Limitation of Liability</h2>
+                        <p>In no event shall {{ project_detail.title }}, nor its directors, employees,
+	                        partners, agents, suppliers, or affiliates, be liable for any indirect, incidental,
+	                        special, consequential, or punitive damages, including without limitation,
+	                        loss of profits, data, use, goodwill, or other intangible losses.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="text-center mt-5">
+                    <p class="text-muted">For questions about these Terms, please contact us.</p>
+                    <div class="d-flex gap-2 justify-content-center">
+	                    <a href="{% url 'core:contact_us' %}" class="btn btn-primary legal-btn">Contact Support</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'core/js/legal_scripts.js' %}"></script>
+	<script src="{% static 'core/js/legal/terms.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,62 @@
+.cookie-table {
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cookie-table th {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+.cookie-type-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.cookie-essential {
+    background: var(--success);
+    color: white;
+}
+
+.cookie-analytics {
+    background: var(--info);
+    color: white;
+}
+
+.cookie-marketing {
+    background: var(--warning);
+    color: var(--text-primary);
+}
+
+.cookie-preference {
+    background: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+/* Preference Demo Styles */
+.preference-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    display: inline-block;
+    margin-left: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.preference-indicator.active {
+    background: var(--success);
+    transform: scale(1.2);
+}
+
+.cookie-preference-btn {
+    transition: all 0.3s ease;
+}
+
+.cookie-preference-btn:hover {
+    transform: translateY(-1px);
+}

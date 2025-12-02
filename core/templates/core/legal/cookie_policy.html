@@ -1,0 +1,144 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} Cookie Policy · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'core/css/legal/legal_styles.css' %}">
+	<link rel="stylesheet" href="{% static 'core/css/legal/cookie.css' %}">
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5 legal-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="text-center mb-5 legal-header animate__animated fadeInUp">
+                    <h1 class="display-4 fw-bold mb-3">Cookie Policy</h1>
+                    <p class="lead text-muted">Last updated: {% now "F j, Y" %}</p>
+                </div>
+
+                <!-- Introduction -->
+                <div class="card legal-card">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Introduction</h2>
+                        <p>This Cookie Policy explains how {{ project_detail.title }}
+	                        uses cookies and similar technologies to recognize you when you visit our website.
+	                        It explains what these technologies are and why we use them, as well as your rights
+	                        to control our use of them.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- What are cookies -->
+                <div class="card legal-card">
+                    <div class="card-body">
+	                    <h2 class="h4 mb-3">What Are Cookies?</h2>
+                        <p>Cookies are small data files that are placed on your computer or mobile device when
+	                        you visit a website. Cookies are widely used by website owners to make their websites
+	                        work, or to work more efficiently, as well as to provide reporting information.
+                        </p>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start mb-3">
+                                    <div class="icon-wrapper-sm bg-primary bg-opacity-10 text-primary me-3">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="h6 mb-1">Essential Cookies</h5>
+                                        <p class="small text-muted mb-0">Required for basic site functionality</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start mb-3">
+                                    <div class="icon-wrapper-sm bg-primary bg-opacity-10 text-primary me-3">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="h6 mb-1">Analytics Cookies</h5>
+                                        <p class="small text-muted mb-0">Help us understand how visitors interact</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Types of cookies we use -->
+                <div class="card legal-card">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Types of Cookies We Use</h2>
+
+                        <div class="table-responsive">
+                            <table class="table legal-table cookie-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cookie Type</th>
+                                        <th>Purpose</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="cookie-type-badge cookie-essential">Essential</span>
+                                        </td>
+                                        <td>Required for authentication, security, and basic site functionality</td>
+                                        <td>Session</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="cookie-type-badge cookie-preference">Preference</span>
+                                        </td>
+                                        <td>Remember your settings and preferences</td>
+                                        <td>1 Year</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="cookie-type-badge cookie-analytics">Analytics</span>
+                                        </td>
+                                        <td>Help us understand how visitors use our platform</td>
+                                        <td>2 Years</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="cookie-type-badge cookie-marketing">Marketing</span>
+                                        </td>
+                                        <td>Used to deliver relevant advertisements</td>
+                                        <td>90 Days</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cookie Management -->
+                <div class="card legal-card">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Managing Cookies</h2>
+                        <p>Most browsers allow you to control cookies through their settings preferences.
+	                        However, limiting cookies may affect your experience on our website.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="card legal-card">
+                    <div class="card-body text-center">
+                        <h2 class="h4 mb-3">Questions?</h2>
+                        <p>If you have any questions about our use of cookies, please contact us:</p>
+                        <a href="{% url 'core:contact_us' %}" class="btn btn-primary mt-2 legal-btn">Contact Us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'core/js/legal_scripts.js' %}"></script>
+	<script src="{% static 'core/js/legal/cookie.js' %}"></script>
+{% endblock %}

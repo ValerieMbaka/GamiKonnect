@@ -1,0 +1,184 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} Contact Us · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'core/css/legal/legal_styles.css' %}">
+	<link rel="stylesheet" href="{% static 'core/css/support/contact.css' %}">
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5 support-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="text-center mb-5 support-header animate__animated fadeInUp">
+                    <h1 class="display-4 fw-bold mb-3">Contact Us</h1>
+                    <p class="lead text-muted">We're here to help! Get in touch with our support team</p>
+                </div>
+
+                <!-- Contact Information Cards -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4">
+                        <div class="card contact-method-card shadow-sm h-100" data-method="email">
+                            <div class="card-body p-4 text-center">
+                                <div class="icon-wrapper-lg bg-primary bg-opacity-10 text-primary mb-3 mx-auto">
+                                    <i class="fas fa-envelope fa-2x"></i>
+                                </div>
+                                <h4 class="h5 mb-2">Email Support</h4>
+                                <p class="text-muted mb-2">support@gamikonnect.com</p>
+                                <small class="text-muted d-block">Typically replies within 48 hours</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card contact-method-card shadow-sm h-100" data-method="help">
+                            <div class="card-body p-4 text-center">
+                                <div class="icon-wrapper-lg bg-warning bg-opacity-10 text-warning mb-3 mx-auto">
+                                    <i class="fas fa-life-ring fa-2x"></i>
+                                </div>
+                                <h4 class="h5 mb-2">Help Center</h4>
+                                <p class="text-muted mb-2">Instant Answers</p>
+                                <small class="text-muted d-block">Browse our comprehensive guides</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card contact-method-card shadow-sm h-100" data-method="response">
+                            <div class="card-body p-4 text-center">
+                                <div class="icon-wrapper-lg bg-info bg-opacity-10 text-info mb-3 mx-auto">
+                                    <i class="fas fa-clock fa-2x"></i>
+                                </div>
+                                <h4 class="h5 mb-2">Response Time</h4>
+                                <p class="text-muted mb-2">24-48 Hours</p>
+                                <small class="text-muted d-block">For complex issues</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Form (Full Width Below Contact Info) -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card contact-form-card shadow-sm">
+                            <div class="card-body p-4">
+                                <h3 class="h4 mb-4">Send us a Message</h3>
+
+                                <form id="contactForm" class="contact-form">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="firstName" class="form-label">First Name *</label>
+                                            <input type="text" class="form-control" id="firstName" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="lastName" class="form-label">Last Name *</label>
+                                            <input type="text" class="form-control" id="lastName" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control" id="email" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="subject" class="form-label">Subject *</label>
+                                        <select class="form-select" id="subject" required>
+                                            <option value="">Select a topic</option>
+                                            <option value="account">Account Issues</option>
+                                            <option value="tournament">Tournament Support</option>
+                                            <option value="technical">Technical Problems</option>
+                                            <option value="billing">Billing & Payments</option>
+                                            <option value="partnership">Partnership Inquiry</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="message" class="form-label">Message *</label>
+                                        <textarea class="form-control" id="message" rows="5"
+                                                  placeholder="Please describe your issue in detail..."
+                                                  required>
+                                        </textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="urgent">
+                                            <label class="form-check-label" for="urgent">
+                                                This is an urgent matter
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg support-btn">
+                                            <i class="fas fa-paper-plane me-2"></i>
+                                            Send Message
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Quick Links -->
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="card quick-solution-card shadow-sm">
+                            <div class="card-body p-4">
+                                <h3 class="h4 mb-4">Quick Solutions</h3>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="quick-solution-item">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-key text-primary me-3"></i>
+                                                <div>
+                                                    <h6 class="mb-1">Password Reset</h6>
+                                                    <a href="#" class="small text-muted">Can't access your
+	                                                    account?
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="quick-solution-item">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-trophy text-warning me-3"></i>
+                                                <div>
+                                                    <h6 class="mb-1">Tournament Help</h6>
+                                                    <a href="#" class="small text-muted">Competition questions</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="quick-solution-item">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-shield-alt text-success me-3"></i>
+                                                <div>
+                                                    <h6 class="mb-1">Security</h6>
+                                                    <a href="#" class="small text-muted">Account safety tips</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'core/js/legal_scripts.js' %}"></script>
+	<script src="{% static 'core/js/support/contact.js' %}"></script>
+{% endblock %}

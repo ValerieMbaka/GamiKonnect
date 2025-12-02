@@ -1,0 +1,199 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} FAQs · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'core/css/legal/legal_styles.css' %}">
+	<link rel="stylesheet" href="{% static 'core/css/support/faqs.css' %}">
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5 support-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="text-center mb-5 support-header animate__animated fadeInUp">
+                    <h1 class="display-4 fw-bold mb-3">Frequently Asked Questions</h1>
+                    <p class="lead text-muted">Find quick answers to common questions about our platform</p>
+
+                    <!-- Search Bar -->
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-md-8">
+                            <div class="faq-search-container">
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-search text-muted"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0 faq-search-input"
+                                           placeholder="Search FAQs..." id="faqSearch">
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="resetFAQFilters()">
+	                                    <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Help Cards -->
+                <div class="faq-category-grid">
+                    <div class="card faq-category-card" data-category="getting-started">
+                        <div class="card-body">
+                            <i class="fas fa-user-plus fa-2x text-primary mb-3"></i>
+                            <h5>Getting Started</h5>
+                            <p class="small text-muted">New user questions</p>
+                        </div>
+                    </div>
+                    <div class="card faq-category-card" data-category="tournaments">
+                        <div class="card-body">
+                            <i class="fas fa-trophy fa-2x text-warning mb-3"></i>
+                            <h5>Tournaments</h5>
+                            <p class="small text-muted">Competition info</p>
+                        </div>
+                    </div>
+                    <div class="card faq-category-card" data-category="account-security">
+                        <div class="card-body">
+                            <i class="fas fa-shield-alt fa-2x text-success mb-3"></i>
+                            <h5>Account & Security</h5>
+                            <p class="small text-muted">Safety and settings</p>
+                        </div>
+                    </div>
+                    <div class="card faq-category-card" data-category="gaming">
+	                    <div class="card-body">
+                            <i class="fas fa-gamepad fa-2x text-info mb-3"></i>
+                            <h5>Gaming</h5>
+                            <p class="small text-muted">Game-specific help</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Sections -->
+                <div class="accordion faq-accordion" id="faqAccordion">
+	                <!-- Getting Started -->
+                    <div class="accordion-item" data-category="getting-started" data-faq-id="getting-started-1">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq1">
+                                How do I create an account?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Click the "Join Us" button in the navigation menu. You'll need to provide a
+	                            valid email address, choose a username, and create a secure password.
+	                            After registration, verify your email to activate your account.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item" data-category="getting-started" data-faq-id="getting-started-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq2">
+                                Is there an age requirement?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                You must be at least 13 years old to create an account. Users between 13-18
+	                            years old need parental consent. Some tournaments may have higher age
+	                            requirements based on game ratings.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tournaments -->
+                    <div class="accordion-item" data-category="tournaments" data-faq-id="tournaments-1">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq3">
+                                How do I join a tournament?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+	                            Navigate to the Competitions section, browse available tournaments, and click
+	                            "Join" on any tournament you're eligible for. Make sure to check the tournament
+	                            rules and requirements before joining.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item" data-category="tournaments" data-faq-id="tournaments-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq4">
+                                When are prizes distributed?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+	                            Prizes are typically distributed within 7 business days after tournament
+	                            completion. You'll receive a notification when your prize is ready, and it
+	                            will be available in your account wallet.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account & Security -->
+                    <div class="accordion-item" data-category="account-security" data-faq-id="security-1">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq5">
+                                How do I reset my password?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Click "Forgot Password" on the login page. Enter your email address, and we'll
+	                            send you a password reset link. The link expires in 1 hour for security reasons.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item" data-category="account-security" data-faq-id="security-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq6">
+                                Is two-factor authentication available?
+                            </button>
+                        </h2>
+                        <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! We highly recommend enabling two-factor authentication in your account
+	                            settings for added security. You can use authenticator apps like Google
+	                            Authenticator or Authy.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Still Need Help -->
+                <div class="card support-card mt-5">
+                    <div class="card-body text-center p-5">
+                        <i class="fas fa-headset fa-3x text-primary mb-3"></i>
+                        <h3>Still Need Help?</h3>
+                        <p class="text-muted mb-4">Can't find the answer you're looking for? Our support team
+	                        is here to help!
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="{% url 'core:contact_us' %}" class="btn btn-primary support-btn">
+	                            Contact Support
+                            </a>
+                            <a href="{% url 'core:help_center' %}" class="btn btn-outline-primary support-btn">
+	                            Visit Help Center
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'core/js/legal_scripts.js' %}"></script>
+	<script src="{% static 'core/js/support/faqs.js' %}"></script>
+{% endblock %}

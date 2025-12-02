@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} Getting Started · First Tournament · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/legal/legal_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/support/help.css' %}">
+{% endblock %}
+
+{% block body %}
+<div class="container py-5 support-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="support-header text-center mb-4 animate__animated fadeInUp">
+                <h1 class="fw-bold mb-2">Joining Your First Tournament</h1>
+                <p class="lead text-muted mb-0">A simple walkthrough for entering your first competition.</p>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">1. Find a Tournament</h2>
+                    <p>Go to the <strong>Competitions</strong> section from the navigation bar or your dashboard.</p>
+                    <ul class="terms-list mb-0">
+                        <li>Browse available tournaments by game, platform, or date.</li>
+                        <li>Open a tournament to view detailed rules and prize information.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">2. Check Eligibility & Rules</h2>
+                    <p>Before joining, make sure the tournament fits your skill level and platform.</p>
+                    <ul class="terms-list mb-0">
+                        <li>Confirm the required game version and platform (PC, Console, or Mobile).</li>
+                        <li>Review entry fees and prize distribution details.</li>
+                        <li>Read all rules to avoid disqualification.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">3. Join and Prepare</h2>
+                    <p>Click the <strong>Join</strong> button on the tournament page, complete any required steps, and get ready to play.</p>
+                    <ul class="terms-list mb-0">
+                        <li>Ensure your account details and in-game IDs are correct.</li>
+                        <li>Be online and ready at the scheduled start time.</li>
+                        <li>Watch for notifications with match details or lobby codes.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'core:help_center' %}" class="btn btn-outline-primary support-btn me-2">Back to Help Center</a>
+                <a href="#" class="btn btn-primary support-btn">Browse Competitions</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} Getting Started · Creating Your Account · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/legal/legal_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/support/help.css' %}">
+{% endblock %}
+
+{% block body %}
+<div class="container py-5 support-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="support-header text-center mb-4 animate__animated fadeInUp">
+                <h1 class="fw-bold mb-2">Creating Your Account</h1>
+                <p class="lead text-muted mb-0">Step-by-step guide to getting started on {{ project_detail.title }}.</p>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">1. Choose Your Role</h2>
+                    <p>From the home page, click the <strong>Join Us</strong> button in the navigation bar. Youll be asked to choose whether you are signing up as a <strong>Gamer</strong> or <strong>Shop Owner</strong>.</p>
+                    <ul class="terms-list mb-0">
+                        <li>Gamers can join competitions, manage profiles, and connect with shops.</li>
+                        <li>Shop Owners can create shops, manage tournaments, and track gamers.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">2. Complete the Registration Form</h2>
+                    <p>Enter your basic details including name, email address, and a secure password that meets the platforms requirements.</p>
+                    <ul class="terms-list mb-0">
+                        <li>Use an email address you have access to.</li>
+                        <li>Choose a unique username that represents you.</li>
+                        <li>Create a strong password with letters, numbers, and symbols.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">3. Verify Your Email</h2>
+                    <p>After submitting the registration form, youll receive a verification email.</p>
+                    <ul class="terms-list mb-0">
+                        <li>Open the email titled <strong>Verify Your Account</strong>.</li>
+                        <li>Click the verification link to activate your account.</li>
+                        <li>If you dont see it, check your spam or junk folder.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">4. Complete Your Profile</h2>
+                    <p>Once verified, log in and complete your profile details so that other players and shops can discover you.</p>
+                    <ul class="terms-list mb-0">
+                        <li>Add your preferred platforms and games.</li>
+                        <li>Set a profile picture and short bio.</li>
+                        <li>Review your privacy and notification settings.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'core:help_center' %}" class="btn btn-outline-primary support-btn me-2">Back to Help Center</a>
+                <a href="{% url 'accounts:select_role' %}" class="btn btn-primary support-btn">Create My Account</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

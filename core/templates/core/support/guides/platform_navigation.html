@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} Getting Started · Platform Navigation · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/legal/legal_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/support/help.css' %}">
+{% endblock %}
+
+{% block body %}
+<div class="container py-5 support-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="support-header text-center mb-4 animate__animated fadeInUp">
+                <h1 class="fw-bold mb-2">Navigating the Platform</h1>
+                <p class="lead text-muted mb-0">Learn how to move around {{ project_detail.title }} efficiently.</p>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">1. Main Navigation Bar</h2>
+                    <p>The top navigation bar gives you quick access to the most important areas of the platform.</p>
+                    <ul class="terms-list mb-0">
+                        <li><strong>Home</strong>  Overview of featured games, events, and stats.</li>
+                        <li><strong>About</strong>  Learn more about the platform and community.</li>
+                        <li><strong>Competitions</strong>  Browse and join upcoming tournaments.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">2. Dashboards</h2>
+                    <p>Once logged in, your dashboard changes based on your role.</p>
+                    <ul class="terms-list mb-0">
+                        <li><strong>Gamer Dashboard</strong>  Track competitions, communities, and your stats.</li>
+                        <li><strong>Shop Owner Dashboard</strong>  Manage shops, tournaments, and registrations.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="support-card card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">3. Accessing Settings</h2>
+                    <p>You can access your account and profile settings from your dashboard.</p>
+                    <ul class="terms-list mb-0">
+                        <li>Open the menu from your dashboard header.</li>
+                        <li>Click on <strong>Settings</strong> to manage security, notifications, and more.</li>
+                        <li>Review these regularly to keep your account up to date.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'core:help_center' %}" class="btn btn-outline-primary support-btn">Back to Help Center</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

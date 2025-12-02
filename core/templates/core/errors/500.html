@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} 500 · Server Error {% endblock %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'core/css/errors.css' %}">
+{% endblock %}
+
+{% block body %}
+	<div class="error-container">
+        <div class="error-content">
+            <div class="error-icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <h1 class="error-title">500</h1>
+            <h2 class="error-subtitle">Server Connection Lost</h2>
+            <p class="error-message">Our gaming servers are experiencing technical difficulties.
+	            Please try again later.</p>
+            <div class="error-actions">
+                <a href="{% url 'core:home' %}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+                <button onclick="window.location.reload()" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            </div>
+            <div class="error-status">
+                <p>If the problem persists, please contact our support team.</p>
+            </div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'core/js/errors.js' %}"></script>
+{% endblock %}

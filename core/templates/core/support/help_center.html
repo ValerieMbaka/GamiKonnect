@@ -1,0 +1,287 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} Help Center · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'core/css/legal/legal_styles.css' %}">
+	<link rel="stylesheet" href="{% static 'core/css/support/help.css' %}">
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5 support-container">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <!-- Sidebar Navigation -->
+                <div class="card help-sidebar shadow-sm">
+                    <div class="card-body">
+                        <h5 class="mb-3">Help Topics</h5>
+                        <nav class="nav flex-column">
+                            <a class="nav-link active" href="#getting-started">
+                                <i class="fas fa-rocket me-2"></i>
+                                Getting Started
+                            </a>
+                            <a class="nav-link" href="#account-management">
+                                <i class="fas fa-user me-2"></i>
+                                Account Management
+                            </a>
+                            <a class="nav-link" href="#tournaments">
+                                <i class="fas fa-trophy me-2"></i>
+                                Tournaments
+                            </a>
+                            <a class="nav-link" href="#technical">
+                                <i class="fas fa-cog me-2"></i>
+                                Technical Support
+                            </a>
+                            <a class="nav-link" href="#billing">
+	                            <i class="fas fa-credit-card me-2"></i>
+                                Billing & Payments
+                            </a>
+                            <a class="nav-link" href="#safety">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Safety & Security
+                            </a>
+                        </nav>
+
+                        <hr class="my-3">
+
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'core:contact_us' %}" class="btn btn-outline-primary btn-sm
+                            support-btn">
+                                <i class="fas fa-headset me-1"></i>
+                                Contact Support
+                            </a>
+                            <a href="{% url 'core:faqs' %}" class="btn btn-outline-secondary btn-sm support-btn">
+                                <i class="fas fa-question-circle me-1"></i>
+                                View FAQs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-9">
+                <!-- Header -->
+                <div class="text-center mb-5 support-header animate__animated fadeInUp">
+                    <h1 class="display-4 fw-bold mb-3">Help Center</h1>
+                    <p class="lead text-muted">Comprehensive guides and resources for all your needs</p>
+                </div>
+
+                <!-- Getting Started Section -->
+                <section id="getting-started" class="help-section">
+                    <div class="help-section-header">
+                        <div class="icon-wrapper-sm bg-primary bg-opacity-10 text-primary me-3">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h2 class="h3 mb-0">Getting Started</h2>
+                    </div>
+
+                    <div class="help-resource-grid">
+                        <div class="card help-resource-card" data-resource-type="guide">
+                            <div class="card-body">
+                                <h5 class="card-title">Creating Your Account</h5>
+                                <p class="card-text">Step-by-step guide to setting up your gaming profile
+	                                and preferences.
+                                </p>
+                                <a href="{% url 'core:help_creating_account' %}" class="btn btn-outline-primary btn-sm">Read Guide</a>
+                            </div>
+                        </div>
+                        <div class="card help-resource-card" data-resource-type="guide">
+                            <div class="card-body">
+                                <h5 class="card-title">Platform Navigation</h5>
+                                <p class="card-text">Learn how to navigate through different sections and
+	                                features.
+                                </p>
+                                <a href="{% url 'core:help_platform_navigation' %}" class="btn btn-outline-primary btn-sm">Read Guide</a>
+                            </div>
+                        </div>
+                        <div class="card help-resource-card" data-resource-type="tutorial">
+                            <div class="card-body">
+                                <h5 class="card-title">First Tournament Guide</h5>
+                                <p class="card-text">Complete walkthrough for joining your first competition.</p>
+                                <a href="{% url 'core:help_first_tournament' %}" class="btn btn-outline-primary btn-sm">View Guide</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Account Management -->
+                <section id="account-management" class="help-section">
+                    <div class="help-section-header">
+                        <div class="icon-wrapper-sm bg-success bg-opacity-10 text-success me-3">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h2 class="h3 mb-0">Account Management</h2>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card help-resource-card" data-resource-type="settings">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-key fa-2x text-primary mb-3"></i>
+                                    <h6>Password & Security</h6>
+                                    <p class="small text-muted">Manage your account security settings</p>
+                                    <a href="#" class="btn btn-outline-primary btn-sm">Configure</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card help-resource-card" data-resource-type="settings">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-sliders-h fa-2x text-primary mb-3"></i>
+                                    <h6>Profile Settings</h6>
+                                    <p class="small text-muted">Customize your profile and preferences</p>
+                                    <a href="#" class="btn btn-outline-primary btn-sm">Customize</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card help-resource-card" data-resource-type="settings">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-bell fa-2x text-primary mb-3"></i>
+                                    <h6>Notification Settings</h6>
+                                    <p class="small text-muted">Control your notification preferences</p>
+                                    <a href="#" class="btn btn-outline-primary btn-sm">Manage</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tournaments -->
+                <section id="tournaments" class="help-section">
+                    <div class="help-section-header">
+                        <div class="icon-wrapper-sm bg-warning bg-opacity-10 text-warning me-3">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h2 class="h3 mb-0">Tournaments</h2>
+                    </div>
+
+                    <div class="row g-4 mt-1">
+                        <div class="col-md-6">
+                            <div class="card help-resource-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Finding Events</h5>
+                                    <p class="card-text">Use the Competitions section to browse upcoming events by game, platform, and date.</p>
+                                    <a href="{% url 'core:help_first_tournament' %}" class="btn btn-outline-primary btn-sm">View Tournament Guide</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card help-resource-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Prize Distribution</h5>
+                                    <p class="card-text">Learn how prize pools are handled, when payouts occur, and how results are verified.</p>
+                                    <a href="{% url 'core:help_first_tournament' %}" class="btn btn-outline-primary btn-sm">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Technical Support -->
+                <section id="technical" class="help-section">
+                    <div class="help-section-header">
+                        <div class="icon-wrapper-sm bg-info bg-opacity-10 text-info me-3">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <h2 class="h3 mb-0">Technical Support</h2>
+                    </div>
+
+                    <div class="support-card card mt-2">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Connection & Performance</h5>
+                            <p class="card-text">If you experience issues loading pages or joining matches, start with these checks:</p>
+                            <ul class="terms-list mb-0">
+                                <li>Confirm you have a stable internet connection.</li>
+                                <li>Try refreshing the page or using a different browser.</li>
+                                <li>Disable VPNs or firewalls that may block game traffic.</li>
+                            </ul>
+                            <p class="mt-3 mb-0">If issues persist, reach out through the <a href="{% url 'core:contact_us' %}">Contact Us</a> page with as many details as possible.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Billing & Payments -->
+                <section id="billing" class="help-section">
+                    <div class="help-section-header">
+                        <div class="icon-wrapper-sm bg-secondary bg-opacity-10 text-secondary me-3">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <h2 class="h3 mb-0">Billing & Payments</h2>
+                    </div>
+
+                    <div class="support-card card mt-2">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Entry Fees & Refunds</h5>
+                            <p class="card-text">Tournament entry fees and prize payouts follow the rules in our Terms & Conditions.</p>
+                            <ul class="terms-list mb-0">
+                                <li>Most entry fees are non-refundable once a tournament starts.</li>
+                                <li>Cancelled events are typically refunded automatically.</li>
+                                <li>Review the <a href="{% url 'core:terms_conditions' %}">Terms &amp; Conditions</a> for full details.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Safety & Security -->
+                <section id="safety" class="help-section">
+                    <div class="help-section-header">
+                        <div class="icon-wrapper-sm bg-success bg-opacity-10 text-success me-3">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h2 class="h3 mb-0">Safety & Security</h2>
+                    </div>
+
+                    <div class="support-card card mt-2">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Staying Safe on {{ project_detail.title }}</h5>
+                            <p class="card-text">We encourage all players and shop owners to follow safe practices when interacting on the platform.</p>
+                            <ul class="terms-list mb-0">
+                                <li>Never share your password or private account details.</li>
+                                <li>Report suspicious or abusive behavior via the <a href="{% url 'core:contact_us' %}">Contact Us</a> page.</li>
+                                <li>Review our <a href="{% url 'core:privacy_policy' %}">Privacy Policy</a> to understand how your data is handled.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Popular Articles -->
+                <div class="card support-card mb-5">
+                    <div class="card-header bg-white border-0">
+                        <h3 class="h4 mb-0">📈 Popular Help Articles</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush popular-articles-list">
+                            <a href="{% url 'core:help_first_tournament' %}" class="list-group-item list-group-item-action d-flex
+                                justify-content-between align-items-center">
+	                            How to join your first tournament
+                            <span class="badge bg-primary rounded-pill popular-faq-badge">1,234</span>
+                            </a>
+                            <a href="{% url 'core:help_creating_account' %}" class="list-group-item list-group-item-action d-flex
+                                justify-content-between align-items-center">
+                                Troubleshooting connection issues
+                                <span class="badge bg-primary rounded-pill popular-faq-badge">892</span>
+                            </a>
+                            <a href="{% url 'core:help_platform_navigation' %}" class="list-group-item list-group-item-action d-flex
+                                justify-content-between align-items-center">
+                                Understanding prize distribution
+                                <span class="badge bg-primary rounded-pill popular-faq-badge">756</span>
+                            </a>
+                            <a href="{% url 'core:help_creating_account' %}" class="list-group-item list-group-item-action d-flex
+                                justify-content-between align-items-center">
+                                Two-factor authentication setup
+                                <span class="badge bg-primary rounded-pill popular-faq-badge">654</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'core/js/legal_scripts.js' %}"></script>
+	<script src="{% static 'core/js/support/help.js' %}"></script>
+{% endblock %}

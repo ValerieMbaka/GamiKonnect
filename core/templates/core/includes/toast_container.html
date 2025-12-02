@@ -1,0 +1,37 @@
+{% load static %}
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Toast Template -->
+<template id="toast-template">
+    <div class="toast" data-toast-id="">
+        <div class="toast-icon">
+            <i class="icon"></i>
+        </div>
+
+        <div class="toast-content">
+            <h4 class="toast-title"></h4>
+            <p class="toast-message"></p>
+
+            <!-- Countdown Section for specific toasts -->
+            <div class="toast-countdown hidden">
+                <div class="countdown-progress">
+                    <div class="countdown-progress-bar"></div>
+                </div>
+                <div class="countdown-info">
+                    <span class="countdown-text">Loading details in:</span>
+                    <span class="countdown-timer"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast-actions">
+            <button class="btn-toast-action hidden">
+                <span class="action-text"></span>
+            </button>
+            <button class="btn-toast-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+</template>

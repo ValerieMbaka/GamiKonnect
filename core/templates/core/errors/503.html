@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} 503 · Service Unavailable {% endblock %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'core/css/errors.css' %}">
+{% endblock %}
+
+{% block body %}
+	<div class="error-container">
+        <div class="error-content">
+            <div class="error-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h1 class="error-title">503</h1>
+            <h2 class="error-subtitle">Maintenance Mode</h2>
+            <p class="error-message">We're currently upgrading our gaming servers for a better experience.</p>
+            <div class="maintenance-info">
+                <div class="maintenance-card">
+                    <i class="fas fa-clock"></i>
+                    <h4>Estimated Time</h4>
+                    <p>30-60 minutes</p>
+                </div>
+                <div class="maintenance-card">
+                    <i class="fas fa-sync"></i>
+                    <h4>Status</h4>
+                    <p>Server Updates</p>
+                </div>
+            </div>
+            <div class="error-actions">
+                <button onclick="window.location.reload()" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Check Again
+                </button>
+                <a href="{% url 'core:home' %}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> Home Page
+                </a>
+            </div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'core/js/errors.js' %}"></script>
+{% endblock %}

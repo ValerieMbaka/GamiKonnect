@@ -62,14 +62,8 @@ venv/
 
 
 # Keys and credentials
-django-4c5e9-firebase-adminsdk.json
 /django-4c5e9-firebase-adminsdk.json
-.django-4c5e9-firebase-adminsdk.json
 /core/static/core/js/firebase-init.js
 /core/static/core/js/firebase_config.js
-core/static/core/js/firebase-init.js
-core/static/core/js/firebase_config.js
-
-core/email_service.py
-.core/email_service.py
 /core/email_service.py
+/firebase_config.py

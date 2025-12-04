@@ -13,7 +13,7 @@
         <div id="heroCarousel" class="carousel slide mb-0" data-bs-ride="carousel">
             <div class="carousel-indicators">
                 {% for slider in sliders %}
-	                <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+	                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
 	                        class="{% if forloop.first %} active {% endif %}" aria-label="Slide {{ forloop.counter }}">
 	                </button>
                 {% endfor %}
@@ -62,24 +62,45 @@
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-4 mb-lg-0">
                     <div class="pe-lg-5">
-                        <span class="badge bg-primary mb-3">{{ about.badge_text }}</span>
-                        <h2 class="mb-4">{{ about.heading }}</h2>
-                        <p class="mb-4">{{ about.content }}</p>
+                        {% if about %}
+                            <span class="badge bg-primary mb-3">{{ about.badge_text }}</span>
+                            <h2 class="mb-4">{{ about.heading }}</h2>
+                            <p class="mb-4">{{ about.content }}</p>
 
-                        <div class="d-flex mb-3">
-                            <div class="me-4">
-                                <div class="fs-1 text-primary mb-1">{{ about.active_players_count }}</div>
-                                <div class="text-muted">{{ about.active_players }}</div>
+                            <div class="d-flex mb-3">
+                                <div class="me-4">
+                                    <div class="fs-1 text-primary mb-1">{{ about.active_players_count }}</div>
+                                    <div class="text-muted">{{ about.active_players }}</div>
+                                </div>
+                                <div class="me-4">
+                                    <div class="fs-1 text-primary mb-1">{{ about.competitions_count }}</div>
+                                    <div class="text-muted">{{ about.competitions }}</div>
+                                </div>
+                                <div>
+                                    <div class="fs-1 text-primary mb-1">{{ about.platforms_count }}</div>
+                                    <div class="text-muted">{{ about.platforms }}</div>
+                                </div>
                             </div>
-                            <div class="me-4">
-                                <div class="fs-1 text-primary mb-1">{{ about.competitions_count }}</div>
-                                <div class="text-muted">{{ about.competitions }}</div>
+                        {% else %}
+                            <span class="badge bg-primary mb-3">WHO WE ARE</span>
+                            <h2 class="mb-4">Welcome to GamiKonnect</h2>
+                            <p class="mb-4">Unite gamers across platforms with competitions, communities,
+	                            and analytics.</p>
+	                        <div class="d-flex mb-3">
+                                <div class="me-4">
+                                    <div class="fs-1 text-primary mb-1">10K+</div>
+                                    <div class="text-muted">Active Players</div>
+                                </div>
+                                <div class="me-4">
+                                    <div class="fs-1 text-primary mb-1">100+</div>
+                                    <div class="text-muted">Competitions</div>
+                                </div>
+                                <div>
+                                    <div class="fs-1 text-primary mb-1">4</div>
+                                    <div class="text-muted">Platforms</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="fs-1 text-primary mb-1">{{ about.platforms_count }}</div>
-                                <div class="text-muted">{{ about.platforms }}</div>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -152,7 +173,11 @@
 		            <div class="col-md-3 col-6">
 						<div class="card game-card border-0 h-100">
 							<div class="card-img-top position-relative">
-								<img src="{{ game.image.url }}" class="img-fluid w-100" alt="{{ game.title }}">
+                                {% if game.image %}
+                                    <img src="{{ game.image.url }}" class="img-fluid w-100" alt="{{ game.name }}">
+                                {% else %}
+                                    <img src="{% static 'core/images/tekken.jpeg' %}" class="img-fluid w-100" alt="{{ game.name }}">
+                                {% endif %}
 		                        <span class="badge game-badge trending-badge position-absolute top-0 end-0 m-2">
 		                            {% if game.status == 'New' %}
 		                                <span class="badge game-badge new-badge position-absolute top-0 start-0 m-2">
@@ -279,6 +304,11 @@
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card platform-card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-4">
+                                {% if platform.logo %}
+                                    <div class="mb-3">
+                                        <img src="{{ platform.logo.url }}" alt="{{ platform.name }}" width="48" height="48">
+                                    </div>
+                                {% endif %}
                                 {% if platform.name == 'PC Gaming' %}
                                     <div class="icon-wrapper bg-primary bg-opacity-10 text-primary mb-4 mx-auto">
                                         <i class="fas fa-desktop fa-2x"></i>
@@ -468,6 +498,6 @@
 
 {% endblock %}
 
-{% block extra_js %}
+{% block extra_scripts %}
 	<script src="{% static 'core/js/index.js' %}"></script>
 {% endblock %}

@@ -63,14 +63,14 @@
         <div class="container-fluid px-4">
             <!-- Logo + Name -->
             <a class="navbar-brand me-0" href="{% url 'core:home' %}">
-	            {% if project_detail.logo %}
+	            {% if project_detail and project_detail.logo %}
 	                <img src="{{ project_detail.logo.url }}" alt="{{ project_detail.title }}"
 	                     width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
 	            {% else %}
 	                <img src="{% static 'core/images/gamepad.jpeg' %}" alt="{{ project_detail.title }}"
 	                     width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
 	            {% endif %}
-                <span class="brand-text">{{ project_detail.title }}</span>
+                <span class="brand-text">{{ project_detail.title|default:'GamiKonnect' }}</span>
             </a>
 
             <!-- Mobile Toggle -->
@@ -81,9 +81,31 @@
             <!-- Navigation Links -->
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav me-0">
-                    <li class="nav-item me-2"><a class="nav-link active" href="{% url 'core:home' %}">
-	                    <i class="fas fa-home me-1"></i> Home </a>
+                    <li class="nav-item me-2">
+	                    <a class="nav-link
+							{% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}">
+	                        <i class="fas fa-home me-1"></i>
+		                    Home
+	                    </a>
                     </li>
+
+                    {% if navigation_links %}
+                        {% for nav in navigation_links %}
+                            {% if nav.is_active %}
+                            <li class="nav-item me-2">
+                                <a class="nav-link
+									{% if nav.link == request.path %}active{% endif %}" href="{{ nav.link }}">
+                                    {% if nav.link_icon %}
+                                        <img src="{{ nav.link_icon.url }}"
+                                             alt="{{ nav.link_text }}" width="16" height="16" class="me-1">
+                                    {% endif %}
+                                    {{ nav.link_text }}
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
                     <!-- Auth / Dashboard Links -->
                     {% if request.session.user_id %}
                         <li class="nav-item me-2">
@@ -140,16 +162,16 @@
         <div class="row g-4">
             <div class="col-lg-3">
                 <div class="d-flex align-items-center mb-2">
-                    {% if project_detail.logo %}
+                    {% if project_detail and project_detail.logo %}
                         <img src="{{ project_detail.logo.url }}" alt="{{ project_detail.title }}"
                              width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
                     {% else %}
                         <img src="{% static 'core/images/gamepad.jpeg' %}" alt="{{ project_detail.title }}"
                              width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
                     {% endif %}
-                    <span class="fs-6 fw-bold brand-text"> {{ project_detail.title }} </span>
+                    <span class="fs-6 fw-bold brand-text"> {{ project_detail.title|default:'GamiKonnect' }} </span>
                 </div>
-                <p class="mb-2"> {{ project_detail.description }} </p>
+                <p class="mb-2"> {{ project_detail.description|default:'A unified hub for gamers.' }} </p>
             </div>
 
             {% for footer_section in footer_sections %}
@@ -182,12 +204,12 @@
         <div class="row">
             <div class="col-10 text-center">
                 <p class="mt-2 small" style="color: rgba(2,1,2,0.81)">
-                    {{ footer.copy_right_text }}</p>
+                        {{ footer.copy_right_text|default:'© 2025 GamiKonnect. All rights reserved.' }}</p>
             </div>
 
             <div class="col-2 text-right">
                 <p class="mt-2 text-muted small" style="font-size: 10px;">
-                    {{ footer.ownership_text }} </p>
+                    {{ footer.ownership_text|default:'A product by JM | In partnership with Biztimam Ventures' }} </p>
             </div>
         </div>
     </div>
@@ -230,19 +252,21 @@
     </script>
 
     <!-- Firebase SDK -->
-    <script>
-        window.firebaseConfig = {
-            apiKey: "{{ firebase_config.api_key }}",
-            authDomain: "{{ firebase_config.auth_domain }}",
-            projectId: "{{ firebase_config.project_id }}",
-            storageBucket: "{{ firebase_config.storage_bucket }}",
-            messagingSenderId: "{{ firebase_config.messaging_sender_id }}",
-            appId: "{{ firebase_config.app_id }}",
-            measurementId: "{{ firebase_config.measurement_id }}"
-        };
-    </script>
+    {% if firebase_config %}
+        <script>
+            window.firebaseConfig = {
+                apiKey: "{{ firebase_config.api_key }}",
+                authDomain: "{{ firebase_config.auth_domain }}",
+                projectId: "{{ firebase_config.project_id }}",
+                storageBucket: "{{ firebase_config.storage_bucket }}",
+                messagingSenderId: "{{ firebase_config.messaging_sender_id }}",
+                appId: "{{ firebase_config.app_id }}",
+                measurementId: "{{ firebase_config.measurement_id }}"
+            };
+        </script>
+    {% endif %}
 
-	{% block extra_scripts %} {% endblock %}
+    {% block extra_scripts %} {% endblock %}
 
 </body>
 </html>

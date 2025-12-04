@@ -78,6 +78,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processor.site_style',
+                'core.context_processor.firebase_config',
             ],
         },
     },
@@ -169,3 +170,16 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@gamikonnect.com')
+SUPPORT_EMAIL = env('SUPPORT_EMAIL', default='support@gamikonnect.com')
+ADMIN_EMAIL = env('ADMIN_EMAIL', default='admin@gamikonnect.com')
+
+# Client-side Firebase config
+FIREBASE_CLIENT_CONFIG = {
+    'api_key': env('FIREBASE_API_KEY', default=''),
+    'auth_domain': env('FIREBASE_AUTH_DOMAIN', default=''),
+    'project_id': env('FIREBASE_PROJECT_ID', default=''),
+    'storage_bucket': env('FIREBASE_STORAGE_BUCKET', default=''),
+    'messaging_sender_id': env('FIREBASE_MESSAGING_SENDER_ID', default=''),
+    'app_id': env('FIREBASE_APP_ID', default=''),
+    'measurement_id': env('FIREBASE_MEASUREMENT_ID', default=''),
+}

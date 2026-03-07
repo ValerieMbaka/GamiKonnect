@@ -78,7 +78,5 @@ accounts/static/accounts/*
 accounts/context_processors.py
 accounts/middleware.py
 accounts/backends.py
-accounts/models.py
-accounts/admin.py
 accounts/urls.py
 

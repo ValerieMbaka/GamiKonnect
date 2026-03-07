@@ -1,0 +1,687 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %} Gamer Dashboard · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_profile_completion.css' %}">
+	<link rel="stylesheet" href="{% static 'accounts/css/gamers/profile_completion_modal.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.default.min.css">
+{% endblock %}
+
+{% block content %}
+
+    <div id="profileCompletionModal" class="modal {% if not profile_complete %}show{% if not profile_complete %} mandatory{% endif %}{% endif %} anim-fade-in">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Complete Your Profile</h3>
+                <p>Please fill in your profile details to continue using {{ project_detail.title }}</p>
+                {% if profile_complete %}
+                <button class="modal-close" onclick="closeProfileModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                {% endif %}
+            </div>
+            <div class="modal-body">
+                {% include 'accounts/gamers/gamer_profile_completion.html' %}
+            </div>
+        </div>
+    </div>
+
+    
+
+	<!-- Profile Header Section -->
+	<section class="profile-header-wrapper">
+        <div class="profile-header-grid">
+            <div class="profile-avatar-column">
+                <div class="profile-avatar-container">
+                    <img src="{% if gamer.profile_picture %}{{ gamer.profile_picture.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}"
+                         alt="Profile Avatar" class="profile-main-avatar">
+                    <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name-wrapper">
+                        <h1 class="profile-name">
+                            {% if gamer.custom_username %}{{ gamer.custom_username }}{% elif gamer.first_name %}{{ gamer.first_name }} {{ gamer.last_name }}{% else %}Gamer{% endif %}
+                        </h1>
+                        <span class="verified-badge" title="Verified Account">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                    <p class="profile-title">{% if gamer.bio and gamer.bio != "Bio" and gamer.bio != "" %}{{ gamer.bio }}{% else %}Gaming Enthusiast{% endif %}</p>
+                    <div class="profile-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{% if gamer.location and gamer.location != "" %}{{ gamer.location }}{% else %}Location not set{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-content-column">
+                <div class="profile-cover-section">
+                    <div class="profile-cover-container">
+                        <img src="{% static 'core/images/gameroom1.jpeg' %}" alt="Profile Cover" class="profile-cover-image">
+                        <div class="profile-actions-container">
+                            <button class="btn btn-icon btn-action" title="More options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="performance-stats-section">
+                    <h3 class="section-title">Performance Stats</h3>
+                    <div class="stats-grid-horizontal">
+                        <div class="stat-item-horizontal win-rate">
+                            <div class="stat-content">
+                                <div class="stat-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="stat-text">
+                                    <div class="stat-value">87% <span class="stat-trend up">+2%</span></div>
+                                    <div class="stat-label">Win Rate</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 87%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-item-horizontal competitions">
+                            <div class="stat-content">
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="stat-text">
+                                    <div class="stat-value">24</div>
+                                    <div class="stat-label">Competitions</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- <div class="stat-item-horizontal play-time">
+                            <div class="stat-content">
+                                <div class="stat-icon">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div class="stat-text">
+                                    <div class="stat-value">24h</div>
+                                    <div class="stat-label">Play Time</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-item-horizontal points">
+                            <div class="stat-content">
+                                <div class="stat-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="stat-text">
+                                    <div class="stat-value">0</div>
+                                    <div class="stat-label">Points</div>
+                                </div>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+	</section>
+
+	<!-- Content Tabs -->
+	<nav class="profile-tabs-container">
+        <div class="profile-tabs-inner">
+            <button class="profile-tab active" data-tab="overview">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Overview</span>
+            </button>
+            <button class="profile-tab {% if not profile_complete %}profile-restricted{% endif %}" data-tab="games" {% if not profile_complete %}data-restricted="true"{% endif %}>
+                <i class="fas fa-gamepad"></i>
+                <span>My Games <span class="badge">{{ gamer.games_count }}</span></span>
+            </button>
+            <button class="profile-tab {% if not profile_complete %}profile-restricted{% endif %}" data-tab="competitions" {% if not profile_complete %}data-restricted="true"{% endif %}>
+                <i class="fas fa-trophy"></i>
+                <span>Competitions <span class="badge">2</span></span>
+            </button>
+            <button class="profile-tab {% if not profile_complete %}profile-restricted{% endif %}" data-tab="performance" {% if not profile_complete %}data-restricted="true"{% endif %}>
+                <i class="fas fa-chart-line"></i>
+                <span>Performance</span>
+            </button>
+        </div>
+	</nav>
+
+	<!-- Overview Tab Content -->
+	<div class="profile-tab-content active" id="overview">
+        {% if not profile_complete %}
+        <!-- Profile Incomplete Message -->
+        <section class="profile-card component-card gradient-header hoverable anim-fade-in profile-incomplete-card">
+            <div class="card-header component-card-header">
+                <h2>
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Profile Incomplete</span>
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="incomplete-message">
+                    <i class="fas fa-user-circle"></i>
+                    <h3>Complete Your Profile</h3>
+                    <p>Please complete your profile to access all dashboard features including games, competitions, feeds, and more.</p>
+                    <button class="btn btn-primary complete-profile-btn" onclick="openProfileModal()">
+                        <i class="fas fa-user-edit"></i>
+                        Complete Profile
+                    </button>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+        
+        <!-- Quick Actions -->
+        <section class="profile-card component-card gradient-header hoverable anim-fade-in">
+            <div class="card-header component-card-header">
+                <h2>
+                    <i class="fas fa-bolt"></i>
+                    <span>Quick Actions</span>
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="action-buttons">
+                    {% if profile_complete %}
+                    <a href="{% url 'competitions:competitions' %}" class="action-btn btn btn-light btn-shimmer" data-tooltip="Join a competition">
+                        <div class="action-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <span>Join Competition</span>
+                    </a>
+                    <a href="{% url 'feeds:feeds' %}" class="action-btn btn btn-light btn-shimmer" data-tooltip="View activity feeds and updates">
+                        <div class="action-icon">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <span>View Feeds</span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'accounts:gamer_public_profile' %}" class="action-btn btn btn-light btn-shimmer" data-tooltip="View your public profile">
+	                    <div class="action-icon">
+		                    <i class="fas fa-user"></i>
+	                    </div>
+                        <span>View Profile</span>
+                    </a>
+                    {% if not profile_complete %}
+                    <button class="action-btn btn btn-primary btn-shimmer complete-profile-action" onclick="openProfileModal()" data-tooltip="Complete your profile">
+                        <div class="action-icon">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <span>Complete Profile</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+<!-- Recent Activities Section -->
+    <section class="recent-activities" style="margin: 2em 0;">
+        <h3>Recent Activity</h3>
+        <ul class="activity-list">
+            {% for activity in recent_activities %}
+                <li>
+                    <span class="activity-time">{{ activity.created_at|date:'M d, H:i' }}</span> —
+                    <span class="activity-type">{{ activity.get_activity_type_display }}</span>:
+                    <span class="activity-desc">{{ activity.description }}</span>
+                </li>
+            {% empty %}
+                <li>No recent activity.</li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'activities:gamer_activity' %}" class="btn btn-link">View all activity</a>
+    </section>
+        <!-- Recent Activities Section -->
+        <div class="dashboard-two-column anim-fade-in">
+
+                <div class="profile-card component-card gradient-header hoverable anim-fade-in">
+                    <div class="card-header component-card-header">
+                    <h2>
+                        <i class="fas fa-history"></i>
+                        <span>Recent Activities</span>
+                    </h2>
+                    <a href="#" class="view-all-link">View All</a>
+                </div>
+                    <div class="card-body component-card-body">
+	                <div class="activity-feed">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <img src="{% static 'core/images/player.jpeg' %}" alt="Profile">
+                            </div>
+                            <div class="activity-content">
+                                <h3 class="activity-title">Profile Updated</h3>
+                                <p class="activity-meta"></p>
+                                <p class="activity-description">{% if gamer.games and gamer.games|length > 0 %}Added {{ gamer.games|length }} game{{ gamer.games|length|pluralize }} to your profile{% else %}Started your gaming journey{% endif %}</p>
+                                <div class="activity-stats">
+                                    <span class="activity-stat">
+                                        <i class="fas fa-gamepad"></i>
+                                        <span>{% if gamer.games and gamer.games|length > 0 %}{{ gamer.games|length }} Game{{ gamer.games|length|pluralize }}{% else %}No Games{% endif %}</span>
+                                    </span>
+                                    <span class="activity-stat">
+                                        <i class="fas fa-desktop"></i>
+                                        <span>{% if gamer.platforms and gamer.platforms|length > 0 %}{{ gamer.platforms|length }} Platform{{ gamer.platforms|length|pluralize }}{% else %}No Platforms{% endif %}</span>
+                                    </span>
+                                </div>
+                                <div class="activity-actions">
+                                    <button class="btn-like"><i class="far fa-heart"></i> 0</button>
+                                    <button class="btn-comment"><i class="far fa-comment"></i> 0</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if gamer.games and gamer.games|length > 0 %}
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <img src="" alt="Games" data-game="{% for game in gamer.games %}{{ game }}{% if not forloop.last %}, {% endif %}{% endfor %}" class="activity-game-image">
+                                </div>
+                                <div class="activity-content">
+                                    <h3 class="activity-title">Games Added to Profile</h3>
+	                                <p class="activity-meta">{{ gamer_stats.join_date }}</p>
+                                    <p class="activity-description">"{% for game in gamer.games %}{{ game }}{% if not forloop.last %}, {% endif %}{% endfor %}"</p>
+                                    <div class="activity-stats">
+                                        <span class="activity-stat">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Profile Complete</span>
+                                        </span>
+                                        <span class="activity-stat">
+                                            <i class="fas fa-star"></i>
+	                                        <span>Ready to Play</span>
+                                        </span>
+                                    </div>
+                                    <div class="activity-actions">
+                                        <button class="btn-like"><i class="far fa-heart"></i> 0</button>
+                                        <button class="btn-comment"><i class="far fa-comment"></i> 0</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-achievements-column anim-fade-in">
+                <section class="profile-card component-card gradient-header hoverable anim-fade-in">
+                    <div class="card-header component-card-header">
+                        <h2>
+                            <i class="fas fa-trophy"></i>
+                            <span>Recent Achievements</span>
+                        </h2>
+                        <a href="{% url 'achievements:gamer_achievements' %}" class="view-all-link">View All</a>
+                    </div>
+                    <div class="card-body component-card-body">
+                        <div class="achievements-list">
+                            {% for ga in recent_achievements %}
+                                <div class="achievement-item">
+                                    <div class="achievement-badge">
+                                        {% if ga.achievement.badge_icon %}
+                                            <img src="{{ ga.achievement.badge_icon.url }}" alt="{{ ga.achievement.name }} badge" class="badge-img" style="width:40px;height:40px;">
+                                        {% else %}
+                                            <i class="fas fa-medal"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="achievement-details">
+                                        <h4 class="achievement-title">{{ ga.achievement.name }}</h4>
+                                        <p class="achievement-date">{{ ga.earned_at|date:'M d, Y' }}</p>
+                                        <div class="achievement-xp">+{{ ga.achievement.xp }} XP</div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div>No achievements yet.</div>
+                            {% endfor %}
+                        </div>
+                        {% if level_badge %}
+                        <div class="level-badge-section" style="margin-top:1em;">
+                            <span>Current Level Badge:</span>
+                            <img src="{{ level_badge }}" alt="Level Badge" style="width:48px;height:48px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </div>
+	</div>
+
+    <!-- Games Tab Content -->
+    <div class="profile-tab-content" id="games">
+        <section class="profile-card component-card gradient-header hoverable anim-fade-in">
+            <div class="card-header component-card-header">
+                <h2>
+                    <i class="fas fa-gamepad"></i>
+                    <span>My Games</span>
+                </h2>
+            </div>
+            <div class="card-body">
+                {% if gamer.games.all %}
+                    <div class="game-carousel">
+                        {% for game in gamer.games.all %}
+                            <div class="game-card">
+                                <div class="game-status">Active</div>
+                                <div class="platform-badges">
+                                    <span class="platform-badge">PC</span>
+                                    <span class="platform-badge">PS5</span>
+                                </div>
+                                <img src="" alt="{{ game.name }}" data-game="{{ game.name }}" class="game-image">
+                                <div class="game-info">
+                                    <h4>{{ game.name }}</h4>
+		                            <div class="game-stats">
+			                            <div class="stat-item hours" title="Total hours played">
+				                            <span class="stat-value">{{ forloop.counter|add:50|add:forloop.counter0|add:10 }}h</span>
+				                            <span class="stat-label">Hours</span>
+			                            </div>
+			                            <div class="stat-item win-rate" title="Win rate percentage">
+				                            <span class="stat-value">{{ forloop.counter|add:70|add:forloop.counter0|add:5 }}%</span>
+				                            <span class="stat-label">Win Rate</span>
+			                            </div>
+			                            <div class="stat-item achievements" title="Achievements unlocked">
+				                            <span class="stat-value">{{ forloop.counter|add:5|add:forloop.counter0|add:3 }}</span>
+				                            <span class="stat-label">Achievements</span>
+			                            </div>
+			                            <div class="stat-item last-played" title="Last time played">
+				                            <span class="stat-value">{% if forloop.counter == 1 %}Today{% elif forloop.counter == 2 %}Yesterday{% elif forloop.counter == 3 %}2d ago{% elif forloop.counter == 4 %}3d ago{% else %}1w ago{% endif %}</span>
+				                            <span class="stat-label">Last Played</span>
+			                            </div>
+		                            </div>
+	                            </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-gamepad"></i>
+	                        <h3>No games added yet</h3>
+                            <p>Add your favorite games to see them here</p>
+                            <button class="btn btn-primary mt-3" onclick="document.getElementById('profileCompletionModal').classList.add('show')">Add Games</button>
+                        </div>
+                {% endif %}
+            </div>
+        </section>
+	</div>
+
+	<!-- Competitions Tab Content -->
+	<div class="profile-tab-content" id="competitions">
+        <section class="profile-card component-card gradient-header hoverable anim-fade-in">
+            <div class="card-header component-card-header">
+                <h2>
+	                <i class="fas fa-trophy"></i>
+                    <span>My Competitions</span>
+                </h2>
+                <div class="competition-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="active">Active</button>
+                    <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="competition-stats">
+	                <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-content">
+	                        <span class="stat-value">12</span>
+                            <span class="stat-label">Total Competitions</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">8</span>
+                            <span class="stat-label">Wins</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">Kshs 2,850</span>
+                            <span class="stat-label">Total Winnings</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">67%</span>
+                            <span class="stat-label">Win Rate</span>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="competition-grid">
+                    <div class="competition-card" data-status="active">
+                        <div class="competition-card-header">
+                            <img src="{% static 'core/images/cod.jpeg' %}"
+                                 class="competition-card-image" alt="Valorant">
+                            <div class="competition-status active">
+                                <i class="fas fa-play-circle"></i>
+                                Active
+                            </div>
+                            <div class="competition-participants">
+                                <i class="fas fa-users"></i>
+                                128/200
+                            </div>
+                        </div>
+                        <div class="competition-card-body">
+                            <div class="competition-category">
+                                <span class="category-badge fps">FPS</span>
+                            </div>
+                            <h4 class="competition-title">Valorant Weekly Championship</h4>
+                            <p class="competition-meta">
+                                <i class="fas fa-calendar-alt"></i> Tomorrow, 8:00 PM
+                            </p>
+                            <div class="competition-prize">
+                                <i class="fas fa-gem"></i> Kshs 1,500 Prize Pool
+                            </div>
+                            <div class="competition-stats">
+                                <div class="stat">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Best of 3</span>
+                                </div>
+                                <div class="stat">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Online</span>
+                                </div>
+                            </div>
+                            <div class="countdown-timer urgent">
+                                <div class="countdown-segment">
+                                    <span class="countdown-value">1</span>
+                                    <span class="countdown-label">Day</span>
+                                </div>
+                                <div class="countdown-segment">
+                                    <span class="countdown-value">8</span>
+                                    <span class="countdown-label">Hours</span>
+                                </div>
+                                <div class="countdown-segment">
+                                    <span class="countdown-value">32</span>
+                                    <span class="countdown-label">Minutes</span>
+                                </div>
+                            </div>
+                            <button class="competition-btn primary">
+                                <i class="fas fa-play"></i>
+                                Join Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="competition-card" data-status="upcoming">
+                        <div class="competition-card-header">
+                            <img src="{% static 'core/images/fc.jpeg' %}"
+                                 class="competition-card-image" alt="FIFA">
+                            <div class="competition-status upcoming">
+                                <i class="fas fa-clock"></i>
+                                Upcoming
+                            </div>
+                            <div class="competition-participants">
+                                <i class="fas fa-users"></i>
+                                64/100
+                            </div>
+                        </div>
+                        <div class="competition-card-body">
+                            <div class="competition-category">
+                                <span class="category-badge sports">Sports</span>
+                            </div>
+                            <h4 class="competition-title">FIFA Weekend Cup</h4>
+                            <p class="competition-meta">
+                                <i class="fas fa-calendar-alt"></i> Saturday, 3:00 PM
+                            </p>
+                            <div class="competition-prize">
+                                <i class="fas fa-gem"></i> Kshs 800 Prize Pool
+                            </div>
+                            <div class="competition-stats">
+                                <div class="stat">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Single Elimination</span>
+                                </div>
+                                <div class="stat">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Online</span>
+                                </div>
+                            </div>
+                            <div class="countdown-timer">
+                                <div class="countdown-segment">
+                                    <span class="countdown-value">3</span>
+                                    <span class="countdown-label">Days</span>
+                                </div>
+                                <div class="countdown-segment">
+                                    <span class="countdown-value">15</span>
+                                    <span class="countdown-label">Hours</span>
+                                </div>
+                            </div>
+                            <button class="competition-btn secondary">
+                                <i class="fas fa-info-circle"></i>
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="competition-card" data-status="completed">
+                        <div class="competition-card-header">
+                            <img src="{% static 'core/images/tekken.jpeg' %}"
+                                 class="competition-card-image" alt="Tekken">
+                            <div class="competition-status completed">
+                                <i class="fas fa-check-circle"></i>
+                                Completed
+                            </div>
+                            <div class="competition-result">
+                                <i class="fas fa-trophy"></i>
+                                1st Place
+                            </div>
+                        </div>
+                        <div class="competition-card-body">
+                            <div class="competition-category">
+                                <span class="category-badge fighting">Fighting</span>
+                            </div>
+                            <h4 class="competition-title">Tekken Masters Tournament</h4>
+                            <p class="competition-meta">
+                                <i class="fas fa-calendar-alt"></i> Last Week
+                            </p>
+                            <div class="competition-prize won">
+                                <i class="fas fa-gem"></i> Won Kshs 1,500
+                            </div>
+                            <div class="competition-performance">
+                                <div class="performance-stat">
+                                    <span class="stat-label">Final Rank</span>
+                                    <span class="stat-value">1st</span>
+                                </div>
+                                <div class="performance-stat">
+                                    <span class="stat-label">Matches Won</span>
+                                    <span class="stat-value">8/10</span>
+                                </div>
+                            </div>
+                            <button class="competition-btn completed">
+                                <i class="fas fa-eye"></i>
+                                View Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+	</div>
+
+	<!-- Performance Tab Content -->
+	<div class="profile-tab-content" id="performance">
+        <section class="profile-card">
+            <div class="card-header">
+                <h2>
+                    <i class="fas fa-chart-line"></i>
+                    <span>Performance Metrics</span>
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="empty-state">
+	                <i class="fas fa-chart-pie"></i>
+                    <h3>No performance data yet</h3>
+                    <p>Play some games to see your stats</p>
+                    <button class="btn btn-primary mt-3">Join a Competition</button>
+                </div>
+            </div>
+        </section>
+	</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'accounts/js/gamers/profile_completion_modal.js' %}"></script>
+    <script src="{% static 'accounts/js/gamers/profile_completion.js' %}"></script>
+    <script src="{% static 'accounts/js/gamers/gamer_dashboard.js' %}"></script>
+    <script>
+        function openProfileModal() {
+            const modal = document.getElementById('profileCompletionModal');
+            if (modal) {
+                modal.classList.add('show');
+            }
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profileCompletionModal');
+            const isMandatory = modal && modal.classList.contains('mandatory');
+            if (modal && !isMandatory) {
+                modal.classList.remove('show');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('profileCompletionModal');
+            const isProfileComplete = {{ profile_complete|yesno:"true,false" }};
+            
+            // Handle profile restrictions
+            const restrictedLinks = document.querySelectorAll('.profile-restricted[data-restricted="true"]');
+            restrictedLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!isProfileComplete) {
+                        e.preventDefault();
+                        showToast('Please complete your profile to access this page', 'error');
+                        openProfileModal();
+                    }
+                });
+            });
+
+            // Handle mandatory modal
+            if (modal && modal.classList.contains('mandatory')) {
+                // Prevent closing mandatory modal
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        e.stopPropagation();
+                    }
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modal.classList.contains('mandatory')) {
+                        e.preventDefault();
+                    }
+                });
+
+                // Show toast message
+                {% if not profile_complete %}
+                showToast('Please complete your profile to access full dashboard features', 'info');
+                {% endif %}
+            }
+        });
+    </script>
+{% endblock %}

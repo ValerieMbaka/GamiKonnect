@@ -1,0 +1,75 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} Login · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/auth_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
+    <style>
+        .navbar, footer { display: none; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <main class="auth-form-container">
+        <div class="auth-form-wrapper">
+            <div class="auth-form-header">
+                <img src="{% static 'core/images/gamepad.jpeg' %}" alt="GamiKonnect Logo" class="auth-logo">
+                <h1>Welcome to {{ project_detail.title }}</h1>
+                <p class="auth-subtitle">Sign in to your account or create a new one to get started</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="auth-tabs">
+                <a href="{% url 'accounts:login' %}" class="auth-tab active">Sign In</a>
+                <a href="{% url 'accounts:select_role' %}" class="auth-tab">Sign Up</a>
+            </div>
+
+            <form id="loginForm" class="auth-form" method="post" action="{% url 'accounts:session_login' %}"
+                data-gamer-dashboard-url="{% url 'accounts:gamer_dashboard' %}"
+                data-shop-owner-dashboard-url="{% url 'accounts:shop_owner_dashboard' %}">
+                {% csrf_token %}
+                <input type="hidden" id="firebase_uid" name="firebase_uid">
+                <input type="hidden" id="id_token" name="id_token">
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="remember">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-shimmer w-100" id="loginSubmitBtn">Sign In</button>
+            </form>
+
+            <!-- Resend Verification Section (hidden by default) -->
+            <div id="resendVerificationSection" class="resend-verification-section" {% if request.session.show_resend %}style="display:block"{% else %}style="display:none"{% endif %}>
+                <p class="resend-message">Did not receive verification email. Click the button below to resend the verification email</p>
+                <form id="resendForm" method="post" action="{% url 'accounts:resend_verification' %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="resendEmail" name="email" value="{{ request.session.show_resend }}">
+                    <button type="submit" id="resendVerificationBtn" class="btn btn-outline btn-sm btn-shimmer">Resend Verification Email</button>
+                </form>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script type="module" src="{% static 'core/js/firebase-init.js' %}"></script>
+    <script src="{% static 'accounts/js/auth_scripts.js' %}"></script>
+    <script src="{% static 'accounts/js/login.js' %}"></script>
+{% endblock %}

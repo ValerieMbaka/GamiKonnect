@@ -67,3 +67,6 @@ venv/
 /core/static/core/js/firebase_config.js
 /core/email_service.py
 /firebase_config.py
+/debug_accounts.py
+/accounts/
+accounts

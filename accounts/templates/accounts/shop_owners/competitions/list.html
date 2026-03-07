@@ -1,0 +1,132 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Competitions · {{ project_detail.title }}{% endblock %}
+{% block page_eyebrow %}Tournament Hub{% endblock %}
+{% block page_title %}Competitions{% endblock %}
+{% block page_description %}Manage all your shop competitions and tournaments.{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/competitions.css' %}">
+{% endblock %}
+
+{% block content %}
+    <section class="competitions-stats anim-fade-in-up">
+        <div class="stat-card">
+            <i class="fas fa-trophy"></i>
+            <div>
+                <h3>{{ stats.total }}</h3>
+                <p>Total Competitions</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-door-open"></i>
+            <div>
+                <h3>{{ stats.open }}</h3>
+                <p>Open for Registration</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-play-circle"></i>
+            <div>
+                <h3>{{ stats.in_progress }}</h3>
+                <p>In Progress</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <h3>{{ stats.completed }}</h3>
+                <p>Completed</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="competitions-filters anim-fade-in-up">
+        <div class="filter-tabs">
+            <a href="{% url 'accounts:shop_owner_competitions' %}" 
+               class="filter-tab {% if not status_filter %}active{% endif %}">
+                All
+            </a>
+            <a href="?status=draft" class="filter-tab {% if status_filter == 'draft' %}active{% endif %}">
+                Draft
+            </a>
+            <a href="?status=open" class="filter-tab {% if status_filter == 'open' %}active{% endif %}">
+                Open
+            </a>
+            <a href="?status=in_progress" class="filter-tab {% if status_filter == 'in_progress' %}active{% endif %}">
+                In Progress
+            </a>
+            <a href="?status=completed" class="filter-tab {% if status_filter == 'completed' %}active{% endif %}">
+                Completed
+            </a>
+        </div>
+    </section>
+
+    <section class="competitions-grid anim-fade-in-up">
+        {% if competitions %}
+            {% for competition in competitions %}
+                <article class="competition-card {% if competition.status == 'completed' %}completed{% elif competition.status == 'in_progress' %}active{% endif %}">
+                    <div class="competition-header">
+                        <div>
+                            <h3>{{ competition.title }}</h3>
+                            <p class="competition-shop">{{ competition.shop.name }}</p>
+                        </div>
+                        <span class="status-badge status-{{ competition.status }}">
+                            {{ competition.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="competition-body">
+                        <div class="competition-info">
+                            <p><i class="fas fa-gamepad"></i> {{ competition.game.name }}</p>
+                            <p><i class="fas fa-users"></i> {{ competition.current_participants_count }}/{{ competition.max_participants }} participants</p>
+                            <p><i class="fas fa-calendar"></i> Starts: {{ competition.competition_start|date:"M d, Y" }}</p>
+                        </div>
+                        
+                        {% if competition.prize_pool > 0 %}
+                            <div class="prize-info">
+                                <i class="fas fa-gift"></i>
+                                <strong>Ksh {{ competition.prize_pool|floatformat:0 }}</strong> Prize Pool
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="competition-actions">
+                        <a href="{% url 'accounts:shop_owner_competition_detail' competition.pk %}" 
+                           class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        {% if competition.status == 'completed' and not competition.has_result %}
+                            <a href="{% url 'accounts:submit_competition_result' competition.pk %}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-upload"></i> Submit Results
+                            </a>
+                        {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-trophy anim-float"></i>
+                <h3>No competitions yet</h3>
+                <p>Create your first competition to start hosting tournaments.</p>
+            </div>
+        {% endif %}
+    </section>
+
+    {% if competitions.has_other_pages %}
+        <nav class="pagination-wrapper">
+            <ul class="pagination">
+                {% if competitions.has_previous %}
+                    <li><a href="?page={{ competitions.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a></li>
+                {% endif %}
+                <li class="active">{{ competitions.number }} of {{ competitions.paginator.num_pages }}</li>
+                {% if competitions.has_next %}
+                    <li><a href="?page={{ competitions.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}
+

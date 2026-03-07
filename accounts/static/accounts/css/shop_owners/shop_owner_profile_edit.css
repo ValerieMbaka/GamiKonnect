@@ -1,0 +1,66 @@
+.profile-edit-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-light);
+    padding: var(--spacing-lg);
+    max-width: 720px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-md);
+}
+
+.profile-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.form-group label {
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+}
+
+.form-group input[type="text"],
+.form-group input[type="file"] {
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-light);
+    padding: 0.75rem;
+    font-size: 1rem;
+    background: var(--bg-secondary);
+}
+
+.upload-field {
+    border: 2px dashed var(--border-light);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    background: var(--bg-secondary);
+}
+
+.upload-field small {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+@media (max-width: 576px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+

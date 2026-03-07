@@ -1,0 +1,103 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Submit Results · {{ competition.title }}{% endblock %}
+{% block page_eyebrow %}Results Submission{% endblock %}
+{% block page_title %}Submit Competition Results{% endblock %}
+{% block page_description %}Upload results and select winners for admin review.{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/competitions.css' %}">
+{% endblock %}
+
+{% block content %}
+    <section class="submit-result-container anim-fade-in-up">
+        <div class="competition-info-card">
+            <h3><i class="fas fa-trophy"></i> {{ competition.title }}</h3>
+            <p><i class="fas fa-store"></i> {{ competition.shop.name }}</p>
+            <p><i class="fas fa-gamepad"></i> {{ competition.game.name }}</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="result-form">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h3><i class="fas fa-file-upload"></i> Results File</h3>
+                <div class="form-group">
+                    <label for="results_file">Upload Results Document *</label>
+                    <input type="file" id="results_file" name="results_file" 
+                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" required>
+                    <small>Accepted formats: PDF, Word, Excel, or Images</small>
+                    {% if existing_result and existing_result.results_file %}
+                        <p class="text-muted">
+                            Current file: <a href="{{ existing_result.results_file.url }}" target="_blank">View</a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-align-left"></i> Results Summary</h3>
+                <div class="form-group">
+                    <label for="results_summary">Brief Summary *</label>
+                    <textarea id="results_summary" name="results_summary" rows="5" required
+                              placeholder="Provide a brief summary of the competition results...">{% if existing_result %}{{ existing_result.results_summary }}{% endif %}</textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-medal"></i> Winners</h3>
+                
+                <div class="form-group">
+                    <label for="first_place">First Place Winner</label>
+                    <select id="first_place" name="first_place" class="form-control">
+                        <option value="">Select winner...</option>
+                        {% for participant in participants %}
+                            <option value="{{ participant.gamer.id }}" 
+                                    {% if existing_result and existing_result.first_place.id == participant.gamer.id %}selected{% endif %}>
+                                {{ participant.gamer.custom_username|default:participant.gamer.first_name }} {{ participant.gamer.last_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="second_place">Second Place Winner</label>
+                    <select id="second_place" name="second_place" class="form-control">
+                        <option value="">Select winner...</option>
+                        {% for participant in participants %}
+                            <option value="{{ participant.gamer.id }}"
+                                    {% if existing_result and existing_result.second_place.id == participant.gamer.id %}selected{% endif %}>
+                                {{ participant.gamer.custom_username|default:participant.gamer.first_name }} {{ participant.gamer.last_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="third_place">Third Place Winner</label>
+                    <select id="third_place" name="third_place" class="form-control">
+                        <option value="">Select winner...</option>
+                        {% for participant in participants %}
+                            <option value="{{ participant.gamer.id }}"
+                                    {% if existing_result and existing_result.third_place.id == participant.gamer.id %}selected{% endif %}>
+                                {{ participant.gamer.custom_username|default:participant.gamer.first_name }} {{ participant.gamer.last_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-paper-plane"></i> Submit for Review
+                </button>
+                <a href="{% url 'accounts:shop_owner_competition_detail' competition.pk %}" 
+                   class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </section>
+{% endblock %}
+

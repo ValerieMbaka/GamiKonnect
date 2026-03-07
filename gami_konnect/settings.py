@@ -65,6 +65,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    
     # Role-based access control for gamer/shop-owner roles
     'accounts.middleware.RoleAccessMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

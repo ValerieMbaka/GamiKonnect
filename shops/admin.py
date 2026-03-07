@@ -200,9 +200,9 @@ class ShopAdmin(admin.ModelAdmin):
 
 @admin.register(Console)
 class ConsoleAdmin(admin.ModelAdmin):
-    list_display = ('shop', 'console_type', 'quantity', 'notes')
+    list_display = ('shop', 'console_type', 'quantity')
     list_filter = ('console_type', 'shop', 'created_at')
-    search_fields = ('shop__name', 'notes', 'console_type__name')
+    search_fields = ('shop__name', 'console_type__name')
     readonly_fields = ('shop', 'console_type', 'quantity', 'notes', 'created_at', 'updated_at')
     list_per_page = 20
     
@@ -223,7 +223,7 @@ class ConsoleAdmin(admin.ModelAdmin):
 class GamePricingAdmin(admin.ModelAdmin):
     list_display = ('shop', 'game', 'price_per_hour', 'is_premium')
     list_filter = ('is_premium', 'shop', 'created_at')
-    search_fields = ('game__name', 'shop__name', 'notes')
+    search_fields = ('game__name', 'shop__name')
     readonly_fields = ('shop', 'game', 'price_per_hour', 'is_premium', 'notes', 'created_at', 'updated_at')
     list_per_page = 20
     

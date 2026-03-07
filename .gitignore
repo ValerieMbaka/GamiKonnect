@@ -70,6 +70,3 @@ venv/
 /debug_accounts.py
 /accounts/
 accounts
-/shops/views.py
-/shops/models.py
-/shops/admin.py

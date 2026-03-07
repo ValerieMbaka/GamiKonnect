@@ -57,7 +57,7 @@ class PlatformCategory(models.Model):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.integer_id}: {self.name}"
+        return self.name
     
     def game_count(self):
         # Count games available in the platform category
@@ -92,7 +92,7 @@ class Platform(models.Model):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.integer_id}: {self.name} ({self.category.name})"
+        return self.name
     
     def game_count(self):
         return self.games.count()
@@ -125,7 +125,7 @@ class Genre(models.Model):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.integer_id}: {self.name}"
+        return self.name
     
     def game_count(self):
         return self.games.count()
@@ -142,6 +142,7 @@ class Game(models.Model):
     supported_platforms = models.ManyToManyField(Platform, related_name='games', blank=True)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='game_images/', blank=True)
+    is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -184,4 +185,4 @@ class Game(models.Model):
     platform_categories_list.short_description = 'Platform Categories'
     
     def __str__(self):
-        return f"{self.integer_id}: {self.name}"
+        return self.name

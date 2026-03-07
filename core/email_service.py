@@ -121,6 +121,9 @@ def send_profile_completion_email(email, username):
 def send_shop_approval_email(shop, approved=True):
     try:
         owners_emails = [owner.email for owner in shop.owners.all()]
+        # If owners not yet assigned (e.g., submitted by gamer), fall back to submitter email
+        if not owners_emails and getattr(shop, 'submitted_by_email', None):
+            owners_emails = [shop.submitted_by_email]
         
         if approved:
             subject = f"Shop Approved - {settings.PROJECT_NAME}"

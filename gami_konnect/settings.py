@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     # Local apps
     'core',
     'games',
+    'accounts',
+    'shops',
     
 ]
 
@@ -63,6 +65,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    # Role-based access control for gamer/shop-owner roles
+    'accounts.middleware.RoleAccessMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -154,6 +158,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Project metadata and base URLs
+PROJECT_NAME = env('PROJECT_NAME', default='GamiKonnect')
+SITE_URL = env('SITE_URL', default='http://localhost:8000')
 
 
 # Email configuration

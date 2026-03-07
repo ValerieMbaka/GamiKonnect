@@ -83,10 +83,10 @@ class GenreAdmin(admin.ModelAdmin):
 
 @admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
-    list_display = ('integer_id', 'name', 'platform_categories_list', 'display_genres', 'is_active')
-    list_filter = ('is_active', 'genres', 'supported_platforms__category')
+    list_display = ('integer_id', 'name', 'platform_categories_list', 'display_genres', 'is_verified', 'is_active')
+    list_filter = ('is_verified', 'is_active', 'genres', 'supported_platforms__category')
     search_fields = ('name', 'slug', 'description', 'integer_id')
-    list_editable = ('is_active',)
+    list_editable = ('is_verified', 'is_active')
     readonly_fields = ('id', 'integer_id', 'platform_categories_list_display', 'created_at', 'updated_at')
     filter_horizontal = ('genres', 'supported_platforms')
     list_per_page = 20
@@ -101,7 +101,7 @@ class GameAdmin(admin.ModelAdmin):
             'fields': ('name', 'genres', 'description', 'image')
         }),
         ('Platforms & Availability', {
-            'fields': ('supported_platforms', 'platform_categories_list_display', 'is_active')
+            'fields': ('supported_platforms', 'platform_categories_list_display', 'is_verified', 'is_active')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),

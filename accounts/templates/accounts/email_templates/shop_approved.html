@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <style>
         body {
@@ -86,6 +86,7 @@
             background: #E8E3FF;
         }
     </style>
+	<title>Shop Approved</title>
 </head>
 <body>
     <div class="container">
@@ -94,8 +95,9 @@
             <h2>Shop Approved! 🎉</h2>
         </div>
         <div class="content">
-            <p>Dear Shop Owner,</p>
-            <p>Great news! Your shop <strong>"{{ shop.name }}"</strong> has been approved and is now active on {{ project_name }}.</p>
+            <p>Dear {% if username %} {{ username }}{% endif %},</p>
+            <p>Great news! Your shop <strong>"{{ shop.name }}"</strong> has been approved and is
+	            now active on {{ project_name }}.</p>
 
             <div class="shop-details">
                 <h3>Shop Details:</h3>
@@ -119,7 +121,8 @@
                 </a>
             </p>
 
-            <p>Thank you for choosing {{ project_name }}! We're excited to have you as part of our gaming community.</p>
+            <p>Thank you for choosing {{ project_name }}!
+	            We're excited to have you as part of our gaming community.</p>
         </div>
         <div class="footer">
             <p>Happy Gaming!<br>The {{ project_name }} Team</p>

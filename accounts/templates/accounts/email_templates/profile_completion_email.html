@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <style>
         @keyframes floatCard {
@@ -88,6 +88,7 @@
             background: #E8E3FF;
         }
     </style>
+	<title>Complete Your Profile</title>
 </head>
 <body>
     <div class="container">
@@ -97,7 +98,8 @@
         </div>
         <div class="content">
             <p>Hey {% if gamer_name %}{{ gamer_name }}{% else %}Gamer{% endif %},</p>
-            <p>Your new account is live! Complete your gamer profile to unlock personalized competitions, platform stats, and a public profile that shines across the {{ project_name }} community.</p>
+            <p>Your new account is live! Complete your gamer profile to unlock personalized competitions,
+	            platform stats, and a public profile that shines across the {{ project_name }} community.</p>
 
             <div class="checklist">
                 <strong>Complete these quick steps:</strong>
@@ -105,7 +107,6 @@
                     <li>Add your favorite platforms & titles</li>
                     <li>Upload an avatar so teams can spot you</li>
                     <li>Share a short gamer bio to stand out</li>
-                    <li>Verify your contact details for prizes</li>
                 </ul>
             </div>
 
@@ -116,7 +117,7 @@
             <p style="margin-top: 24px;">Need help? Our support team is ready at {{ support_email|default:'support@gamikonnect.com' }}.</p>
         </div>
         <div class="footer">
-            <p>See you in the lobby,<br>The {{ project_name }} Crew</p>
+            <p>See you in the lobby.<br>The {{ project_name }} Crew</p>
         </div>
     </div>
 </body>

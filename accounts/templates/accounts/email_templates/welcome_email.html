@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <style>
         body {
@@ -57,6 +57,7 @@
             background: #E8E3FF;
         }
     </style>
+	<title>Welcome</title>
 </head>
 <body>
     <div class="container">
@@ -69,7 +70,6 @@
             <p>As a {{ role }}, you can now:</p>
             <ul>
                 {% if role == 'gamer' %}
-                <li>Complete your gaming profile</li>
                 <li>Join competitions and tournaments</li>
                 <li>Connect with other gamers</li>
                 <li>Track your gaming performance</li>
@@ -77,7 +77,6 @@
                 <li>Set up your game shop details</li>
                 <li>Host tournaments and competitions</li>
                 <li>Manage your shop operations</li>
-                <li>Verify players and upload results</li>
                 {% endif %}
             </ul>
             <p>We're excited to have you on board!</p>

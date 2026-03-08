@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <style>
         @keyframes pulseBorder {
@@ -76,16 +76,18 @@
             background: #E8E3FF;
         }
     </style>
+	<title>Verify our Email Address</title>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>{{ project_name }}</h1>
-            <h2>Verify Your {{ role|title }} Account</h2>
+            <h2>Verify Your Account</h2>
         </div>
         <div class="content">
             <p>Hello!</p>
-            <p>Thank you for registering as a {{ role }} on {{ project_name }}. Please verify your email address to activate your account.</p>
+            <p>Thank you for registering on {{ project_name }}.
+	            Please verify your email address to activate your account.</p>
             <p style="text-align: center;">
                 <a href="{{ verification_link }}" class="button">Verify Email Address</a>
             </p>

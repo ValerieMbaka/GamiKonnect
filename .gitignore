@@ -75,26 +75,4 @@ accounts/templates/accounts/shop_owners/competitions/detail.html
 accounts/templates/accounts/shop_owners/competitions/list.html
 accounts/templates/accounts/shop_owners/competitions/submit_result.html
 
-
-accounts/templates/accounts/shop_owners/shop_owner_profile.html
-accounts/templates/accounts/shop_owners/shop_owner_profile_edit.html
-accounts/templates/accounts/shop_owners/shop_owner_settings.html
-accounts/templates/accounts/shop_owners/shop_owner_shop_detail.html
-accounts/templates/accounts/shop_owners/edit_shop.html
-
-
-
-
-
 accounts/static/accounts/css/shop_owners/competitions.css
-accounts/static/accounts/css/shop_owners/shop_owner_profile.css
-accounts/static/accounts/css/shop_owners/shop_owner_profile_edit.css
-accounts/static/accounts/css/shop_owners/shop_owner_settings.css
-accounts/static/accounts/css/shop_owners/shop_owner_shop_detail.css
-
-accounts/static/accounts/js/shop_owners/shop_owner_profile.js
-accounts/static/accounts/js/shop_owners/shop_owner_profile_edit.js
-accounts/static/accounts/js/shop_owners/shop_owner_settings.js
-
-
-

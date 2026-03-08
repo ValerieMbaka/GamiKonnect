@@ -1,0 +1,205 @@
+.profile-hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-accent);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-md);
+}
+
+.profile-identity {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-light);
+}
+
+.identity-badge {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.identity-badge img {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(53, 168, 240, 0.4);
+}
+
+.identity-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.identity-tags span {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.identity-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.profile-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    border: 1px dashed var(--border-medium);
+}
+
+.profile-summary h3 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.profile-grid {
+    margin-top: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.profile-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-light);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-card header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.profile-card dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.profile-card dt {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+}
+
+.profile-card dd {
+    margin: 0;
+    font-weight: var(--font-medium);
+}
+
+.metric-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.metric-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.metric-list li:last-child {
+    border-bottom: none;
+}
+
+.span-2 {
+    grid-column: span 2;
+}
+
+.linked-shops {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.linked-shop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.linked-shop:last-child {
+    border-bottom: none;
+}
+
+.linked-shop .status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+}
+
+.linked-shop .status.live {
+    background: rgba(95, 211, 179, 0.15);
+    color: var(--success);
+}
+
+.linked-shop .status.pending {
+    background: rgba(255, 215, 0, 0.18);
+    color: var(--warning);
+}
+
+.milestone-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.milestone-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.milestone-list li:last-child {
+    border-bottom: none;
+}
+
+.milestone-list .badge {
+    background: var(--bg-secondary);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--border-light);
+}
+
+@media (max-width: 992px) {
+    .span-2 {
+        grid-column: span 1;
+    }
+}
+

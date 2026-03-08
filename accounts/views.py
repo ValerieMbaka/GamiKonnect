@@ -1198,6 +1198,715 @@ def gamer_games(request):
     return render(request, 'accounts/gamers/gamer_games.html', context)
 
 
+# SHOP OWNER VIEWS
+def shop_owner_dashboard(request):
+    # If entering owner dashboard, clear gamer_mode flag
+    if 'gamer_mode' in request.session:
+        del request.session['gamer_mode']
+    
+    role = request.session.get('role')
+    # If true owner i.e at least 1 approved shop, render full dashboard
+    if role == 'shop_owner':
+        try:
+            shop_owner = ShopOwner.objects.get(id=request.session['user_id'])
+            # Ensure session role is set correctly
+            request.session['role'] = 'shop_owner'
+            request.session['user_id'] = shop_owner.id
+            request.session.modified = True
+            
+            shops = (
+                Shop.objects.filter(owners=shop_owner)
+                .prefetch_related('games_available', 'consoles', 'game_prices__game')
+                .order_by('-created_at')
+            )
+            has_shops = shops.exists()
+            verified_shops = shops.filter(is_active=True)
+            pending_shops = shops.filter(is_active=False)
+            shop_stats = {
+                'total_screens': sum(shop.total_consoles() for shop in shops),
+                'total_games': sum(shop.games_available.count() for shop in shops),
+                'premium_games': sum(shop.premium_games_count() for shop in shops),
+                'pending_shops': pending_shops.count(),
+            }
+            recent_activity = []
+            for shop in shops[:4]:
+                recent_activity.append({
+                    'title': f"{shop.name} registration",
+                    'status': 'Live' if shop.is_active else 'Awaiting approval',
+                    'timestamp': shop.created_at.strftime('%b %d, %Y'),
+                    'meta': f"{shop.games_available.count()} games · {shop.total_consoles()} screens",
+                    'is_active': shop.is_active,
+                })
+            verification_percent = 0
+            if shops.count() > 0:
+                verification_percent = round((verified_shops.count() / shops.count()) * 100)
+            
+            # Fetch actual pending counts
+            pending_total = pending_shops.count()
+            
+            context = {
+                **base_site_context(),
+                'shop_owner': shop_owner,
+                'shops': shops,
+                'has_shops': has_shops,
+                'shops_verified': verified_shops.exists(),
+                'shop_count': shops.count(),
+                'verified_shop_count': verified_shops.count(),
+                'pending_shop_count': pending_total,
+                'shop_stats': shop_stats,
+                'recent_activity': recent_activity,
+                'verification_percent': verification_percent,
+                'inactive_mode': False,
+            }
+            return render(request, 'accounts/shop_owners/shop_owner_dashboard.html', context)
+        except ShopOwner.DoesNotExist:
+            messages.error(request, 'Shop owner profile not found.')
+            return redirect('core:home')
+
+    # Allow gamers with pending shops to view an inactive dashboard
+    if role == 'gamer':
+        try:
+            gamer = Gamer.objects.get(id=request.session['user_id'])
+            # Check if they actually have a ShopOwner record now (i.e just approved)
+            try:
+                shop_owner = ShopOwner.objects.filter(uid=gamer.uid).first()
+                if shop_owner and Shop.objects.filter(owners=shop_owner, is_active=True).exists():
+                    request.session['role'] = 'shop_owner'
+                    request.session['user_id'] = shop_owner.id
+                    return redirect('accounts:shop_owner_dashboard')
+            except Exception:
+                pass
+            
+            pending_shops = Shop.objects.filter(submitted_by_uid=gamer.uid).order_by('-created_at')
+            if not pending_shops.exists():
+                messages.error(request, 'Access denied.')
+                return redirect('core:home')
+            # Inactive mode
+            shops = pending_shops
+            verified_shops = shops.filter(is_active=True)
+            shop_stats = {
+                'total_screens': sum(shop.total_consoles() for shop in shops),
+                'total_games': sum(shop.games_available.count() for shop in shops),
+                'premium_games': sum(shop.premium_games_count() for shop in shops),
+                'pending_shops': shops.count(),
+            }
+            recent_activity = []
+            for shop in shops[:4]:
+                recent_activity.append({
+                    'title': f"{shop.name} status update",
+                    'status': 'Awaiting approval',
+                    'timestamp': shop.updated_at.strftime('%b %d, %Y'),
+                    'meta': f"{shop.games_available.count()} games · {shop.total_consoles()} consoles",
+                    'is_active': False,
+                })
+            verification_percent = 0
+            context = {
+                **base_site_context(),
+                # Provide gamer info to template via expected variables
+                'shop_owner': gamer,  # use gamer names where template reads shop_owner
+                'shop_owner_avatar': getattr(gamer, 'profile_picture', None),
+                'shops': shops,
+                'has_shops': shops.exists(),
+                'shops_verified': verified_shops.exists(),
+                'shop_count': shops.count(),
+                'verified_shop_count': verified_shops.count(),
+                'pending_shop_count': shops.count(),
+                'shop_stats': shop_stats,
+                'recent_activity': recent_activity,
+                'verification_percent': verification_percent,
+                'inactive_mode': True,
+            }
+            return render(request, 'accounts/shop_owners/shop_owner_dashboard.html', context)
+        except Gamer.DoesNotExist:
+            messages.error(request, 'Access denied.')
+            return redirect('core:home')
+
+    messages.error(request, 'Access denied.')
+    return redirect('core:home')
+
+
+def shop_owner_profile(request):
+    if request.session.get('role') != 'shop_owner':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shops = Shop.objects.filter(owners=shop_owner)
+    
+    context = {
+        **base_site_context(),
+        'shop_owner': shop_owner,
+        'shops': shops,
+        'shop_metrics': {
+            'total_shops': shops.count(),
+            'verified_shops': shops.filter(is_active=True).count(),
+            'total_games': sum(shop.games_available.count() for shop in shops),
+            'total_consoles': sum(shop.total_consoles() for shop in shops),
+        }
+    }
+    return render(request, 'accounts/shop_owners/shop_owner_profile.html', context)
+
+
+def shop_owner_profile_edit(request):
+    if request.session.get('role') != 'shop_owner':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    
+    if request.method == 'POST':
+        try:
+            shop_owner.first_name = request.POST.get('first_name')
+            shop_owner.last_name = request.POST.get('last_name')
+            
+            # Handle profile picture
+            if 'profile_picture' in request.FILES:
+                shop_owner.profile_picture = request.FILES['profile_picture']
+            
+            shop_owner.save()
+            
+            # Update session data
+            request.session['first_name'] = shop_owner.first_name
+            request.session['last_name'] = shop_owner.last_name
+            
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('accounts:shop_owner_profile')
+        
+        except Exception as e:
+            logger.error(f"Shop owner profile edit error: {e}")
+            messages.error(request, 'Failed to update profile. Please try again.')
+    
+    context = {
+        **base_site_context(),
+        'shop_owner': shop_owner,
+    }
+    return render(request, 'accounts/shop_owners/shop_owner_profile_edit.html', context)
+
+
+def shop_owner_shop_detail(request, pk):
+    if request.session.get('role') != 'shop_owner':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shop = get_object_or_404(
+        Shop.objects.prefetch_related('games_available', 'consoles', 'game_prices__game', 'owners'),
+        pk=pk,
+        owners=shop_owner
+    )
+    
+    pricing = shop.game_prices.select_related('game')
+    context = {
+        **base_site_context(),
+        'shop_owner': shop_owner,
+        'shop': shop,
+        'consoles': shop.consoles.all(),
+        'pricing': pricing,
+        'games': shop.games_available.all(),
+        'metrics': {
+            'total_games': shop.games_available.count(),
+            'premium_games': shop.premium_games_count(),
+            'total_screens': shop.total_consoles(),
+            'custom_prices': pricing.count(),
+        }
+    }
+    return render(request, 'accounts/shop_owners/shop_owner_shop_detail.html', context)
+
+
+def shop_owner_settings(request):
+    if request.session.get('role') != 'shop_owner':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shops = Shop.objects.filter(owners=shop_owner)
+    
+    context = {
+        **base_site_context(),
+        'shop_owner': shop_owner,
+        'shops': shops,
+        'security_state': {
+            'multi_factor': False,
+            'last_password_change': shop_owner.updated_at.strftime('%b %d, %Y'),
+            'active_sessions': 3
+        }
+    }
+    return render(request, 'accounts/shop_owners/shop_owner_settings.html', context)
+
+
+@csrf_exempt
+def create_shop(request):
+    role = request.session.get('role')
+    if role not in ['gamer', 'shop_owner']:
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    # Fetch the appropriate account object for context
+    account_obj = None
+    if role == 'shop_owner':
+        account_obj = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    else:
+        # Gamer submitting intent to become shop owner
+        account_obj = get_object_or_404(Gamer, id=request.session['user_id'])
+    
+    if request.method == 'POST':
+        # Server-side validation
+        shop_name = request.POST.get('shop_name')
+        description = request.POST.get('description')
+        city = request.POST.get('city')
+        building = request.POST.get('building')
+        floor = request.POST.get('floor')
+        room_number = request.POST.get('room_number')
+        shop_location = request.POST.get('shop_location')
+        screen_number = request.POST.get('screen_number')
+        base_price_per_hour = request.POST.get('base_price_per_hour')
+        opening_hours = request.POST.get('opening_hours')
+        closing_hours = request.POST.get('closing_hours')
+        logo = request.FILES.get('logo')
+        business_permit = request.FILES.get('business_permit')
+        
+        console_types = request.POST.getlist('console_types')
+        games_available_data = request.POST.get('games_available', '[]')
+        
+        # Basic field validation
+        if not all([shop_name, description, city, building, floor, room_number,
+                    shop_location, screen_number, base_price_per_hour,
+                    opening_hours, closing_hours, logo, business_permit]):
+            messages.error(request, 'Please fill in all compulsory fields and upload both logo and business permit.')
+            return render(request, 'accounts/shop_owners/create_shop.html', {
+                **base_site_context(),
+                'consoles_platforms': Platform.objects.filter(category__name='Console')
+            })
+
+        # At least one console must be selected
+        if not console_types:
+            messages.error(request, 'Please select at least one console type.')
+            return render(request, 'accounts/shop_owners/create_shop.html', {
+                **base_site_context(),
+                'consoles_platforms': Platform.objects.filter(category__name='Console')
+            })
+            
+        # At least one game must be selected
+        try:
+            if not json.loads(games_available_data):
+                messages.error(request, 'Please select at least one game.')
+                return render(request, 'accounts/shop_owners/create_shop.html', {
+                    **base_site_context(),
+                    'consoles_platforms': Platform.objects.filter(category__name='Console')
+                })
+        except:
+            messages.error(request, 'Invalid game data provided.')
+            return render(request, 'accounts/shop_owners/create_shop.html', {
+                **base_site_context(),
+                'consoles_platforms': Platform.objects.filter(category__name='Console')
+            })
+
+        try:
+            with transaction.atomic():
+                # Create shop
+                shop = Shop.objects.create(
+                    name=shop_name,
+                    logo=logo,
+                    description=description,
+                    city=city,
+                    building=building,
+                    floor=floor,
+                    room_number=room_number,
+                    location=shop_location,
+                    address=shop_location,
+                    screen_number=int(screen_number),
+                    base_price_per_hour=float(base_price_per_hour),
+                    opening_hours=opening_hours,
+                    closing_hours=closing_hours,
+                    business_permit=business_permit,
+                    is_active=False  # Wait for admin approval
+                )
+                
+                # Track submitter for admin approval flow
+                shop.submitted_by_uid = account_obj.uid
+                shop.submitted_by_email = account_obj.email
+                shop.save(update_fields=['submitted_by_uid', 'submitted_by_email'])
+
+                if role == 'shop_owner':
+                    # Add shop owner as owner
+                    shop.owners.add(account_obj)
+                
+                # Handle consoles
+                console_types = request.POST.getlist('console_types')
+                for c_slug in console_types:
+                    try:
+                        platform = get_platform_by_string(c_slug)
+                        if not platform:
+                            continue
+                        
+                        quantity = int(request.POST.get(f'console_quantity_{c_slug}', 1))
+                        
+                        Console.objects.create(
+                            shop=shop,
+                            console_type=platform,
+                            quantity=quantity
+                        )
+                    except Exception as ce:
+                        logger.error(f"Error creating console: {ce}")
+                        continue
+                
+                # Handle games available
+                games_available_data = request.POST.get('games_available', '[]')
+                games_to_add = []
+                if games_available_data:
+                    try:
+                        game_identifiers = json.loads(games_available_data)
+                        for identifier in game_identifiers:
+                            # Try to find by ID first
+                            game = Game.objects.filter(models.Q(id=identifier) if is_valid_uuid(identifier) else models.Q(integer_id=identifier) if str(identifier).isdigit() else models.Q(pk=None)).first()
+                            
+                            if game:
+                                games_to_add.append(game)
+                            else:
+                                # Treat as a custom game name if it's a string
+                                if isinstance(identifier, str) and identifier.strip():
+                                    name = identifier.strip()
+                                    # Create or get custom game
+                                    custom_game, created = Game.objects.get_or_create(
+                                        name__iexact=name,
+                                        defaults={'name': name, 'is_verified': False, 'is_active': True}
+                                    )
+                                    games_to_add.append(custom_game)
+                    except (json.JSONDecodeError, TypeError, ValidationError) as e:
+                        logger.error(f"Error parsing games_available in create_shop: {e} | data: {games_available_data}")
+                
+                # Handle new custom games
+                new_games_payload = request.POST.get('new_games', '[]')
+                if new_games_payload:
+                    custom_games = json.loads(new_games_payload)
+                    for custom in custom_games:
+                        name = custom.get('name', '').strip()
+                        platforms = custom.get('platforms', [])
+                        if not name or not platforms:
+                            continue
+                        existing_game = Game.objects.filter(name__iexact=name, is_verified=False).first()
+                        if existing_game:
+                            games_to_add.append(existing_game)
+                            continue
+                        
+                        game = Game.objects.create(
+                            name=name,
+                            is_verified=False,
+                            is_active=True
+                        )
+                        
+                        # Resolve platform objects from names/slugs
+                        if platforms:
+                            resolved_platforms = []
+                            for p_str in platforms:
+                                p_obj = get_platform_by_string(p_str)
+                                if p_obj:
+                                    resolved_platforms.append(p_obj)
+                            if resolved_platforms:
+                                game.supported_platforms.set(resolved_platforms)
+                        
+                        games_to_add.append(game)
+                
+                if games_to_add:
+                    shop.games_available.set(games_to_add)
+                
+                # Notify admin about new shop submission
+                notify_admin_new_shop(shop)
+                
+                # Handle game pricing
+                pricing_data = request.POST.get('game_pricing', '[]')
+                if pricing_data:
+                    pricing_list = json.loads(pricing_data)
+                    # Create a mapping of custom game indices to actual game objects
+                    custom_games_map = {}
+                    if new_games_payload:
+                        custom_games_list = json.loads(new_games_payload)
+                        for idx, custom in enumerate(custom_games_list):
+                            name = custom.get('name', '').strip()
+                            if name:
+                                # Find the created game (either existing or newly created)
+                                game = Game.objects.filter(name__iexact=name).first()
+                                if game:
+                                    custom_games_map[f'custom_{idx}'] = game
+                    
+                    for price_data in pricing_list:
+                        game_id = price_data.get('game_id')
+                        price = float(price_data.get('price_per_hour', 0))
+                        is_premium = price_data.get('is_premium', False)
+                        
+                        # Handle custom game IDs
+                        if game_id and game_id.startswith('custom_'):
+                            game = custom_games_map.get(game_id)
+                            if not game:
+                                continue
+                        else:
+                            try:
+                                game = Game.objects.get(id=game_id)
+                            except (Game.DoesNotExist, ValueError):
+                                continue
+                        
+                        if game:
+                            GamePricing.objects.create(
+                                shop=shop,
+                                game=game,
+                                price_per_hour=price,
+                                is_premium=is_premium
+                            )
+                
+                messages.success(
+                    request,
+                    'Registration in progress. Check your email for shop verification status'
+                )
+                
+                # Redirect based on role - default to gamer dashboard
+                return redirect('accounts:gamer_dashboard')
+        
+        except Exception as e:
+            logger.error(f"Shop creation error: {e}")
+            messages.error(request, 'Failed to create shop. Please try again.')
+    
+    # Get all games for the form
+    games = Game.objects.filter(is_verified=True, is_active=True).order_by('name')
+    consoles_platforms = Platform.objects.filter(category__name='Console').order_by('name')
+    context = {
+        **base_site_context(),
+        'shop_owner': account_obj if role == 'shop_owner' else None,
+        'gamer': account_obj if role == 'gamer' else None,
+        'games': games,
+        'consoles_platforms': consoles_platforms
+    }
+    return render(request, 'accounts/shop_owners/create_shop.html', context)
+
+
+def edit_shop(request, pk):
+    if request.session.get('role') != 'shop_owner':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shop = get_object_or_404(Shop.objects.prefetch_related('games_available', 'consoles', 'game_prices__game'), pk=pk,
+                             owners=shop_owner)
+    
+    if request.method == 'POST':
+        # Server-side validation
+        shop_name = request.POST.get('shop_name')
+        description = request.POST.get('description')
+        city = request.POST.get('city')
+        building = request.POST.get('building')
+        floor = request.POST.get('floor')
+        room_number = request.POST.get('room_number')
+        shop_location = request.POST.get('shop_location')
+        screen_number = request.POST.get('screen_number')
+        base_price_per_hour = request.POST.get('base_price_per_hour')
+        opening_hours = request.POST.get('opening_hours')
+        closing_hours = request.POST.get('closing_hours')
+        
+        console_types = request.POST.getlist('console_types')
+        games_available_data = request.POST.get('games_available', '[]')
+        
+        # Basic field validation
+        if not all([shop_name, description, city, building, floor, room_number,
+                    shop_location, screen_number, base_price_per_hour,
+                    opening_hours, closing_hours]):
+            messages.error(request, 'Please fill in all compulsory fields.')
+            return redirect('accounts:edit_shop', pk=shop.pk)
+
+        # At least one console must be selected
+        if not console_types:
+            messages.error(request, 'Please select at least one console type.')
+            return redirect('accounts:edit_shop', pk=shop.pk)
+            
+        # At least one game must be selected
+        try:
+            if not json.loads(games_available_data):
+                messages.error(request, 'Please select at least one game.')
+                return redirect('accounts:edit_shop', pk=shop.pk)
+        except:
+            messages.error(request, 'Invalid game data provided.')
+            return redirect('accounts:edit_shop', pk=shop.pk)
+
+        try:
+            with transaction.atomic():
+                # Update shop basic info
+                shop.name = shop_name
+                if request.FILES.get('logo'):
+                    shop.logo = request.FILES.get('logo')
+                shop.description = description
+                shop.city = city
+                shop.building = building
+                shop.floor = floor
+                shop.room_number = room_number
+                shop.location = shop_location
+                shop.address = shop_location
+                shop.screen_number = int(screen_number)
+                shop.base_price_per_hour = float(base_price_per_hour)
+                shop.opening_hours = opening_hours
+                shop.closing_hours = closing_hours
+                if request.FILES.get('business_permit'):
+                    shop.business_permit = request.FILES.get('business_permit')
+                shop.save()
+                
+                # Handle consoles - delete existing and recreate
+                shop.consoles.all().delete()
+                console_types = request.POST.getlist('console_types')
+                for c_slug in console_types:
+                    try:
+                        platform = get_platform_by_string(c_slug)
+                        if not platform:
+                            continue
+                        
+                        quantity = int(request.POST.get(f'console_quantity_{c_slug}', 1))
+                        
+                        Console.objects.create(
+                            shop=shop,
+                            console_type=platform,
+                            quantity=quantity
+                        )
+                    except Exception as ce:
+                        logger.error(f"Error updating console: {ce}")
+                        continue
+                
+                # Handle games available
+                games_available_data = request.POST.get('games_available', '[]')
+                games_to_add = []
+                if games_available_data:
+                    try:
+                        game_identifiers = json.loads(games_available_data)
+                        for identifier in game_identifiers:
+                            game = Game.objects.filter(models.Q(id=identifier) if is_valid_uuid(identifier) else models.Q(integer_id=identifier) if str(identifier).isdigit() else models.Q(pk=None)).first()
+                            if game:
+                                games_to_add.append(game)
+                            else:
+                                if isinstance(identifier, str) and identifier.strip():
+                                    name = identifier.strip()
+                                    custom_game, created = Game.objects.get_or_create(
+                                        name__iexact=name,
+                                        defaults={'name': name, 'is_verified': False, 'is_active': True}
+                                    )
+                                    games_to_add.append(custom_game)
+                    except (json.JSONDecodeError, TypeError, ValidationError) as e:
+                        logger.error(f"Error parsing games_available in edit_shop: {e}")
+                
+                # Handle new custom games (legacy support)
+                new_games_payload = request.POST.get('new_games', '[]')
+                if new_games_payload:
+                    custom_games = json.loads(new_games_payload)
+                    for custom in custom_games:
+                        name = custom.get('name', '').strip()
+                        platforms = custom.get('platforms', [])
+                        if not name or not platforms:
+                            continue
+                        existing_game = Game.objects.filter(name__iexact=name, is_verified=False).first()
+                        if existing_game:
+                            games_to_add.append(existing_game)
+                            continue
+                        
+                        game = Game.objects.create(
+                            name=name,
+                            is_verified=False,
+                            is_active=True
+                        )
+                        
+                        # Resolve platform objects from names/slugs
+                        if platforms:
+                            resolved_platforms = []
+                            for p_str in platforms:
+                                p_obj = get_platform_by_string(p_str)
+                                if p_obj:
+                                    resolved_platforms.append(p_obj)
+                            if resolved_platforms:
+                                game.supported_platforms.set(resolved_platforms)
+                        
+                        games_to_add.append(game)
+                
+                if games_to_add:
+                    shop.games_available.set(games_to_add)
+                
+                # Handle game pricing - delete existing and recreate
+                shop.game_prices.all().delete()
+                pricing_data = request.POST.get('game_pricing', '[]')
+                if pricing_data:
+                    pricing_list = json.loads(pricing_data)
+                    custom_games_map = {}
+                    if new_games_payload:
+                        custom_games_list = json.loads(new_games_payload)
+                        for idx, custom in enumerate(custom_games_list):
+                            name = custom.get('name', '').strip()
+                            if name:
+                                game = Game.objects.filter(name__iexact=name).first()
+                                if game:
+                                    custom_games_map[f'custom_{idx}'] = game
+                    
+                    for price_data in pricing_list:
+                        game_id = price_data.get('game_id')
+                        price = float(price_data.get('price_per_hour', 0))
+                        is_premium = price_data.get('is_premium', False)
+                        
+                        if game_id and game_id.startswith('custom_'):
+                            game = custom_games_map.get(game_id)
+                            if not game:
+                                continue
+                        else:
+                            try:
+                                game = Game.objects.get(id=game_id)
+                            except (Game.DoesNotExist, ValueError):
+                                continue
+                        
+                        if game:
+                            GamePricing.objects.create(
+                                shop=shop,
+                                game=game,
+                                price_per_hour=price,
+                                is_premium=is_premium
+                            )
+                
+                messages.success(request, 'Shop updated successfully!')
+                return redirect('accounts:shop_owner_shop_detail', pk=shop.pk)
+        
+        except Exception as e:
+            logger.error(f"Shop edit error: {e}")
+            messages.error(request, 'Failed to update shop. Please try again.')
+    
+    # Get all games for the form
+    games = Game.objects.filter(is_verified=True, is_active=True).order_by('name')
+    consoles_platforms = Platform.objects.filter(category__name='Console').order_by('name')
+    pricing = shop.game_prices.select_related('game')
+    
+    existing_consoles_objs = shop.consoles.all()
+    existing_console_platform_ids = [c.console_type.id for c in existing_consoles_objs]
+    existing_console_quantities = {c.console_type.slug: c.quantity for c in existing_consoles_objs}
+    
+    context = {
+        **base_site_context(),
+        'shop_owner': shop_owner,
+        'shop': shop,
+        'games': games,
+        'consoles_platforms': consoles_platforms,
+        'existing_console_platform_ids': existing_console_platform_ids,
+        'existing_console_quantities': existing_console_quantities,
+        'existing_games': list(shop.games_available.values_list('id', flat=True)),
+        'existing_pricing': json.dumps(
+            [{'game_id': str(p.game.id), 'price_per_hour': float(p.price_per_hour), 'is_premium': p.is_premium} for p in
+             pricing])
+    }
+    return render(request, 'accounts/shop_owners/edit_shop.html', context)
+
+
+def toggle_gamer_mode(request):
+    # Toggle a shop owner into gamer dashboard mode
+    try:
+        # Check if they have a gamer record
+        gamer = Gamer.objects.get(uid=request.session['firebase_uid'])
+        request.session['role'] = 'gamer'
+        request.session['user_id'] = gamer.id
+        request.session['gamer_mode'] = True
+        return redirect('accounts:gamer_dashboard')
+    except Exception as e:
+        logger.error(f"Error toggling to gamer mode: {e}")
+        messages.error(request, "Failed to switch dashboards.")
+        return redirect('accounts:shop_owner_dashboard')
+
+
 # Test view to verify Firebase integration
 def test_firebase(request):
     try:

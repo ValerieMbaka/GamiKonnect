@@ -70,11 +70,21 @@ venv/
 /debug_accounts.py
 
 
-accounts/templates/accounts/email_templates
 accounts/templates/accounts/gamers/*
 accounts/templates/accounts/shop_owners/*
 accounts/templates/accounts/gamers/
 accounts/templates/accounts/shop_owners/
-accounts/static/accounts/*
+
+accounts/static/accounts/css/gamers/*
+accounts/static/accounts/css/shop_owners/*
+accounts/static/accounts/css/gamers/
+accounts/static/accounts/css/shop_owners/
+
+accounts/static/accounts/js/gamers/*
+accounts/static/accounts/js/shop_owners/*
+accounts/static/accounts/js/gamers/
+accounts/static/accounts/js/shop_owners/
+accounts/static/accounts/js/sidebar.js
+
 
 

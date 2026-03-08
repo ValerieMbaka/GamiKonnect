@@ -75,8 +75,6 @@ accounts/templates/accounts/gamers/gamer_profile_edit.html
 accounts/templates/accounts/gamers/gamer_public_profile.html
 accounts/templates/accounts/gamers/gamer_settings.html
 accounts/templates/accounts/gamers/gamer_dashboard.html
-accounts/templates/accounts/gamers/includes
-accounts/templates/accounts/gamers/includes/*
 
 
 accounts/templates/accounts/shop_owners/competitions/*

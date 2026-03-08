@@ -74,7 +74,6 @@ accounts/templates/accounts/gamers/gamer_games.html
 accounts/templates/accounts/gamers/gamer_profile_edit.html
 accounts/templates/accounts/gamers/gamer_public_profile.html
 accounts/templates/accounts/gamers/gamer_settings.html
-accounts/templates/accounts/gamers/gamer_dashboard.html
 
 
 accounts/templates/accounts/shop_owners/competitions/*
@@ -93,7 +92,6 @@ accounts/templates/accounts/shop_owners/edit_shop.html
 accounts/templates/accounts/shop_owners/create_shop.html
 
 
-accounts/static/accounts/css/gamers/gamer_dashboard.css
 accounts/static/accounts/css/gamers/gamer_games.css
 accounts/static/accounts/css/gamers/gamer_profile_edit.css
 accounts/static/accounts/css/gamers/gamer_settings.css
@@ -112,7 +110,6 @@ accounts/static/accounts/css/shop_owners/shop_owner_settings.css
 accounts/static/accounts/css/shop_owners/shop_owner_shop_detail.css
 
 
-accounts/static/accounts/js/gamers/gamer_dashboard.js
 accounts/static/accounts/js/gamers/gamer_profile_edit.js
 accounts/static/accounts/js/gamers/gamer_settings.js
 accounts/static/accounts/js/gamers/gamer_public_profile.js

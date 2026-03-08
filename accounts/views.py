@@ -712,6 +712,492 @@ def notify_admin_account_deletion(email):
         return False
 
 
+# GAMER VIEWS
+def gamer_dashboard(request):
+    # Check if the user is a a gamer and is logged in
+    if request.session.get('role') != 'gamer':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    try:
+        gamer = Gamer.objects.get(id=request.session['user_id'])
+        
+        # Check if they have been upgraded to shop owner recently
+        try:
+            from shops.models import Shop
+            shop_owner = ShopOwner.objects.filter(uid=gamer.uid).first()
+            if shop_owner:
+                # If they have the role, go to Shop Owner Dashboard by default
+                # Use a 'gamer_mode' session flag to allow Shop Owners to stay.
+                if not request.session.get('gamer_mode'):
+                    request.session['role'] = 'shop_owner'
+                    request.session['user_id'] = shop_owner.id
+                    return redirect('accounts:shop_owner_dashboard')
+        except Exception as e:
+            logger.error(f"Error checking for shop owner upgrade: {e}")
+            pass
+
+        # Check profile completion
+        profile_complete = gamer.profile_completed
+        if not profile_complete:
+            messages.info(request, 'Please complete your profile to access full dashboard features')
+        
+        # Determine if gamer has pending or approved shops
+        from shops.models import Shop
+        has_pending_or_approved_shops = Shop.objects.filter(submitted_by_uid=gamer.uid).exists()
+
+        context = {
+            **base_site_context(),
+            'gamer': gamer,
+            'profile_complete': profile_complete,
+            'gamer_stats': {
+                'join_date': gamer.date_joined.strftime('%b %Y'),
+                'games_count': gamer.games.count(),
+            },
+            'has_owner_access': has_pending_or_approved_shops,
+        }
+        return render(request, 'accounts/gamers/gamer_dashboard.html', context)
+    
+    except Gamer.DoesNotExist:
+        messages.error(request, 'Gamer profile not found.')
+        return redirect('core:home')
+
+
+@csrf_exempt
+def gamer_profile_completion(request):
+    if request.session.get('role') != 'gamer':
+        return JsonResponse({'success': False, 'message': 'Access denied'})
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                gamer = Gamer.objects.get(id=request.session['user_id'])
+                
+                # Handle profile picture
+                if 'profile_picture' in request.FILES:
+                    gamer.profile_picture = request.FILES['profile_picture']
+                
+                # Update basic info
+                gamer.custom_username = request.POST.get('custom_username')
+                gamer.bio = request.POST.get('bio')
+                gamer.about = request.POST.get('about', '')
+                gamer.location = request.POST.get('location')
+                
+                # Support JSON body or form-encoded
+                raw_body = None
+                if request.headers.get('Content-Type', '').startswith('application/json'):
+                    try:
+                        raw_body = json.loads(request.body.decode('utf-8'))
+                    except Exception:
+                        raw_body = {}
+                    get_val = lambda k, default=None: raw_body.get(k, default)
+                else:
+                    get_val = lambda k, default=None: request.POST.get(k, default)
+                
+                errors = {}
+                
+                # Username validation
+                username = get_val('custom_username') or get_val('username') or ''
+                username = username.strip()
+                if not username:
+                    errors['custom_username'] = 'Username is required'
+                else:
+                    if not re.match(r'^[A-Za-z0-9_]{3,15}$', username):
+                        errors['custom_username'] = 'Username must be 3-15 chars (letters, numbers, underscores)'
+                    else:
+                        # Case-insensitive uniqueness
+                        exists = Gamer.objects.filter(custom_username__iexact=username).exclude(pk=gamer.pk).exists()
+                        if exists:
+                            errors['custom_username'] = 'Username already taken'
+                
+                # Bio validation
+                bio = get_val('bio') or ''
+                bio = bio.strip()
+                if not bio:
+                    errors['bio'] = 'Bio is required'
+                elif len(bio) < 5 or len(bio) > 30:
+                    errors['bio'] = 'Bio must be 5-30 characters'
+                
+                # About validation
+                about = get_val('about') or ''
+                if about:
+                    about = about.strip()
+                    if len(about) < 5 or len(about) > 200:
+                        errors['about'] = 'About must be 5-200 characters when provided'
+                
+                # Location
+                location = get_val('location') or ''
+                location = location.strip()
+                if not location:
+                    errors['location'] = 'Location is required'
+                
+                # Date of birth
+                dob_year = get_val('dob_year')
+                dob_month = get_val('dob_month')
+                dob_day = get_val('dob_day')
+                dob_iso = get_val('date_of_birth')
+                date_of_birth = None
+                try:
+                    if dob_year and dob_month and dob_day:
+                        date_of_birth = datetime.date(int(dob_year), int(dob_month), int(dob_day))
+                    elif dob_iso:
+                        date_of_birth = datetime.date.fromisoformat(dob_iso)
+                    else:
+                        errors['date_of_birth'] = 'Date of birth is required'
+                except Exception:
+                    errors['date_of_birth'] = 'Invalid date of birth'
+                
+                # Platforms JSON list
+                platforms_raw = get_val('platforms', '[]') or '[]'
+                try:
+                    platforms_list = platforms_raw if isinstance(platforms_raw, list) else json.loads(platforms_raw)
+                except Exception:
+                    platforms_list = []
+                if not platforms_list:
+                    errors['platforms'] = 'Select at least one platform'
+                
+                # Games
+                games_raw = get_val('games', '[]') or '[]'
+                try:
+                    games_list = games_raw if isinstance(games_raw, list) else json.loads(games_raw)
+                except Exception:
+                    games_list = []
+                if not games_list:
+                    errors['games'] = 'Select or enter at least one game'
+                
+                # If validation failed, return errors
+                if errors:
+                    return JsonResponse({'success': False, 'message': 'Validation errors', 'errors': errors})
+                
+                # Apply validated fields
+                gamer.custom_username = username
+                gamer.bio = bio
+                gamer.about = about or ''
+                gamer.location = location
+                if date_of_birth:
+                    gamer.date_of_birth = date_of_birth
+                gamer.platforms = platforms_list
+                
+                # Resolve games - only attach existing Game objects.
+                # For unknown names, create GameSuggestion records so they can be approved later.
+                attached_games = []
+                pending_custom_names = []
+                for entry in games_list:
+                    game_obj = None
+                    # Accept UUID string IDs for existing games
+                    if isinstance(entry, str) and len(entry) > 20 and '-' in entry:
+                        try:
+                            game_obj = Game.objects.get(id=entry)
+                        except Game.DoesNotExist:
+                            game_obj = None
+                    # Accept ints as legacy ids (no-op if not found)
+                    if not game_obj and (isinstance(entry, int) or (isinstance(entry, str) and entry.isdigit())):
+                        try:
+                            game_obj = Game.objects.get(id=int(entry))
+                        except (Game.DoesNotExist, ValueError):
+                            game_obj = None
+                    # Accept names
+                    if not game_obj and isinstance(entry, str):
+                        name = entry.strip()
+                        if not name:
+                            continue
+                        existing = Game.objects.filter(name__iexact=name).first()
+                        if existing:
+                            game_obj = existing
+                            
+                    if game_obj:
+                        attached_games.append(game_obj)
+                if attached_games:
+                    gamer.games.set(attached_games)
+                
+                gamer.profile_completed = True
+                gamer.save()
+                
+            
+                send_profile_completion_email(gamer.email, gamer.custom_username)
+                
+                profile_picture_url = gamer.profile_picture.url if gamer.profile_picture else '/static/core/images/player.jpeg'
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Profile completed successfully!',
+                    'profile_picture_url': profile_picture_url,
+                    'custom_username': gamer.custom_username or '',
+                    'username': gamer.custom_username or '',
+                    'bio': gamer.bio or '',
+                    'about': gamer.about or '',
+                    'location': gamer.location or '',
+                    'platforms': gamer.platforms or [],
+                    # Include pending custom names
+                    'games': [g.name for g in gamer.games.all()] + pending_custom_names,
+                    'date_of_birth': gamer.date_of_birth.isoformat() if gamer.date_of_birth else None
+                })
+        except Exception as e:
+            logger.error(f"Gamer profile completion error: {e}")
+            return JsonResponse({'success': False, 'message': 'Failed to complete profile. Please try again.'})
+    # Non-POST request
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+@csrf_exempt
+def check_username(request):
+    # AJAX endpoint to validate gamer custom_username availability and format
+    username = (request.GET.get('username') or '').strip()
+    pattern = re.compile(r'^[A-Za-z0-9_]{3,15}$')
+    
+    # Rate limiting - 20 checks per rolling minute per IP
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get(
+        'REMOTE_ADDR') or 'unknown'
+    cache_key = f"check_username_rl:{ip}"
+    data = cache.get(cache_key)
+    now_ts = timezone.now().timestamp()
+    window_seconds = 60
+    limit = 20
+    if not data:
+        data = {'count': 0, 'reset': now_ts + window_seconds}
+    # Reset if window passed
+    if now_ts > data['reset']:
+        data = {'count': 0, 'reset': now_ts + window_seconds}
+    if data['count'] >= limit:
+        retry_after = int(data['reset'] - now_ts)
+        resp = JsonResponse({'available': False, 'reason': 'rate_limited', 'retry_after': retry_after})
+        resp.status_code = 429
+        resp['X-RateLimit-Limit'] = str(limit)
+        resp['X-RateLimit-Remaining'] = '0'
+        resp['X-RateLimit-Reset'] = str(int(data['reset']))
+        return resp
+    # Increment and persist
+    data['count'] += 1
+    cache.set(cache_key, data, timeout=window_seconds)
+    
+    if not pattern.match(username):
+        resp = JsonResponse({'available': False, 'reason': 'invalid_format'})
+        resp['X-RateLimit-Limit'] = str(limit)
+        resp['X-RateLimit-Remaining'] = str(limit - data['count'])
+        resp['X-RateLimit-Reset'] = str(int(data['reset']))
+        return resp
+    exists = Gamer.objects.filter(custom_username__iexact=username).exists()
+    resp = JsonResponse({'available': not exists, 'reason': 'taken' if exists else 'ok'})
+    resp['X-RateLimit-Limit'] = str(limit)
+    resp['X-RateLimit-Remaining'] = str(limit - data['count'])
+    resp['X-RateLimit-Reset'] = str(int(data['reset']))
+    return resp
+
+
+def gamer_profile_edit(request):
+    if request.session.get('role') != 'gamer':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    gamer = get_object_or_404(Gamer, id=request.session['user_id'])
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Handle profile picture
+                if 'profile_picture' in request.FILES:
+                    gamer.profile_picture = request.FILES['profile_picture']
+                errors = {}
+                username = request.POST.get('custom_username', '').strip()
+                if not username:
+                    errors['custom_username'] = 'Username is required'
+                elif not re.match(r'^[A-Za-z0-9_]{3,15}$', username):
+                    errors['custom_username'] = 'Username must be 3-15 chars (letters, numbers, underscores)'
+                else:
+                    exists = Gamer.objects.filter(custom_username__iexact=username).exclude(pk=gamer.pk).exists()
+                    if exists:
+                        errors['custom_username'] = 'Username already taken'
+                
+                bio = request.POST.get('bio', '').strip()
+                if not bio:
+                    errors['bio'] = 'Bio is required'
+                elif len(bio) < 5 or len(bio) > 30:
+                    errors['bio'] = 'Bio must be 5-30 characters'
+                
+                about = request.POST.get('about', '').strip()
+                if about and (len(about) < 5 or len(about) > 200):
+                    errors['about'] = 'About must be 5-200 characters when provided'
+                
+                location = request.POST.get('location', '').strip()
+                if not location:
+                    errors['location'] = 'Location is required'
+                
+                raw_platforms = request.POST.get('platforms', '').strip()
+                platforms = []
+                if raw_platforms:
+                    try:
+                        # Expect JSON list from the edit JS
+                        parsed = json.loads(raw_platforms)
+                        if isinstance(parsed, list):
+                            # Coerce everything to simple strings
+                            platforms = [str(p).strip() for p in parsed if str(p).strip()]
+                    except (TypeError, ValueError, json.JSONDecodeError):
+                        # Fallback: treat as comma-separated string
+                        platforms = [p.strip() for p in raw_platforms.split(',') if p.strip()]
+                
+                if not platforms:
+                    errors['platforms'] = 'Select at least one platform'
+                
+                games_data = request.POST.get('games', '').strip()
+                games_entries = []
+                if games_data:
+                    # Could be comma separated ids or names
+                    for token in [t.strip() for t in games_data.split(',') if t.strip()]:
+                        games_entries.append(token)
+                if not games_entries:
+                    errors['games'] = 'Select or enter at least one game'
+                
+                if errors:
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'message': 'Validation errors', 'errors': errors})
+                    for k, v in errors.items():
+                        messages.error(request, v)
+                    return redirect('accounts:gamer_profile_edit')
+                
+                # Track previous games and platforms
+                prev_games = set(gamer.games.values_list('id', flat=True))
+                prev_platforms = set(gamer.platforms or [])
+                
+                gamer.custom_username = username
+                gamer.bio = bio
+                gamer.about = about or ''
+                gamer.location = location
+                gamer.platforms = platforms
+                
+                # Resolve games - only attach existing Game objects.
+                attached_games = []
+                pending_custom_names = []
+                for entry in games_entries:
+                    game_obj = None
+                    token = entry
+                    # Accept UUIDs
+                    if isinstance(token, str) and '-' in token and len(token) > 20:
+                        try:
+                            game_obj = Game.objects.get(id=token)
+                        except Game.DoesNotExist:
+                            game_obj = None
+                    # Accept numeric ids
+                    if not game_obj and token.isdigit():
+                        try:
+                            game_obj = Game.objects.get(id=int(token))
+                        except (Game.DoesNotExist, ValueError):
+                            game_obj = None
+                    # Accept names
+                    if not game_obj:
+                        name = token.strip()
+                        if not name:
+                            continue
+                        existing = Game.objects.filter(name__iexact=name).first()
+                        if existing:
+                            game_obj = existing
+                        
+                    if game_obj:
+                        attached_games.append(game_obj)
+                if attached_games:
+                    gamer.games.set(attached_games)
+                
+                gamer.save()
+                
+                
+                # AJAX / fetch-based submission support
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    profile_picture_url = gamer.profile_picture.url if gamer.profile_picture else '/static/core/images/player.jpeg'
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Profile updated successfully!',
+                        'user': {
+                            'profile_picture_url': profile_picture_url,
+                            'custom_username': gamer.custom_username or '',
+                            'bio': gamer.bio or '',
+                            'about': gamer.about or '',
+                            'location': gamer.location or '',
+                            'platforms': gamer.platforms or [],
+                            # Include pending custom names
+                            'games': [g.name for g in gamer.games.all()] + pending_custom_names,
+                        },
+                        'user_stats': {
+                            'games_count': gamer.games.count(),
+                            'platforms_count': len(gamer.platforms or []),
+                        }
+                    })
+                
+                messages.success(request, 'Profile updated successfully!')
+                return redirect('accounts:gamer_settings')
+        
+        except Exception as e:
+            logger.error(f"Profile edit error: {e}")
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Failed to update profile. Please try again.'})
+            messages.error(request, 'Failed to update profile. Please try again.')
+    
+    context = {
+        **base_site_context(),
+        'gamer': gamer
+    }
+    return render(request, 'accounts/gamers/gamer_profile_edit.html', context)
+
+
+def gamer_settings(request):
+    if request.session.get('role') != 'gamer':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    gamer = get_object_or_404(Gamer, id=request.session['user_id'])
+    context = {
+        **base_site_context(),
+        'gamer': gamer
+    }
+    return render(request, 'accounts/gamers/gamer_settings.html', context)
+
+
+def gamer_public_profile(request, username=None):
+    if request.session.get('role') != 'gamer':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    if username:
+        gamer = get_object_or_404(Gamer, custom_username=username)
+    else:
+        gamer = get_object_or_404(Gamer, id=request.session['user_id'])
+    
+    context = {
+        **base_site_context(),
+        'gamer': gamer
+    }
+    return render(request, 'accounts/gamers/gamer_public_profile.html', context)
+
+
+def gamer_games(request):
+    if request.session.get('role') != 'gamer':
+        messages.error(request, 'Access denied.')
+        return redirect('core:home')
+    
+    gamer = get_object_or_404(Gamer, id=request.session['user_id'])
+    
+    # Prepare richer context for the gamer games page
+    gamer_games_qs = gamer.games.filter(is_active=True).prefetch_related('genres')
+    
+    # Platforms saved on the gamer's profile completion
+    profile_platforms = gamer.platforms or []
+    gamer_platforms = sorted({p for p in profile_platforms if p})
+    
+    # Distinct genres across the gamer games
+    from games.models import Genre  # local import to avoid circulars at module load
+    gamer_genres = (
+        Genre.objects.filter(games__in=gamer_games_qs)
+        .distinct()
+        .order_by('name')
+    )
+    
+    context = {
+        **base_site_context(),
+        'gamer': gamer,
+        'gamer_games': gamer_games_qs,
+        'gamer_platforms': gamer_platforms,
+        'gamer_genres': gamer_genres,
+    }
+    return render(request, 'accounts/gamers/gamer_games.html', context)
+
+
 # Test view to verify Firebase integration
 def test_firebase(request):
     try:

@@ -17,6 +17,17 @@ urlpatterns = [
     path('change-password/', views.change_password, name='change_password'),
     path('delete-account/', views.delete_account, name='delete_account'),
     
+    # Gamer URLs
+    path('gamer-profile-completion/', views.gamer_profile_completion, name='gamer_profile_completion'),
+    path('check-username/', views.check_username, name='check_username'),
+    path('gamer-dashboard/', views.gamer_dashboard, name='gamer_dashboard'),
+    path('gamer-games/', views.gamer_games, name='gamer_games'),
+    path('gamer-profile-edit/', views.gamer_profile_edit, name='gamer_profile_edit'),
+    path('gamer-settings/', views.gamer_settings, name='gamer_settings'),
+    path('gamer-public-profile/', views.gamer_public_profile, name='gamer_public_profile'),
+    path('gamer-public-profile/<str:username>/', views.gamer_public_profile, name='gamer_public_profile_username'),
+    
+
     
     # Test URL
     path('test-firebase/', views.test_firebase, name='test_firebase'),

@@ -1,0 +1,281 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %} Username's Profile · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_public_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+	<!-- Profile Header Section -->
+	<section class="profile-header-wrapper">
+        <div class="profile-header-grid">
+            <div class="profile-avatar-column">
+                <div class="profile-avatar-container">
+                    <img src="{% if gamer.profile_picture %}{{ gamer.profile_picture.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}"
+                     alt="Profile Avatar" class="profile-main-avatar">
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name-wrapper">
+                        <h1 class="profile-name">
+                            {% if gamer.first_name or gamer.last_name %}
+                                {{ gamer.first_name }} {{ gamer.last_name }}
+                            {% else %}
+                                {{ gamer.custom_username|default:gamer.email }}
+                            {% endif %}
+                        </h1>
+                        <span class="verified-badge" title="Verified Account">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                    <p class="profile-username">
+                        {% if gamer.custom_username %}@{{ gamer.custom_username }}{% else %}@gamer{% endif %}
+                    </p>
+                    <p class="profile-title">
+                        {% if gamer.bio and gamer.bio != "Bio" %}{{ gamer.bio }}{% else %}Gaming Enthusiast{% endif %}
+                    </p>
+                    <div class="profile-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{% if gamer.location %}{{ gamer.location }}{% else %}Location not set{% endif %}</span>
+                    </div>
+                    <div class="profile-join-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Joined {{ gamer.date_joined|date:"M Y" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-content-column">
+                <div class="profile-cover-section">
+                    <div class="profile-cover-container">
+                        <img src="{% static 'core/images/gameroom1.jpeg' %}" alt="Profile Cover" class="profile-cover-image">
+                        <div class="profile-actions-container">
+                            <button class="btn btn-icon btn-action" title="More options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="performance-stats-section">
+                    <h3 class="section-title">Performance Stats</h3>
+                    <div class="stats-grid-horizontal">
+	                    <div class="stat-item-horizontal win-rate">
+                            <div class="stat-content">
+                                <div class="stat-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="stat-text">
+                                    <div class="stat-value">87% <span class="stat-trend up">+2%</span></div>
+                                    <div class="stat-label">Win Rate</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ user_stats.win_rate|default:87 }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="stat-item-horizontal competitions">
+                            <div class="stat-content">
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="stat-text">
+                                    <div class="stat-value"></div>
+                                    <div class="stat-label">Competitions</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+	</section>
+
+	<!-- Main Content -->
+	<div class="profile-content">
+        <!-- About Section -->
+        <section class="profile-card">
+            <div class="card-header">
+                <h2>
+                    <i class="fas fa-user"></i>
+                    <span>About Gamer</span>
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="user-details-grid">
+                    <div class="user-detail-section">
+                        <h3 class="detail-title">
+                            <i class="fas fa-info-circle"></i>
+                            About
+                        </h3>
+                        <p class="detail-content">
+                            {% if gamer.about and gamer.about != "About" %}{{ gamer.about }}{% else %}No about information provided yet.{% endif %}
+                        </p>
+                    </div>
+                    <div class="user-detail-section">
+                        <h3 class="detail-title">
+                            <i class="fas fa-gamepad"></i>
+	                        Games
+                        </h3>
+                        <div class="detail-content">
+                            {% if gamer.games.all %}
+                                {% for game in gamer.games.all %}
+                                    <span class="badge bg-secondary me-1 mb-1">{{ game.name }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span>No games added yet.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="user-detail-section">
+                        <h3 class="detail-title">
+                            <i class="fas fa-desktop"></i>
+                            Platforms
+                        </h3>
+                        <div class="detail-content">
+                            {% if gamer.platforms %}
+                                {% for platform in gamer.platforms %}
+                                    <span class="badge bg-info text-dark me-1 mb-1">{{ platform }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span>No platforms added yet.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Activities Section -->
+		<div class="dashboard-two-column">
+            <div class="profile-card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-history"></i>
+                        <span>Recent Activities</span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="activity-feed">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <img src="{% static 'core/images/player.jpeg' %}" alt="Profile">
+                            </div>
+                            <div class="activity-content">
+                                <h3 class="activity-title">Joined {{ project_detail.title }}</h3>
+                                <p class="activity-meta">Joined {{ gamer.date_joined|date:"M d, Y" }}</p>
+                                <p class="activity-description">Started their gaming journey on {{ project_detail.title }}</p>
+                                <div class="activity-stats">
+                                    <span class="activity-stat">
+                                        <i class="fas fa-gamepad"></i>
+                                        <span>{% if gamer.games.all %}{{ gamer.games.count }} Games{% else %}No Games{% endif %}</span>
+                                    </span>
+                                    <span class="activity-stat">
+                                        <i class="fas fa-desktop"></i>
+                                        <span>{% if gamer.platforms %}{{ gamer.platforms|length }} Platforms{% else %}No Platforms{% endif %}</span>
+                                    </span>
+                                </div>
+                                <div class="activity-actions">
+                                    <button class="btn-like"><i class="far fa-heart"></i> 0</button>
+                                    <button class="btn-comment"><i class="far fa-comment"></i> 0</button>
+                                </div>
+                            </div>
+                        </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <img src="" alt="Games" data-game="" class="activity-game-image">
+                                </div>
+                                <div class="activity-content">
+                                    <h3 class="activity-title">Added Games to Profile</h3>
+                                    <p class="activity-meta">{{ gamer.date_joined|date:"M d, Y" }}</p>
+                                    <p class="activity-description">
+                                        {% if gamer.games.all %}
+                                            "{% for game in gamer.games.all %}{{ game.name }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+                                        {% else %}
+                                            "No games added yet."
+                                        {% endif %}
+                                    </p>
+                                    <div class="activity-stats">
+                                        <span class="activity-stat">
+	                                        <i class="fas fa-check-circle"></i>
+	                                        <span>Profile Complete</span>
+                                        </span>
+                                        <span class="activity-stat">
+                                            <i class="fas fa-star"></i>
+                                            <span>Ready to Play</span>
+                                        </span>
+                                    </div>
+                                    <div class="activity-actions">
+                                        <button class="btn-like"><i class="far fa-heart"></i> 0</button>
+                                        <button class="btn-comment"><i class="far fa-comment"></i> 0</button>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-achievements-column">
+                <section class="profile-card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-trophy"></i>
+                            <span>Recent Achievements</span>
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="achievements-list">
+                            <div class="achievement-item">
+                                <div class="achievement-badge gold">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="achievement-details">
+                                    <h4 class="achievement-title">Profile Completion</h4>
+                                    <p class="achievement-date">{{ gamer.date_joined|date:"M d, Y" }}</p>
+                                    <div class="achievement-game">
+                                        <img src="{% static 'core/images/player.jpeg' %}" alt="Profile">
+                                    </div>
+                                </div>
+                            </div>
+                                <div class="achievement-item">
+                                    <div class="achievement-badge silver">
+                                        <i class="fas fa-gamepad"></i>
+                                    </div>
+                                    <div class="achievement-details">
+                                        <h4 class="achievement-title">Game Collector</h4>
+                                        <p class="achievement-date">{{ gamer.date_joined|date:"M d, Y" }}</p>
+                                        <div class="achievement-game">
+                                            <img src="{% static 'core/images/gamepad.jpeg' %}" alt="Games">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="achievement-item">
+                                    <div class="achievement-badge bronze">
+                                        <i class="fas fa-desktop"></i>
+                                    </div>
+                                    <div class="achievement-details">
+                                        <h4 class="achievement-title">Multi-Platform Gamer</h4>
+                                        <p class="achievement-date">{{ gamer.date_joined|date:"M d, Y" }}</p>
+                                        <div class="achievement-game">
+                                            <img src="{% static 'core/images/ps5.jpeg' %}" alt="Platforms">
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+	</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'accounts/js/gamers/gamer_public_profile.js' %}"></script>
+{% endblock %}

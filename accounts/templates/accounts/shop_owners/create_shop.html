@@ -1,0 +1,209 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %} Create Shop · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/create_shop.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.default.min.css">
+{% endblock %}
+
+{% block content %}
+    <div class="create-shop-container">
+        <div class="create-shop-header">
+            <h1><i class="fas fa-store"></i> Create Your Game Shop</h1>
+            <p>Fill in your shop details to get started. Your shop will need admin approval before going live.</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="shop-creation-form" id="createShopForm">
+            {% csrf_token %}
+
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="shop_name">Shop Name *</label>
+                        <input type="text" id="shop_name" name="shop_name" required
+                               placeholder="Enter your shop name">
+                    </div>
+                    <div class="form-group">
+                        <label for="logo">Shop Logo *</label>
+                        <input type="file" id="logo" name="logo" accept="image/*" class="form-control" required>
+                        <small class="form-text">Recommended size: 512x512px</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Shop Description *</label>
+                    <textarea id="description" name="description" required
+                              placeholder="Tell gamers what makes your shop special..."
+                              rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City/Town *</label>
+                        <input type="text" id="city" name="city" required placeholder="e.g. Nairobi">
+                    </div>
+                    <div class="form-group">
+                        <label for="building">Building *</label>
+                        <input type="text" id="building" name="building" required placeholder="e.g. GamiKonnect Plaza">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="floor">Floor *</label>
+                        <input type="text" id="floor" name="floor" required placeholder="e.g. 2nd Floor">
+                    </div>
+                    <div class="form-group">
+                        <label for="room_number">Room/Shop Number *</label>
+                        <input type="text" id="room_number" name="room_number" required placeholder="e.g. Shop B12">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_location">Other Location Details / Landmarks *</label>
+                    <textarea id="shop_location" name="shop_location" required
+                              placeholder="Any additional details to help people find you..."
+                              rows="2"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="screen_number">Number of Stations/Screens *</label>
+                        <input type="number" id="screen_number" name="screen_number"
+                               min="1" required placeholder="e.g., 10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="base_price_per_hour">Base Price per Hour (Ksh) *</label>
+                        <input type="number" id="base_price_per_hour" name="base_price_per_hour"
+                               step="0.01" min="0" required placeholder="e.g., 200">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification Section -->
+            <div class="form-section">
+                <h3><i class="fas fa-shield-alt"></i> Shop Verification</h3>
+                <p class="section-description">Upload your business permit to verify your shop and gain full access to the platform.</p>
+                <div class="form-group">
+                    <label for="business_permit">Business Permit (PDF or Image) *</label>
+                    <input type="file" id="business_permit" name="business_permit" accept=".pdf,image/*" required class="form-control">
+                    <small class="form-text">Your information is kept secure and used only for verification purposes.</small>
+                </div>
+            </div>
+
+            <!-- Operating Hours Section -->
+            <div class="form-section">
+                <h3><i class="fas fa-clock"></i> Operating Hours</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="opening_hours">Opening Hours *</label>
+                        <input type="text" id="opening_hours" name="opening_hours" required
+                               placeholder="e.g., 8:00 AM">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="closing_hours">Closing Hours *</label>
+                        <input type="text" id="closing_hours" name="closing_hours" required
+                               placeholder="e.g., 10:00 PM">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consoles Section -->
+            <div class="form-section">
+                <h3><i class="fas fa-gamepad"></i> Gaming Consoles</h3>
+                <p class="section-description">Select the consoles available in your shop and specify how many of each you have.</p>
+
+                <div class="console-selection-container">
+                    <!-- Popular Consoles -->
+                    <div class="popular-consoles">
+                        <label class="group-label">Popular Consoles</label>
+                        <div class="console-checkbox-list">
+                            {% for platform in consoles_platforms %}
+                                {% if platform.name == "PlayStation 4" or platform.name == "PlayStation 5" or platform.name == "Xbox One" %}
+                                <div class="console-checkbox-item" data-platform-slug="{{ platform.slug }}">
+                                    <div class="console-info">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="console_types" value="{{ platform.slug }}" class="console-checkbox">
+                                            <span class="checkmark"></span>
+                                            {{ platform.name }}
+                                        </label>
+                                    </div>
+                                    <div class="console-quantity-input">
+                                        <input type="number" name="console_quantity_{{ platform.slug }}" 
+                                               min="1" value="1" class="form-control quantity-input" disabled>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Other Consoles Dropdown -->
+                    <div class="other-consoles-section mt-4">
+                        <label for="otherConsolesDropdown" class="group-label">Other Platforms (Xbox Series X, PC, etc.)</label>
+                        <div class="other-consoles-selector">
+                            <select id="otherConsolesDropdown" class="form-control">
+                                <option value="">-- Select a platform --</option>
+                                {% for platform in consoles_platforms %}
+                                    {% if platform.name != "PlayStation 4" and platform.name != "PlayStation 5" and platform.name != "Xbox One" %}
+                                        <option value="{{ platform.slug }}" data-name="{{ platform.name }}">{{ platform.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <button type="button" id="addOtherConsoleBtn" class="btn btn-outline-primary">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                        
+                        <!-- Selected Other Consoles List -->
+                        <div id="selectedOtherConsolesList" class="console-checkbox-list mt-3">
+                            <!-- Dynamically added consoles will appear here -->
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="consoles" id="consoles" value="[]">
+            </div>
+
+            <!-- Games Available Section -->
+            <div class="form-section">
+                <h3><i class="fas fa-dice"></i> Games Available</h3>
+
+                <div class="form-group">
+                    <label>Select Games Available in Your Shop *</label>
+                    <div class="game-input-section single-column">
+                        <input type="text" id="gameSearchInput" placeholder="Search for a game..." class="game-input" autocomplete="off">
+                        <div id="gameSearchSuggestions" class="game-suggestions" aria-label="Game suggestions"></div>
+                        <small class="form-text">Search and select games; new names create custom entries. Enter adds first match.</small>
+                    </div>
+                    <div class="selected-games-wrapper">
+                        <div class="chips" id="selectedGamesTags"></div>
+                    </div>
+                    <input type="hidden" name="games_available" id="games_available" value="[]">
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Create Shop
+                </button>
+                <a href="{% url 'accounts:shop_owner_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
+    <script src="{% static 'accounts/js/shop_owners/create_shop.js' %}"></script>
+{% endblock %}

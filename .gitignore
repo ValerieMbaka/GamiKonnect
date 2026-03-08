@@ -69,49 +69,32 @@ venv/
 /firebase_config.py
 /debug_accounts.py
 
-
-accounts/templates/accounts/gamers/gamer_games.html
-
-
 accounts/templates/accounts/shop_owners/competitions/*
 accounts/templates/accounts/shop_owners/competitions
 accounts/templates/accounts/shop_owners/competitions/detail.html
 accounts/templates/accounts/shop_owners/competitions/list.html
 accounts/templates/accounts/shop_owners/competitions/submit_result.html
-accounts/templates/accounts/shop_owners/includes/
-accounts/templates/accounts/shop_owners/includes/*
-accounts/templates/accounts/shop_owners/shop_owner_dashboard.html
+
+accounts/templates/accounts/shop_owners/create_shop.html
 accounts/templates/accounts/shop_owners/shop_owner_profile.html
 accounts/templates/accounts/shop_owners/shop_owner_profile_edit.html
 accounts/templates/accounts/shop_owners/shop_owner_settings.html
 accounts/templates/accounts/shop_owners/shop_owner_shop_detail.html
 accounts/templates/accounts/shop_owners/edit_shop.html
-accounts/templates/accounts/shop_owners/create_shop.html
 
 
-accounts/static/accounts/css/gamers/gamer_games.css
 
 
-accounts/static/accounts/css/shop_owners/*
-accounts/static/accounts/css/shop_owners/
+
 accounts/static/accounts/css/shop_owners/competitions.css
 accounts/static/accounts/css/shop_owners/create_shop.css
-accounts/static/accounts/css/shop_owners/shop_owner_dashboard.css
-accounts/static/accounts/css/shop_owners/shop_owner_dashboard_base.css
 accounts/static/accounts/css/shop_owners/shop_owner_profile.css
 accounts/static/accounts/css/shop_owners/shop_owner_profile_edit.css
 accounts/static/accounts/css/shop_owners/shop_owner_settings.css
 accounts/static/accounts/css/shop_owners/shop_owner_shop_detail.css
 
 
-accounts/static/accounts/js/gamers/gamer_games.js
-
-
-accounts/static/accounts/js/shop_owners/*
-accounts/static/accounts/js/shop_owners/
 accounts/static/accounts/js/shop_owners/create_shop.js
-accounts/static/accounts/js/shop_owners/shop_owner_dashboard.js
-accounts/static/accounts/js/shop_owners/shop_owner_dashboard_base.js
 accounts/static/accounts/js/shop_owners/shop_owner_profile.js
 accounts/static/accounts/js/shop_owners/shop_owner_profile_edit.js
 accounts/static/accounts/js/shop_owners/shop_owner_settings.js

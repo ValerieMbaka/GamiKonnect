@@ -8,88 +8,30 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}Shop Owner Command Center · {{ project_detail.title }}{% endblock %}</title>
 
-    <!-- CSS Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/css/variables.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/base_styles.css' %}">
-    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shop_owner_dashboard_base.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/toast.css' %}">
 
+    <link rel="stylesheet" href="{% static 'core/css/base_dashboard_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shop_owner_dashboard_base.css' %}">
+
     {% block extra_css %}{% endblock %}
-    <style>
-        .disabled-link { pointer-events: none; opacity: .55; cursor: not-allowed; }
-        .inactive-banner { background: #fff3cd; color: #664d03; border: 1px solid #ffecb5; padding: 10px 14px; border-radius: 8px; margin: 12px; display: flex; align-items: center; gap: 10px; }
-        .inactive-banner i { color: #ffb300; }
-        .topbar-right .toggle-gamer-btn { margin-left: 8px; }
-        
-        /* Modern UI Enhancements */
-        :root {
-            --primary: #35a8f0;
-            --primary-dark: #2563eb;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --border-light: #f1f5f9;
-        }
-
-        [data-dashboard-theme="dark"] {
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-light: #334155;
-        }
-
-        .dashboard-topbar {
-            background: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-light) !important;
-        }
-
-        .sidebar-link {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar-link:hover {
-            transform: translateX(5px);
-            background: rgba(255, 255, 255, 0.1) !important;
-        }
-
-        .sidebar-link.active {
-            background: var(--primary) !important;
-            box-shadow: 0 4px 12px rgba(53, 168, 240, 0.3);
-        }
-
-        .hero-card {
-            transition: all 0.3s ease;
-        }
-
-        .hero-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
-
-    </style>
 </head>
 <body class="shop-owner-dashboard-body" data-dashboard-theme>
     {% include 'core/includes/toast_container.html' %}
 
-    <!-- Top Navigation Bar -->
     <nav class="top-nav">
         <div class="nav-left">
             <button class="sidebar-toggle-btn" aria-label="Toggle sidebar">
                 <i class="fas fa-bars"></i>
             </button>
-            <!-- Back to Home Button -->
             <a href="{% url 'core:home' %}" class="back-to-home-btn">
                 <i class="fas fa-home"></i>
                 <span>Back to Home</span>
             </a>
-            <!-- Search Bar -->
             <div class="search-bar">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Search shops, games, tasks...">
@@ -97,13 +39,11 @@
         </div>
 
         <div class="nav-right">
-            <!-- Dark Mode Toggle -->
             <button class="nav-icon theme-toggle-btn" id="darkModeToggle" aria-label="Toggle dark mode" data-tooltip="Dark Mode">
                 <i class="fas fa-moon"></i>
                 <i class="fas fa-sun"></i>
             </button>
 
-            <!-- Notifications Dropdown -->
             <div class="nav-dropdown">
                 <button class="nav-icon" title="Notifications" data-tooltip="Notifications" onclick="window.location.href=''">
                     <i class="fas fa-bell"></i>
@@ -117,7 +57,6 @@
                 <i class="fas fa-user"></i> <span>Gamer Dashboard</span>
             </a>
 
-            <!-- User Profile Dropdown -->
             <div class="nav-dropdown profile-dropdown">
                 <button class="profile-btn" aria-label="User profile">
                     <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="profile-avatar" alt="User Avatar">
@@ -154,7 +93,7 @@
     </nav>
 
     <div class="dashboard-wrapper">
-        <!-- Sidebar -->
+        <div class="sidebar-overlay"></div>
         <aside class="dashboard-sidebar">
             <div class="sidebar-profile">
                 <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="sidebar-avatar" alt="User Avatar">
@@ -258,7 +197,6 @@
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="dashboard-content">
             {% if inactive_mode %}
             <div class="inactive-banner" role="status">
@@ -290,20 +228,17 @@
         </main>
     </div>
 
-    <!-- JavaScript Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{% static 'core/js/toast.js' %}"></script>
-    <script src="{% static 'accounts/js/shop_owners/shop_owner_dashboard_base.js' %}"></script>
+    <script src="{% static 'core/js/base_sidebar.js' %}"></script>
 
-    <!-- Django Messages Data -->
     <script type="application/json" id="django-messages">
         {% if messages %}[
             {% for message in messages %}{"text":"{{ message|escapejs }}","tags":"{{ message.tags }}"}{% if not forloop.last %},{% endif %}{% endfor %}
         ]{% else %}[]{% endif %}
     </script>
 
-    <!-- Auto-display Django messages as toasts -->
     <script>
         (function(){
             const el = document.getElementById('django-messages');

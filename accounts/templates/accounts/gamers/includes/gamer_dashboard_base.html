@@ -9,63 +9,30 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %} {{ project_detail.title }} {% endblock %}</title>
 
-    <!-- CSS Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&family=Rubik:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/css/variables.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/base_styles.css' %}">
-    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_dashboard_base.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/toast.css' %}">
-    
+
+    <link rel="stylesheet" href="{% static 'core/css/base_dashboard_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_dashboard_base.css' %}">
+
     {% block extra_css %}{% endblock %}
     {% block extra_head %}{% endblock %}
-    <style>
-        .nav-link-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: var(--text-main);
-            font-weight: 500;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .nav-link-btn:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-        .nav-link-btn.owner-btn {
-            background: var(--primary-soft);
-            color: var(--primary);
-        }
-        .nav-link-btn.owner-btn:hover {
-            background: var(--primary);
-            color: white;
-        }
-        @media (max-width: 768px) {
-            .nav-link-btn span { display: none; }
-        }
-    </style>
-
 </head>
 <body>
     {% include 'core/includes/toast_container.html' %}
-    <!-- Top Navigation Bar -->
     <nav class="top-nav">
         <div class="nav-left">
             <button class="sidebar-toggle-btn" aria-label="Toggle sidebar">
                 <i class="fas fa-bars"></i>
             </button>
-	        <!-- Back to Home Button -->
 	        <a href="{% url 'core:home' %}" class="back-to-home-btn">
 		        <i class="fas fa-home"></i>
 		        <span>Back to Home</span>
 	        </a>
-            <!-- Search Bar -->
             <div class="search-bar">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Search games, communities, competitions...">
@@ -73,13 +40,11 @@
         </div>
 
         <div class="nav-right">
-            <!-- Dark Mode Toggle -->
             <button class="nav-icon theme-toggle-btn" id="darkModeToggle" aria-label="Toggle dark mode" data-tooltip="Dark Mode">
                 <i class="fas fa-moon"></i>
                 <i class="fas fa-sun"></i>
             </button>
 
-            <!-- Notifications Dropdown -->
             <div class="nav-dropdown">
                 <button class="nav-icon" title="Notifications" data-tooltip="Notifications" onclick="window.location.href=''">
                     <i class="fas fa-bell"></i>
@@ -89,7 +54,6 @@
                 </button>
             </div>
 
-            <!-- User Profile Dropdown -->
             <div class="nav-dropdown profile-dropdown">
                 <button class="profile-btn" aria-label="User profile">
                     <img src="{% if gamer.profile_picture %}{{ gamer.profile_picture.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="profile-avatar" alt="User Avatar">
@@ -132,9 +96,8 @@
     </nav>
 
     <div class="dashboard-wrapper">
-        <!-- Sidebar -->
+        <div class="sidebar-overlay"></div>
         <aside class="dashboard-sidebar">
-            <!-- Profile Section -->
             <div class="sidebar-profile">
                 <img src="{% if gamer.profile_picture %}{{ gamer.profile_picture.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="sidebar-avatar" alt="User Avatar">
                 <div class="sidebar-profile-info">
@@ -145,9 +108,7 @@
                 </div>
             </div>
 
-            <!-- Navigation -->
             <nav class="dashboard-nav">
-                <!-- Gaming Section -->
                 <div class="nav-section">
                     <div class="section-header">
                         <i class="fas fa-gamepad"></i>
@@ -176,7 +137,6 @@
                     </ul>
                 </div>
 
-                <!-- Social Section -->
                 <div class="nav-section">
                     <div class="section-header">
                         <i class="fas fa-users"></i>
@@ -198,7 +158,6 @@
                     </ul>
                 </div>
 
-                <!-- Profile Section -->
                 <div class="nav-section">
                     <div class="section-header">
                         <i class="fas fa-user"></i>
@@ -223,7 +182,6 @@
                     </ul>
                 </div>
 
-                <!-- Logout Section -->
                 <div class="nav-section logout-section">
                     <a href="{% url 'accounts:logout' %}" class="nav-link logout-link" data-tooltip="Logout">
                         <i class="fas fa-sign-out-alt"></i>
@@ -233,28 +191,23 @@
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="dashboard-content">
             {% block content %}{% endblock %}
         </main>
     </div>
 
-    <!-- JavaScript Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
-    <script src="{% static 'accounts/js/gamers/gamer_dashboard_base.js' %}"></script>
     <script src="{% static 'core/js/toast.js' %}"></script>
-    <script src="{% static 'accounts/js/sidebar.js' %}"></script>
+    <script src="{% static 'core/js/base_sidebar.js' %}"></script>
 
-    <!-- Django Messages Data -->
     <script type="application/json" id="django-messages">
         {% if messages %}[
             {% for message in messages %}{"text":"{{ message|escapejs }}","tags":"{{ message.tags }}"}{% if not forloop.last %},{% endif %}{% endfor %}
         ]{% else %}[]{% endif %}
     </script>
 
-    <!-- Auto-display Django messages as toasts -->
     <script>
         (function(){
             const el = document.getElementById('django-messages');
@@ -272,8 +225,7 @@
     </script>
 
     {% block extra_scripts %}{% endblock %}
-    
-    <!-- Dark Mode Initialization -->
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const currentTheme = localStorage.getItem('theme') || 'light';

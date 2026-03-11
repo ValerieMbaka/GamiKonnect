@@ -1,193 +1,189 @@
-function validatePassword(password) {
-    return {
-        length: password.length >= 8,
-        uppercase: /[A-Z]/.test(password),
-        lowercase: /[a-z]/.test(password),
-        number: /[0-9]/.test(password),
-        special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
-    };
-}
+class RegistrationManager {
+    constructor() {
+        this.form = document.getElementById('registerForm');
+        this.passwordInput = document.getElementById('password');
+        this.confirmInput = document.getElementById('confirm_password');
+        this.requirementsPopup = document.getElementById('passwordRequirements');
+        this.strengthBar = document.querySelector('.strength-bar');
+        this.matchFeedback = document.getElementById('password-match');
 
-function updatePasswordRequirements(requirements) {
-    Object.keys(requirements).forEach(key => {
-        const element = document.getElementById(`req-${key}`);
-        if (element) {
-            const icon = element.querySelector('.req-icon');
-            if (requirements[key]) {
-                element.className = 'req-valid';
-                icon.textContent = '✓';
-            } else {
-                element.className = 'req-invalid';
-                icon.textContent = '○';
-            }
+        if (this.form || this.passwordInput) {
+            this.init();
         }
-    });
-}
-
-function updatePasswordStrength(password) {
-    const strengthBar = document.querySelector('.strength-bar');
-    if (!strengthBar) return;
-    const requirements = validatePassword(password);
-    const metCount = Object.values(requirements).filter(Boolean).length;
-    const totalCount = Object.keys(requirements).length;
-    const strength = metCount / totalCount;
-    strengthBar.className = 'strength-bar';
-    if (password.length === 0) {
-        strengthBar.style.width = '0%';
-    } else if (strength < 0.6) {
-        strengthBar.className += ' strength-weak';
-        strengthBar.style.width = `${strength * 100}%`;
-    } else if (strength < 0.8) {
-        strengthBar.className += ' strength-medium';
-        strengthBar.style.width = `${strength * 100}%`;
-    } else {
-        strengthBar.className += ' strength-strong';
-        strengthBar.style.width = `${strength * 100}%`;
     }
-}
 
-function checkPasswordMatch() {
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirm_password').value;
-    const matchFeedback = document.getElementById('password-match');
-    if (!matchFeedback) return;
-    if (confirmPassword.length === 0) {
-        matchFeedback.textContent = '';
-        matchFeedback.className = 'password-feedback';
-    } else if (password === confirmPassword) {
-        matchFeedback.textContent = 'Passwords match';
-        matchFeedback.className = 'password-feedback password-match';
-    } else {
-        matchFeedback.textContent = 'Passwords do not match';
-        matchFeedback.className = 'password-feedback password-mismatch';
+    init() {
+        this.setupPasswordListeners();
+        this.setupFormListener();
     }
-}
 
-function showPasswordRequirements() {
-    const popup = document.getElementById('passwordRequirements');
-    if (popup) {
-        popup.classList.add('show');
-    }
-}
-
-function hidePasswordRequirements() {
-    const popup = document.getElementById('passwordRequirements');
-    if (popup) {
-        popup.classList.remove('show');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const passwordInput = document.getElementById('password');
-    const confirmInput = document.getElementById('confirm_password');
-    
-    if (passwordInput) {
-        passwordInput.addEventListener('focus', showPasswordRequirements);
-        document.addEventListener('click', function(e) {
-            const popup = document.getElementById('passwordRequirements');
-            if (popup && !passwordInput.contains(e.target) && !popup.contains(e.target)) {
-                hidePasswordRequirements();
-            }
-        });
-
-        passwordInput.addEventListener('input', function() {
-            const requirements = validatePassword(this.value);
-            updatePasswordRequirements(requirements);
-            updatePasswordStrength(this.value);
-            checkPasswordMatch();
-            if (this.value.length > 0) {
-                showPasswordRequirements();
-            }
-        });
-
-        passwordInput.addEventListener('blur', function() {
-            setTimeout(() => {
-                if (document.activeElement !== confirmInput) {
-                    hidePasswordRequirements();
-                }
+    setupPasswordListeners() {
+        if (this.passwordInput) {
+            this.passwordInput.addEventListener('focus', () => this.showRequirements());
+            this.passwordInput.addEventListener('input', (e) => this.handlePasswordInput(e.target.value));
+            
+            this.passwordInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if (document.activeElement !== this.confirmInput) {
+                        this.hideRequirements();
+                    }
                 }, 100);
-        });
-    }
-    
-    if (confirmInput) {
-        confirmInput.addEventListener('input', checkPasswordMatch);
-        confirmInput.addEventListener('focus', function() {
-            if (passwordInput.value.length > 0) {
-                showPasswordRequirements();
-            }
-        });
-    }
-	   
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            hidePasswordRequirements();
-        }
-    });
-	   
-    const registerForm = document.getElementById('registerForm');
-    if (!registerForm) return;
-	   
-    // Firebase create user then submit to backend via AJAX to handle JSON + toasts
-    registerForm.addEventListener('submit', async function(e){
-        e.preventDefault();
-        const btn = document.getElementById('registerSubmitBtn');
-        btn.disabled = true; btn.textContent = 'Creating Account...';
+            });
 
-        if (window.toastManager) {
-            window.toastManager.show({
-                type: 'info',
-                title: 'Creating Account',
-                message: 'Please wait while we set things up...'
+            document.addEventListener('click', (e) => {
+                if (this.requirementsPopup && 
+                    !this.passwordInput.contains(e.target) && 
+                    !this.requirementsPopup.contains(e.target)) {
+                    this.hideRequirements();
+                }
             });
         }
+        
+        if (this.confirmInput) {
+            this.confirmInput.addEventListener('input', () => this.checkMatch());
+            this.confirmInput.addEventListener('focus', () => {
+                if (this.passwordInput.value.length > 0) {
+                    this.showRequirements();
+                }
+            });
+        }
+           
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') this.hideRequirements();
+        });
+    }
+
+    setupFormListener() {
+        if (this.form) {
+            this.form.addEventListener('submit', (e) => this.handleRegistration(e));
+        }
+    }
+
+    validatePassword(password) {
+        return {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /[0-9]/.test(password),
+            special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+        };
+    }
+
+    handlePasswordInput(value) {
+        const requirements = this.validatePassword(value);
+        this.updateRequirementsUI(requirements);
+        this.updateStrengthUI(value, requirements);
+        this.checkMatch();
+        
+        if (value.length > 0) {
+            this.showRequirements();
+        }
+    }
+
+    updateRequirementsUI(requirements) {
+        Object.keys(requirements).forEach(key => {
+            const element = document.getElementById(`req-${key}`);
+            if (element) {
+                const icon = element.querySelector('.req-icon');
+                if (requirements[key]) {
+                    element.className = 'req-valid';
+                    icon.textContent = '✓';
+                } else {
+                    element.className = 'req-invalid';
+                    icon.textContent = '○';
+                }
+            }
+        });
+    }
+
+    updateStrengthUI(password, requirements) {
+        if (!this.strengthBar) return;
+        
+        const metCount = Object.values(requirements).filter(Boolean).length;
+        const totalCount = Object.keys(requirements).length;
+        const strength = metCount / totalCount;
+        
+        this.strengthBar.className = 'strength-bar';
+        
+        if (password.length === 0) {
+            this.strengthBar.style.width = '0%';
+        } else if (strength < 0.6) {
+            this.strengthBar.className += ' strength-weak';
+            this.strengthBar.style.width = `${strength * 100}%`;
+        } else if (strength < 0.8) {
+            this.strengthBar.className += ' strength-medium';
+            this.strengthBar.style.width = `${strength * 100}%`;
+        } else {
+            this.strengthBar.className += ' strength-strong';
+            this.strengthBar.style.width = `${strength * 100}%`;
+        }
+    }
+
+    checkMatch() {
+        if (!this.matchFeedback || !this.confirmInput || !this.passwordInput) return;
+        
+        const password = this.passwordInput.value;
+        const confirmPassword = this.confirmInput.value;
+        
+        if (confirmPassword.length === 0) {
+            this.matchFeedback.textContent = '';
+            this.matchFeedback.className = 'password-feedback';
+        } else if (password === confirmPassword) {
+            this.matchFeedback.textContent = 'Passwords match';
+            this.matchFeedback.className = 'password-feedback password-match';
+        } else {
+            this.matchFeedback.textContent = 'Passwords do not match';
+            this.matchFeedback.className = 'password-feedback password-mismatch';
+        }
+    }
+
+    showRequirements() {
+        if (this.requirementsPopup) this.requirementsPopup.classList.add('show');
+    }
+
+    hideRequirements() {
+        if (this.requirementsPopup) this.requirementsPopup.classList.remove('show');
+    }
+
+    async handleRegistration(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('registerSubmitBtn');
+        btn.disabled = true; 
+        btn.textContent = 'Creating Account...';
+
+        window.toastManager.info('Creating Account', 'Please wait while we set things up...');
 
         const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        const password = this.passwordInput.value;
+        
         try {
             const cred = await window.firebaseAuthCreateUser(email, password);
             document.getElementById('firebase_uid').value = cred.user.uid;
             
-            const formEl = e.target;
-            const formData = new FormData(formEl);
-            const resp = await fetch(formEl.action, {
+            const formData = new FormData(this.form);
+            const resp = await fetch(this.form.action, {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 body: formData
             });
             const data = await resp.json();
+            
             if (data.success) {
-                if (window.toastManager) {
-                    window.toastManager.show({
-                        type: 'success',
-                        title: 'Registration Successful',
-                        message: 'Account created. We\'ve sent a verification email. Please verify to proceed.'
-                    });
-                } else if (window.showToast) {
-                    window.showToast('Account created. Please check your email for verification.', 'success');
-                } else {
-                    alert('Account created. Please check your email for verification.');
-                }
-                setTimeout(() => { window.location.href = registerForm.dataset.loginUrl; }, 1200);
+                window.toastManager.success('Registration Successful', 'Account created. We\'ve sent a verification email. Please verify to proceed.');
+                setTimeout(() => { window.location.href = this.form.dataset.loginUrl; }, 1200);
             } else {
-                if (window.toastManager) {
-                    window.toastManager.show({ type: 'error', title: 'Registration Failed', message: data.message || 'Please try again.' });
-                } else if (window.showToast) {
-                    window.showToast('Registration failed: ' + (data.message || 'Unknown error'), 'error');
-                } else {
-                    alert('Registration failed: ' + (data.message || 'Unknown error'));
-                }
-                btn.disabled = false; btn.textContent = 'Sign Up';
+                window.toastManager.error('Registration Failed', data.message || 'Please try again.');
+                btn.disabled = false; 
+                btn.textContent = 'Sign Up';
             }
-        } catch(err){
-            if (window.toastManager) {
-                window.toastManager.show({ type: 'error', title: 'Registration Failed', message: err.message || 'Unknown error' });
-            } else if (window.showToast) {
-                window.showToast('Registration failed: ' + (err.message || 'Unknown error'), 'error');
-            } else {
-                alert('Registration failed: ' + (err.message || 'Unknown error'));
-            }
-            btn.disabled = false; btn.textContent = 'Sign Up';
+        } catch(err) {
+            window.toastManager.error('Registration Failed', err.message || 'Unknown error');
+            btn.disabled = false; 
+            btn.textContent = 'Sign Up';
         }
-    });
-});
+    }
+}
 
+// Initialize the class when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => new RegistrationManager());

@@ -1,0 +1,22 @@
+{% extends "accounts/email_templates/base_email.html" %}
+
+{% block title %}Shop Application Update{% endblock %}
+{% block header_bg %}background: linear-gradient(135deg, #F0354B 0%, #1A1A2E 100%);{% endblock %}
+{% block header_title %}APPLICATION UPDATE{% endblock %}
+{% block header_subtitle %}Shop Status Notification{% endblock %}
+
+{% block content %}
+    <p class="text-primary">Dear {% if username %}{{ username }}{% else %}Applicant{% endif %},</p>
+    <p class="text-secondary">Thank you for submitting <strong>"{{ shop.name }}"</strong> to {{ project_name }}.</p>
+
+    <div class="info-box" style="border-left: 4px solid #F0354B;">
+        <p class="text-primary" style="margin: 0; font-weight: 600;">After careful review, we are currently unable to approve your shop application.</p>
+    </div>
+
+    <p class="text-secondary">This decision might be due to missing documentation, unclear images of the location, or failure to meet the current platform requirements for competitive locations.</p>
+    <p class="text-secondary">You can update your shop details from your dashboard and resubmit the application.</p>
+
+    <div style="text-align: center;">
+        <a href="mailto:{{ support_email }}" class="btn" style="background-color: #F0354B;">Contact Support</a>
+    </div>
+{% endblock %}

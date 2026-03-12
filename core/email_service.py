@@ -1,255 +1,156 @@
+import logging
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
-from gami_konnect.settings import BASE_DIR
-import environ
-import os
-import logging
+from django.core.signing import TimestampSigner
 
 logger = logging.getLogger(__name__)
 
-# Initialize environ
-env = environ.Env()
-environ.Env.read_env()
 
-# Read the .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-def send_support_contact_email(subject, message, from_email=None):
-    # Send a contact/support email to the configured support/admin address.
-    try:
-        support_email = getattr(settings, 'SUPPORT_EMAIL', None) or getattr(
-            settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL
-        )
-        
-        send_mail(
-            subject,
-            message,
-            from_email or settings.DEFAULT_FROM_EMAIL,
-            [support_email],
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending support contact email: {e}")
-        return False
-
-
-def send_verification_email(email, uid, role):
-    try:
-        # Generate email verification link
-        verification_link = f"{env('SITE_URL')}/accounts/verify-email/{uid}"
-        
-        subject = f"Verify Your {role.title()} Account - {env('PROJECT_NAME')}"
-        
-        # Use the project's custom-designed email template
-        html_message = render_to_string('accounts/email_templates/verification_email.html',
-                                        {
-                                            'verification_link': verification_link,
-                                            'role': role,
-                                            'project_name': env('PROJECT_NAME')
-                                        })
-        
-        plain_message = strip_tags(html_message)
-        
-        send_mail(
-            subject,
-            plain_message,
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending verification email: {e}")
-        return False
-
-
-def send_welcome_email(email, role, username=None):
-    try:
-        subject = f"Welcome to {env('PROJECT_NAME')}!"
-        
-        html_message = render_to_string('accounts/email_templates/welcome_email.html', {
+class EmailManager:
+    # Centralized service for dispatching application emails
+    
+    @staticmethod
+    def _send_html_email(subject, template_path, context, recipient_list, from_email=None):
+        try:
+            if 'project_name' not in context:
+                context['project_name'] = getattr(settings, 'PROJECT_NAME', 'GamiKonnect')
+            if 'support_email' not in context:
+                context['support_email'] = getattr(settings, 'SUPPORT_EMAIL', 'support@gamikonnect.com')
+            
+            html_message = render_to_string(f'accounts/email_templates/{template_path}', context)
+            plain_message = strip_tags(html_message)
+            sender = from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@gamikonnect.com')
+            
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=sender,
+                recipient_list=recipient_list,
+                html_message=html_message,
+                fail_silently=False,
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Error sending email '{subject}' to {recipient_list}: {e}")
+            return False
+    
+    @classmethod
+    def send_support_contact(cls, subject, message, from_email=None):
+        support_email = getattr(settings, 'SUPPORT_EMAIL', getattr(settings, 'ADMIN_EMAIL'))
+        try:
+            send_mail(subject, message, from_email or settings.DEFAULT_FROM_EMAIL, [support_email], fail_silently=False)
+            return True
+        except Exception as e:
+            logger.error(f"Error sending support contact email: {e}")
+            return False
+    
+    # Shared emails
+    @classmethod
+    def send_verification(cls, email, uid, role):
+        site_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
+        context = {
+            'verification_link': f"{site_url}/accounts/verify-email/{uid}",
+            'role': role
+        }
+        subject = f"Verify Your {role.title()} Account - {settings.PROJECT_NAME}"
+        return cls._send_html_email(subject, 'shared/verification_email.html', context, [email])
+    
+    @classmethod
+    def send_welcome(cls, email, role, username=None):
+        subject = f"Welcome to {settings.PROJECT_NAME}!"
+        context = {
             'role': role,
             'username': username,
-            'project_name': settings.PROJECT_NAME
-        })
-        
-        plain_message = strip_tags(html_message)
-        
-        send_mail(
-            subject,
-            plain_message,
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending welcome email: {e}")
-        return False
-
-
-def send_profile_completion_email(email, username):
-    try:
-        subject = f"Profile Completed - {env('PROJECT_NAME')}"
-        
-        html_message = render_to_string('accounts/email_templates/profile_completion_email.html', {
-            'username': username,
-            'project_name': env('PROJECT_NAME')
-        })
-        
-        plain_message = strip_tags(html_message)
-        
-        send_mail(
-            subject,
-            plain_message,
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending profile completion email: {e}")
-        return False
-
-
-def send_shop_approval_email(shop, approved=True):
-    try:
+            'site_url': getattr(settings, 'SITE_URL', 'http://localhost:8000')
+        }
+        return cls._send_html_email(subject, 'shared/welcome_email.html', context, [email])
+    
+    @classmethod
+    def send_password_change(cls, email, username=None):
+        subject = f"Password Changed - {settings.PROJECT_NAME}"
+        return cls._send_html_email(subject, 'shared/password_change.html', {'username': username}, [email])
+    
+    @classmethod
+    def send_password_reset(cls, email, reset_link, username=None):
+        subject = f"Password Reset Request - {settings.PROJECT_NAME}"
+        context = {'username': username, 'reset_link': reset_link, 'expiration_minutes': 30}
+        return cls._send_html_email(subject, 'shared/password_reset.html', context, [email])
+    
+    @classmethod
+    def send_account_deletion(cls, email):
+        subject = f"Account Deleted - {settings.PROJECT_NAME}"
+        return cls._send_html_email(subject, 'shared/account_deleted.html', {}, [email])
+    
+    # Gamer emails
+    @classmethod
+    def send_profile_completion(cls, email, username):
+        subject = f"Profile Completed Successfully - {settings.PROJECT_NAME}"
+        site_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
+        context = {
+            'gamer_name': username,
+            'dashboard_link': f"{site_url}/accounts/gamer-dashboard/"  # <-- Swapped to dashboard link
+        }
+        return cls._send_html_email(subject, 'gamers/profile_completion_email.html', context, [email])
+    
+    # Shop Owner emails
+    @classmethod
+    def send_shop_approval(cls, shop, approved=True):
         owners_emails = [owner.email for owner in shop.owners.all()]
-        # If owners not yet assigned (e.g., submitted by gamer), fall back to submitter email
         if not owners_emails and getattr(shop, 'submitted_by_email', None):
             owners_emails = [shop.submitted_by_email]
         
+        context = {'shop': shop, 'site_url': settings.SITE_URL}
+        
         if approved:
             subject = f"Shop Approved - {settings.PROJECT_NAME}"
-            html_message = render_to_string('accounts/email_templates/shop_approved.html', {
-                'shop': shop,
-                'project_name': settings.PROJECT_NAME,
-                'site_url': settings.SITE_URL
-            })
+            return cls._send_html_email(subject, 'shop_owners/shop_approved.html', context, owners_emails)
         else:
             subject = f"Shop Application Update - {settings.PROJECT_NAME}"
-            html_message = render_to_string('accounts/email_templates/shop_rejected.html', {
-                'shop': shop,
-                'project_name': settings.PROJECT_NAME
-            })
+            return cls._send_html_email(subject, 'shop_owners/shop_rejected.html', context, owners_emails)
+    
+    # Admin emails
+    @classmethod
+    def send_admin_new_shop(cls, shop):
+        subject = f"ACTION REQUIRED: New Shop Submission - {settings.PROJECT_NAME}"
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
         
-        plain_message = strip_tags(html_message)
+        signer = TimestampSigner()
+        # Bind the action securely into the token payload
+        approve_token = signer.sign_object({'shop_id': shop.id, 'action': 'approve'})
+        reject_token = signer.sign_object({'shop_id': shop.id, 'action': 'reject'})
         
-        send_mail(
-            subject,
-            plain_message,
-            settings.DEFAULT_FROM_EMAIL,
-            owners_emails,
-            html_message=html_message,
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending shop approval email: {e}")
-        return False
-
-
-def send_password_change_email(email):
-    try:
-        subject = f"Password Changed - {env('PROJECT_NAME')}"
+        quick_approve_url = f"{settings.SITE_URL}/accounts/quick-approve-shop/{approve_token}/"
+        quick_reject_url = f"{settings.SITE_URL}/accounts/quick-reject-shop/{reject_token}/"
         
-        html_message = render_to_string('accounts/email_templates/password_change.html', {
-            'project_name': env('PROJECT_NAME')
-        })
-        
-        plain_message = strip_tags(html_message)
-        
-        send_mail(
-            subject,
-            plain_message,
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending password change email: {e}")
-        return False
-
-
-def send_account_deletion_email(email):
-    try:
-        subject = f"Account Deleted - {env('PROJECT_NAME')}"
-        
-        message = f"""
-        Dear User,
-
-        Your account has been successfully deleted from {env('PROJECT_NAME')}.
-
-        We're sorry to see you go. If you change your mind, you can always create a new account.
-
-        All your personal data has been permanently removed from our systems in accordance with our privacy policy.
-
-        If you didn't request this deletion or have any concerns, please contact our support team immediately.
-
-        Thank you for being part of {env('PROJECT_NAME')}.
-
-        Best regards,
-        The {env('PROJECT_NAME')} Team
-        """
-        
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending account deletion email: {e}")
-        return False
-
-
-def send_competition_result_notification(competition_result):
-    """Send notification to admin when shop owner submits competition results"""
-    try:
-        from django.conf import settings
-        
+        context = {
+            'shop': shop,
+            'submitter_email': shop.submitted_by_email or 'N/A',
+            'submitter_uid': shop.submitted_by_uid or 'N/A',
+            'admin_dashboard_url': f"{settings.SITE_URL}/admin/shops/shop/",
+            'quick_approve_url': quick_approve_url,
+            'quick_reject_url': quick_reject_url
+        }
+        return cls._send_html_email(subject, 'admin/admin_new_shop.html', context, [admin_email])
+    
+    @classmethod
+    def send_admin_account_deletion(cls, email):
+        subject = f"SYSTEM ALERT: Account Deletion - {settings.PROJECT_NAME}"
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        context = {'deleted_email': email}
+        return cls._send_html_email(subject, 'admin/admin_account_deletion.html', context, [admin_email])
+    
+    @classmethod
+    def send_competition_result_notification(cls, competition_result):
         admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
         competition = competition_result.competition
         shop_owner = competition_result.submitted_by
-        
-        subject = f"New Competition Results Submitted - {competition.title}"
-        
-        message = f"""
-        A new competition result has been submitted for review.
-
-        Competition: {competition.title}
-        Shop: {competition.shop.name}
-        Submitted by: {shop_owner.first_name} {shop_owner.last_name} ({shop_owner.email})
-        Submitted at: {competition_result.submitted_at.strftime('%Y-%m-%d %H:%M:%S')}
-
-        Summary: {competition_result.results_summary[:200]}
-
-        Please review the results file and approve or reject it in the admin panel.
-
-        Results File: {competition_result.results_file.url if competition_result.results_file else 'N/A'}
-
-        Best regards,
-        {settings.PROJECT_NAME} System
-        """
-        
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [admin_email],
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending competition result notification: {e}")
-        return False
+        subject = f"SYSTEM ALERT: Competition Results Submitted - {competition.title}"
+        context = {
+            'competition': competition,
+            'shop_owner': shop_owner,
+            'summary': competition_result.results_summary,
+            'admin_dashboard_url': f"{settings.SITE_URL}/admin/"
+        }
+        return cls._send_html_email(subject, 'admin/admin_competition_result.html', context, [admin_email])

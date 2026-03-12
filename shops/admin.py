@@ -2,10 +2,10 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.db import transaction, IntegrityError
 from django.utils import timezone
+from django.http import HttpRequest
 from .models import Shop, Console, GamePricing
 from accounts.models import ShopOwner, Account
-from core.email_service import send_shop_approval_email
-
+from core.email_service import EmailManager
 
 import logging
 
@@ -51,11 +51,11 @@ class ShopAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'is_approved', 'city', 'location', 'consoles__console_type', 'created_at')
     search_fields = ('name', 'city', 'location', 'address', 'owners__first_name', 'owners__last_name')
     list_editable = ('is_active', 'is_approved')
-    readonly_fields = ('name', 'owners', 'city', 'location', 'building', 'floor', 'room_number', 
-                       'address', 'screen_number', 'games_available', 'base_price_per_hour', 
-                       'opening_hours', 'closing_hours', 'logo', 'description', 
-                       'business_permit', 'submitted_by_uid', 'submitted_by_email', 
-                       'created_at', 'updated_at', 'approved_at', 'total_consoles_display', 
+    readonly_fields = ('name', 'owners', 'city', 'location', 'building', 'floor', 'room_number',
+                       'address', 'screen_number', 'games_available', 'base_price_per_hour',
+                       'opening_hours', 'closing_hours', 'logo', 'description',
+                       'business_permit', 'submitted_by_uid', 'submitted_by_email',
+                       'created_at', 'updated_at', 'approved_at', 'total_consoles_display',
                        'console_summary_display', 'supported_platform_categories_display')
     filter_horizontal = ('owners', 'games_available')
     inlines = [ConsoleInline, GamePricingInline]
@@ -69,7 +69,7 @@ class ShopAdmin(admin.ModelAdmin):
             'fields': ('city', 'location', 'building', 'floor', 'room_number', 'address')
         }),
         ('Shop Facilities', {
-            'fields': ('screen_number', 'games_available', 'business_permit', 'total_consoles_display', 
+            'fields': ('screen_number', 'games_available', 'business_permit', 'total_consoles_display',
                        'console_summary_display', 'supported_platform_categories_display')
         }),
         ('Pricing & Hours', {
@@ -93,39 +93,33 @@ class ShopAdmin(admin.ModelAdmin):
             'game_prices__game'
         )
     
-    def owner_count(self, obj):
+    @admin.display(description='Owners')
+    def owner_count(self, obj: Shop):
         return obj.owners.count()
     
-    owner_count.short_description = 'Owners'
-    
-    def total_consoles_display(self, obj):
+    @admin.display(description='Total Consoles')
+    def total_consoles_display(self, obj: Shop):
         return obj.total_consoles()
     
-    total_consoles_display.short_description = 'Total Consoles'
-    
-    def console_summary_display(self, obj):
+    @admin.display(description='Console Summary')
+    def console_summary_display(self, obj: Shop):
         return obj.console_summary()
     
-    console_summary_display.short_description = 'Console Summary'
-    
-    def console_platforms_list(self, obj):
+    @admin.display(description='Console Platforms')
+    def console_platforms_list(self, obj: Shop):
         platforms = obj.available_console_platforms()
         return ", ".join(platforms) if platforms else "None"
     
-    console_platforms_list.short_description = 'Console Platforms'
-    
-    def supported_platform_categories_display(self, obj):
+    @admin.display(description='Supported Platform Categories')
+    def supported_platform_categories_display(self, obj: Shop):
         categories = obj.supported_platform_categories()
         return ", ".join([category.name for category in categories]) if categories else "None"
     
-    supported_platform_categories_display.short_description = 'Supported Platform Categories'
-    
-    def premium_games_count(self, obj):
+    @admin.display(description='Premium Games')
+    def premium_games_count(self, obj: Shop):
         return obj.premium_games_count()
     
-    premium_games_count.short_description = 'Premium Games'
-
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request: HttpRequest, obj: Shop, form, change: bool):
         # Track prior approval state
         previous_approved = None
         if obj.pk and change:
@@ -191,11 +185,12 @@ class ShopAdmin(admin.ModelAdmin):
                     obj.owners.add(shop_owner)
                     logger.info(f"Added owner {shop_owner.email} to shop {obj.name}")
             
-            # Send approval email to owner/submitter
-            send_shop_approval_email(obj, approved=True)
+            # Send approval email
+            EmailManager.send_shop_approval(obj, approved=True)
+        
         elif previous_approved is True and not obj.is_approved:
-            # Send rejection email when toggled off
-            send_shop_approval_email(obj, approved=False)
+            # Send rejection email
+            EmailManager.send_shop_approval(obj, approved=False)
 
 
 @admin.register(Console)

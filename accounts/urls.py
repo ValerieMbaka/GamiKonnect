@@ -45,6 +45,10 @@ urlpatterns = [
     # Toggle between gamer and shop owner dashboard roles
     path('toggle-gamer-mode/', views.toggle_gamer_mode, name='toggle_gamer_mode'),
     
+    # Admin Quick Actions
+    path('quick-approve-shop/<str:token>/', views.quick_approve_shop, name='quick_approve_shop'),
+    path('quick-reject-shop/<str:token>/', views.quick_reject_shop, name='quick_reject_shop'),
+    
     # Test URL
     path('test-firebase/', views.test_firebase, name='test_firebase'),
 ]

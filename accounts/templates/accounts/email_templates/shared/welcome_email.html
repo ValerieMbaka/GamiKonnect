@@ -1,0 +1,55 @@
+{% extends "accounts/email_templates/base_email.html" %}
+
+{% block title %}Welcome to {{ project_name }}{% endblock %}
+{% block header_bg %}background: linear-gradient(135deg, #5FD3B3 0%, #00A86B 100%);{% endblock %}
+{% block header_title %}🏆 ACHIEVEMENT UNLOCKED{% endblock %}
+{% block header_subtitle %} ✨ Welcome to the Network ✨ {% endblock %}
+
+{% block content %}
+    <p class="text-primary" style="font-weight: 600; font-size: 18px;">
+	    Welcome to {{ project_name }}, {% if username %}{{ username }}{% else %}new player{% endif %}! 🎮</p>
+    <p class="text-secondary">Your account is now fully verified and your profile is officially online. You're all set to start your gaming journey with us!</p>
+
+    <div class="success-box">
+        <p class="text-secondary" style="margin: 0;"><strong>✅ What you can do now:</strong> Join tournaments, connect with other gamers, track your stats, and compete on leaderboards!</p>
+    </div>
+
+    {% if role == 'gamer' %}
+        <div class="info-box">
+            <p class="text-primary" style="margin: 5px 0; font-weight: 600;">🎮 Complete Your Gamer Profile</p>
+            <p class="text-secondary" style="margin: 8px 0;">Your new account is live 🎉! But you're still rocking the newbie skin 🥱! Complete your profile to unlock personalized competitions and get your name on the leaderboards.</p>
+	        <p class="text-primary" style="margin: 10px 0; font-weight: 600;">Quick setup steps:</p>
+            <ul class="text-secondary" style="margin: 0; padding-left: 20px;">
+                <li style="margin: 5px 0;">🎮 Add your favorite gaming platforms & titles</li>
+                <li style="margin: 5px 0;">🖼️ Upload a cool avatar</li>
+                <li style="margin: 5px 0;">📝 Share your gamer bio</li>
+            </ul>
+
+            <p class="text-secondary" style="margin-top: 12px; font-style: italic;">See you on the leaderboards 😎!</p>
+        </div>
+        <div style="text-align: center;">
+            <a href="{{ site_url }}/accounts/gamer-profile-dashboard/" class="btn">Complete Your Profile</a>
+        </div>
+    {% else %}
+        <div class="info-box">
+            <p class="text-primary" style="margin: 5px 0; font-weight: 600;">🕹️ Register Your Gaming Shop</p>
+            <p class="text-secondary" style="margin: 8px 0;">Your account is active and ready! Register your game shop to start hosting tournaments, managing competitions, and growing your business with GamiKonnect.</p>
+
+            <p class="text-primary" style="margin: 10px 0; font-weight: 600;">Next steps:</p>
+            <ul class="text-secondary" style="margin: 0; padding-left: 20px;">
+	            <li style="margin: 5px 0;">🏪 Complete your shop profile</li>
+                <li style="margin: 5px 0;">🎯 Set up game catalogs and pricing</li>
+                <li style="margin: 5px 0;">🏆 Start hosting tournaments</li>
+            </ul>
+
+            <p class="text-secondary" style="margin-top: 12px; font-style: italic;">We're excited to have you on board 😎!</p>
+        </div>
+        <div style="text-align: center;">
+            <a href="{{ site_url }}/accounts/create-shop/" class="btn">Register Your Shop</a>
+        </div>
+    {% endif %}
+
+    <div class="highlight" style="text-align: center; margin-top: 25px;">
+        <p class="text-secondary" style="margin: 0; font-size: 12px;">📧 Need help? Check our <strong><a href="{{ site_url }}/support/" style="color: #35A8F0; text-decoration: none;">Help Center</a></strong> or reach out to <strong><a href="mailto:{{ support_email }}" style="color: #35A8F0; text-decoration: none;">{{ support_email }}</a></strong></p>
+    </div>
+{% endblock %}

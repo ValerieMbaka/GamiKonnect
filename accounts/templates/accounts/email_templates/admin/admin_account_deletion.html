@@ -1,0 +1,37 @@
+{% extends "accounts/email_templates/base_email.html" %}
+
+{% block title %} Admin Alert · Account Deleted {% endblock %}
+
+{% block header_bg %} background: linear-gradient(135deg, #6B7280 0%, #1F2937 100%); {% endblock %}
+
+{% block header_title %} 📋 ACCOUNT DELETED {% endblock %}
+{% block header_subtitle %} System Notification - Data Removed {% endblock %}
+
+{% block content %}
+    <p class="text-primary" style="font-weight: 600; font-size: 16px;">System Alert</p>
+    <p class="text-secondary">A user account has been successfully deleted from the {{ project_name }} platform. This is an automated notification for your records.</p>
+
+    <div class="alert-box">
+        <p class="text-primary" style="margin: 5px 0; font-weight: 600;">❌ Account Deletion Summary:</p>
+        <ul class="text-secondary" style="margin: 8px 0 0 0; padding-left: 20px;">
+            <li><strong>Username:</strong> {{ username }}</li>
+            <li><strong>Email:</strong> <code style="background-color: rgba(240, 53, 75, 0.1); padding: 2px 6px; border-radius: 3px;">{{ deleted_email }}</code></li>
+            <li><strong>Account Type:</strong> {{ account_type }}</li>
+            <li><strong>Deletion Date:</strong> {{ deletion_date|date:"F d, Y - H:i" }}</li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <p class="text-primary" style="margin: 5px 0; font-weight: 600;">🗑️ Data Removed:</p>
+        <ul class="text-secondary" style="margin: 8px 0 0 0; padding-left: 20px; font-size: 13px;">
+            <li>User profile and account credentials</li>
+            <li>Personal information and settings</li>
+            <li>Game history and statistics</li>
+            <li>Associated relationships and records</li>
+        </ul>
+    </div>
+
+    <p class="text-secondary" style="font-size: 12px; margin-top: 15px;"><strong>✓ Status:</strong> All deletion rules have been applied correctly. Relational data has been handled according to system configuration.</p>
+    
+    <p class="text-secondary" style="font-size: 11px; margin-top: 15px; font-style: italic;">For audit purposes, this deletion has been logged in your system records.</p>
+{% endblock %}

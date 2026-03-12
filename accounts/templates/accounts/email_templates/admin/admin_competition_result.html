@@ -1,0 +1,65 @@
+{% extends "accounts/email_templates/base_email.html" %}
+
+{% block title %} Admin Alert · Competition Results {% endblock %}
+{% block header_bg %} background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); {% endblock %}
+{% block header_title %} 🏆 COMPETITION RESULTS {% endblock %}
+{% block header_subtitle %} Results Submitted - Awaiting Review {% endblock %}
+
+{% block content %}
+    <p class="text-primary" style="font-weight: 600; font-size: 16px;">📊 Results Submitted</p>
+    <p class="text-secondary">A new set of competition results has been submitted by a shop owner and is awaiting your review and verification.</p>
+
+    <div class="success-box">
+        <p class="text-secondary" style="margin: 0;"><strong>🎮 Competition Details:</strong></p>
+    </div>
+
+    <div class="info-box">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <th style="text-align: left; font-weight: 700; padding: 8px 0; border-bottom: 1px solid #E2E8FF; width: 35%;" class="text-primary">
+                    🎯 Competition
+                </th>
+                <td style="padding: 8px 0; border-bottom: 1px solid #E2E8FF;" class="text-secondary">
+                    <strong>{{ competition.title }}</strong>
+                </td>
+            </tr>
+            <tr>
+                <th style="text-align: left; font-weight: 700; padding: 8px 0; border-bottom: 1px solid #E2E8FF;" class="text-primary">
+                    🏪 Host Shop
+                </th>
+                <td style="padding: 8px 0; border-bottom: 1px solid #E2E8FF;" class="text-secondary">
+                    {{ competition.shop.name }}
+                </td>
+            </tr>
+            <tr>
+                <th style="text-align: left; font-weight: 700; padding: 8px 0; border-bottom: 1px solid #E2E8FF;" class="text-primary">
+                    👤 Submitted By
+                </th>
+                <td style="padding: 8px 0; border-bottom: 1px solid #E2E8FF;" class="text-secondary">
+                    <a href="mailto:{{ shop_owner.email }}" style="color: #35A8F0; text-decoration: none;">{{ shop_owner.email }}</a>
+                </td>
+            </tr>
+            <tr>
+                <th style="text-align: left; font-weight: 700; padding: 8px 0;" class="text-primary">
+                    ⏰ Submission Date
+                </th>
+                <td style="padding: 8px 0;" class="text-secondary">
+                    {{ submission_date|date:"F d, Y - H:i" }}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="text-primary" style="margin-top: 25px; margin-bottom: 10px;">📋 Result Summary:</h3>
+    <div class="info-box" style="border-left: 4px solid #8B5CF6;">
+        <p class="text-secondary" style="margin: 0;">{{ summary|linebreaks }}</p>
+    </div>
+
+    <div class="highlight">
+        <p class="text-secondary" style="margin: 0;"><strong>⚡ Action Needed:</strong> Review the results for accuracy and verify all participant data before approving or requesting revisions.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 25px;">
+        <a href="{{ admin_dashboard_url }}" class="btn" style="background-color: #8B5CF6;">Review in Admin Panel</a>
+    </div>
+{% endblock %}

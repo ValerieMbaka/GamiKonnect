@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Shop Action · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/auth_styles.css' %}">
+    <style>
+        .navbar, footer { display: none; }
+        
+        .status-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .status-success {
+	        color: var(--success);
+        }
+
+        .status-error {
+	        color: var(--danger);
+        }
+
+        .status-warning {
+	        color: var(--warning);
+        }
+
+        .status-info {
+	        color: var(--info);
+        }
+        
+        .admin-action-wrapper {
+            text-align: center;
+            padding: 40px 30px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <main class="auth-form-container">
+        <div class="auth-form-wrapper admin-action-wrapper">
+            <div class="auth-form-header">
+                {% if status == 'success' %}
+                    <i class="fas fa-check-circle status-icon status-success"></i>
+                {% elif status == 'error' %}
+                    <i class="fas fa-times-circle status-icon status-error"></i>
+                {% elif status == 'warning' %}
+                    <i class="fas fa-exclamation-triangle status-icon status-warning"></i>
+                {% else %}
+                    <i class="fas fa-info-circle status-icon status-info"></i>
+                {% endif %}
+                
+                <h1 style="margin-bottom: 12px;">{{ title }}</h1>
+                <p class="auth-subtitle" style="font-size: 16px;">{{ message|safe }}</p>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <a href="/admin/" class="btn btn-primary" style="display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; color: white;">
+                    Return to Admin Dashboard
+                </a>
+            </div>
+        </div>
+    </main>
+{% endblock %}

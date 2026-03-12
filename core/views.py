@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
-from .email_service import send_support_contact_email
+from .email_service import EmailManager
 from .models import (
     ProjectDetail,
     NavigationLink,
@@ -126,10 +126,7 @@ def help_first_tournament(request):
 @require_POST
 @csrf_exempt
 def contact_submit(request):
-    """ Handle contact form submission and email support.
-    Returns JSON with success flag and message. This endpoint is designed to
-    be called via fetch from the contact page JS.
-    """
+    # Handle contact form submission and email support.
     
     name = f"{request.POST.get('first_name', '').strip()} {request.POST.get('last_name', '').strip()}".strip()
     email = request.POST.get('email', '').strip()
@@ -155,7 +152,7 @@ def contact_submit(request):
         f"Message:\n{message_body}"
     )
     
-    sent = send_support_contact_email(email_subject, full_message, from_email=email)
+    sent = EmailManager.send_support_contact(email_subject, full_message, from_email=email)
     
     if sent:
         return JsonResponse({

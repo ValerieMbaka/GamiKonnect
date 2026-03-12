@@ -1,0 +1,26 @@
+{% extends "accounts/email_templates/base_email.html" %}
+
+{% block title %}Verify Your Account{% endblock %}
+{% block header_bg %}background: linear-gradient(135deg, #35A8F0 0%, #1E90FF 100%);{% endblock %}
+{% block header_title %}🔐 SYSTEM CHECK{% endblock %}
+{% block header_subtitle %}Verify Your Connection{% endblock %}
+
+{% block content %}
+    <p class="text-primary" style="font-weight: 600; font-size: 18px;">🎮 Hey {{ username }}, you're almost in!</p>
+    <p class="text-secondary">Thanks for setting up a <strong>{{ role }}</strong> account on {{ project_name }}. Before we drop you into the dashboard, we just need to verify your email to keep your account secure.</p>
+
+    <div class="success-box">
+        <p class="text-secondary" style="margin: 0;"><strong>✅ What's next?</strong> Click the button below to verify your email address and unlock your full account.</p>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="{{ verification_link }}" class="btn">Verify Email Address</a>
+    </div>
+
+    <div class="info-box">
+        <p class="text-secondary" style="margin: 0; font-size: 14px;"><strong>🔗 Link not working?</strong> Copy and paste this into your browser:<br><br>
+        <a href="{{ verification_link }}" style="color: #35A8F0; word-break: break-all; font-size: 12px;">{{ verification_link }}</a></p>
+    </div>
+
+    <p class="text-secondary" style="font-size: 12px; margin-top: 20px;">⏱️ <em>Link expires in 24 hours. If you didn't create this account, please ignore this email and report it to support.</em></p>
+{% endblock %}

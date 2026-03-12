@@ -1,0 +1,111 @@
+{% extends "accounts/email_templates/base_email.html" %}
+
+{% block title %} Admin Alert · New Shop {% endblock %}
+
+{% block extra_css %}
+	<style>
+	    .admin-table {
+		    width: 100%;
+		    border-collapse: collapse;
+		    margin: 20px 0;
+		    border-radius: 8px;
+		    overflow: hidden;
+	    }
+
+        .admin-table th, .admin-table td {
+	        padding: 14px 15px;
+	        text-align: left;
+	        border-bottom: 1px solid #E2E8FF;
+	        font-size: 14px;
+        }
+
+        .admin-table th {
+	        font-weight: 700;
+	        width: 35%;
+	        background-color: #F0EBFF;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .btn-small {
+            padding: 12px 24px;
+            font-size: 13px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .admin-table th {
+	            background-color: #1A2536 !important;
+            }
+
+            .admin-table th, .admin-table td {
+	            border-bottom-color: #2D3748 !important;
+            }
+        }
+	</style>
+{% endblock %}
+
+{% block header_bg %} background: linear-gradient(135deg, #F97316 0%, #DC2626 100%); {% endblock %}
+{% block header_title %} 🚨 NEW SHOP PENDING {% endblock %}
+{% block header_subtitle %} Review Required - Quick Action Available {% endblock %}
+
+{% block content %}
+    <p class="text-primary" style="font-weight: 600; font-size: 16px;">⚡ Action Required</p>
+    <p class="text-secondary">A new gaming shop has been submitted and is awaiting your administrative review.</p>
+
+    <div class="success-box">
+        <p class="text-secondary" style="margin: 0;"><strong>📊 Shop Submission Details:</strong></p>
+    </div>
+
+    <div class="info-box" style="padding: 0; overflow: hidden;">
+        <table class="admin-table text-secondary">
+            <tr>
+                <th class="text-primary">🏪 Shop Name</th>
+                <td><strong>{{ shop.name }}</strong></td>
+            </tr>
+            <tr>
+                <th class="text-primary">📍 Location</th>
+                <td>{{ shop.location }}</td>
+            </tr>
+            <tr>
+                <th class="text-primary">🖥️ Gaming Screens</th>
+                <td>{{ shop.screen_number }}</td>
+            </tr>
+            <tr>
+                <th class="text-primary">📧 Submitter</th>
+                <td><a href="mailto:{{ submitter_email }}" style="color: #35A8F0; text-decoration: none;">{{ submitter_email }}</a></td>
+            </tr>
+            <tr>
+                <th class="text-primary">⏰ Submitted</th>
+                <td>{{ submission_date|date:"F d, Y - H:i" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="highlight">
+        <p class="text-secondary" style="margin: 0;"><strong>💡 Tip:</strong> Use "Full Review" for complete details including documents and verification status.</p>
+    </div>
+
+    <div class="btn-group">
+        <a href="{{ quick_approve_url }}" class="btn btn-small" style="background-color: #10B981; margin: 0;">
+            ✅ Approve Shop
+        </a>
+
+        <a href="{{ quick_reject_url }}" class="btn btn-small" style="background-color: transparent; border: 2px solid #F0354B; color: #F0354B !important; margin: 0; box-shadow: none;">
+            ❌ Needs Review
+        </a>
+
+        <a href="{{ admin_dashboard_url }}" class="btn btn-small" style="background-color: #35A8F0; margin: 0;">
+            🔍 Full Review
+        </a>
+    </div>
+
+    <p class="text-secondary" style="font-size: 11px; text-align: center; margin-top: 15px; font-style: italic;">
+        Quick approval/rejection buttons update the system immediately. Use "Full Review" for detailed analysis.
+    </p>
+{% endblock %}

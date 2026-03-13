@@ -4,12 +4,21 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.core.signing import TimestampSigner
+from django.core.exceptions import ImproperlyConfigured
+from premailer import transform
 
 logger = logging.getLogger(__name__)
 
 
 class EmailManager:
     # Centralized service for dispatching application emails
+    
+    @staticmethod
+    def _get_site_url():
+        site_url = getattr(settings, 'SITE_URL', None)
+        if not site_url:
+            raise ImproperlyConfigured("SITE_URL must be defined in Django settings (e.g., via environment variables).")
+        return site_url.rstrip('/')
     
     @staticmethod
     def _send_html_email(subject, template_path, context, recipient_list, from_email=None):
@@ -19,7 +28,12 @@ class EmailManager:
             if 'support_email' not in context:
                 context['support_email'] = getattr(settings, 'SUPPORT_EMAIL', 'support@gamikonnect.com')
             
+            # Render the raw HTML with standard <style> blocks
             html_message = render_to_string(f'accounts/email_templates/{template_path}', context)
+            
+            # Use premailer to automatically convert <style> tags to inline CSS
+            html_message = transform(html_message)
+            
             plain_message = strip_tags(html_message)
             sender = from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@gamikonnect.com')
             
@@ -40,7 +54,13 @@ class EmailManager:
     def send_support_contact(cls, subject, message, from_email=None):
         support_email = getattr(settings, 'SUPPORT_EMAIL', getattr(settings, 'ADMIN_EMAIL'))
         try:
-            send_mail(subject, message, from_email or settings.DEFAULT_FROM_EMAIL, [support_email], fail_silently=False)
+            send_mail(
+                subject,
+                message,
+                from_email or settings.DEFAULT_FROM_EMAIL,
+                [support_email],
+                fail_silently=False
+            )
             return True
         except Exception as e:
             logger.error(f"Error sending support contact email: {e}")
@@ -48,11 +68,12 @@ class EmailManager:
     
     # Shared emails
     @classmethod
-    def send_verification(cls, email, uid, role):
-        site_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
+    def send_verification(cls, email, uid, role, username=None):
+        site_url = cls._get_site_url()
         context = {
             'verification_link': f"{site_url}/accounts/verify-email/{uid}",
-            'role': role
+            'role': role,
+            'username': username or email.split('@')[0]
         }
         subject = f"Verify Your {role.title()} Account - {settings.PROJECT_NAME}"
         return cls._send_html_email(subject, 'shared/verification_email.html', context, [email])
@@ -63,7 +84,7 @@ class EmailManager:
         context = {
             'role': role,
             'username': username,
-            'site_url': getattr(settings, 'SITE_URL', 'http://localhost:8000')
+            'site_url': cls._get_site_url()
         }
         return cls._send_html_email(subject, 'shared/welcome_email.html', context, [email])
     
@@ -87,21 +108,42 @@ class EmailManager:
     @classmethod
     def send_profile_completion(cls, email, username):
         subject = f"Profile Completed Successfully - {settings.PROJECT_NAME}"
-        site_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
+        site_url = cls._get_site_url()
         context = {
             'gamer_name': username,
-            'dashboard_link': f"{site_url}/accounts/gamer-dashboard/"  # <-- Swapped to dashboard link
+            'dashboard_link': f"{site_url}/accounts/gamer-dashboard/"
         }
         return cls._send_html_email(subject, 'gamers/profile_completion_email.html', context, [email])
     
     # Shop Owner emails
     @classmethod
-    def send_shop_approval(cls, shop, approved=True):
+    def send_shop_approval(cls, shop, approved=True, rejection_reason=None):
         owners_emails = [owner.email for owner in shop.owners.all()]
         if not owners_emails and getattr(shop, 'submitted_by_email', None):
             owners_emails = [shop.submitted_by_email]
         
-        context = {'shop': shop, 'site_url': settings.SITE_URL}
+        site_url = cls._get_site_url()
+        owner_name = 'Shop Owner'
+        
+        if shop.owners.exists():
+            owner = shop.owners.first()
+            first = getattr(owner, 'first_name', '') or ''
+            last = getattr(owner, 'last_name', '') or ''
+            full_name = f"{first} {last}".strip()
+            owner_name = full_name or getattr(owner, 'custom_username', 'Shop Owner')
+        
+        context = {
+            'shop': shop,
+            'shop_name': shop.name,
+            'shop_owner_name': owner_name,
+            'shop_location': shop.location,
+            'screen_count': shop.screen_number,
+            'site_url': site_url,
+            'dashboard_link': f"{site_url}/accounts/shop-owner-dashboard/",
+            'onboarding_link': f"{site_url}/core/support/guides/shop-onboarding/",
+            'rejection_reason': rejection_reason or "Please review your shop details and ensure all information is accurate.",
+            'resubmit_link': f"{site_url}/accounts/create-shop/"
+        }
         
         if approved:
             subject = f"Shop Approved - {settings.PROJECT_NAME}"
@@ -115,20 +157,18 @@ class EmailManager:
     def send_admin_new_shop(cls, shop):
         subject = f"ACTION REQUIRED: New Shop Submission - {settings.PROJECT_NAME}"
         admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        site_url = cls._get_site_url()
         
         signer = TimestampSigner()
-        # Bind the action securely into the token payload
         approve_token = signer.sign_object({'shop_id': shop.id, 'action': 'approve'})
         reject_token = signer.sign_object({'shop_id': shop.id, 'action': 'reject'})
-        
-        quick_approve_url = f"{settings.SITE_URL}/accounts/quick-approve-shop/{approve_token}/"
-        quick_reject_url = f"{settings.SITE_URL}/accounts/quick-reject-shop/{reject_token}/"
         
         context = {
             'shop': shop,
             'submitter_email': shop.submitted_by_email or 'N/A',
             'submitter_uid': shop.submitted_by_uid or 'N/A',
-            'admin_dashboard_url': f"{settings.SITE_URL}/admin/shops/shop/",
+            'submission_date': shop.created_at,
+            'admin_dashboard_url': f"{site_url}/admin/shops/shop/",
             'quick_approve_url': quick_approve_url,
             'quick_reject_url': quick_reject_url
         }
@@ -146,11 +186,13 @@ class EmailManager:
         admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
         competition = competition_result.competition
         shop_owner = competition_result.submitted_by
+        site_url = cls._get_site_url()
+        
         subject = f"SYSTEM ALERT: Competition Results Submitted - {competition.title}"
         context = {
             'competition': competition,
             'shop_owner': shop_owner,
             'summary': competition_result.results_summary,
-            'admin_dashboard_url': f"{settings.SITE_URL}/admin/"
+            'admin_dashboard_url': f"{site_url}/admin/"
         }
         return cls._send_html_email(subject, 'admin/admin_competition_result.html', context, [admin_email])

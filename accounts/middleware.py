@@ -26,7 +26,7 @@ class RoleAccessMiddleware:
                 current_name = f"{resolver_match.app_name}:{resolver_match.url_name}"
             else:
                 current_name = resolver_match.url_name
-
+        
         """
         Always allow access to Django admin URLs (including its own login)
         This prevents the custom auth gating from hijacking /admin/ flows.
@@ -44,8 +44,7 @@ class RoleAccessMiddleware:
             return None
         if request.path.startswith('/admin_panel/'):
             return None
-
-
+        
         # Central role-based route configuration
         # Users who are not logged in can always access these views
         allowed_anonymous = {
@@ -70,8 +69,12 @@ class RoleAccessMiddleware:
             'accounts:select_role',
             'accounts:verify_email',
             'accounts:resend_verification',
+            
+            # Admin Email Quick Actions
+            'accounts:quick_approve_shop',
+            'accounts:quick_reject_shop',
         }
-
+        
         # Explicit gamer and shop-owner URL names
         gamer_allowed_names = {
             'accounts:gamer_dashboard',
@@ -84,7 +87,7 @@ class RoleAccessMiddleware:
             'accounts:gamer_public_profile_username',
             'games:get_profile_form_data',
         }
-
+        
         shop_owner_allowed_names = {
             'accounts:shop_owner_dashboard',
             'accounts:shop_owner_profile',
@@ -97,17 +100,17 @@ class RoleAccessMiddleware:
             'accounts:submit_competition_result',
             'accounts:submit_competition_result_no_pk',
         }
-
+        
         # Views allowed for both authenticated gamers and shop owners
         common_authenticated_allowed = {
             'accounts:create_shop',
         }
-
+        
         role_allowed_map = {
             'gamer': gamer_allowed_names,
             'shop_owner': shop_owner_allowed_names,
         }
-
+        
         if current_name in allowed_anonymous:
             return None
         
@@ -121,7 +124,7 @@ class RoleAccessMiddleware:
             except Exception:
                 # Best effort only
                 pass
-
+            
             # Show toast prompting login
             if current_name not in allowed_anonymous and current_name != 'core:home':
                 messages.warning(request, 'Login to access this page')
@@ -130,16 +133,16 @@ class RoleAccessMiddleware:
         
         # Role-based access control using explicit route-name allowlists
         user_role = request.session.get('role')
-
+        
         # Allow common authenticated views for both roles
         if current_name in common_authenticated_allowed:
             return None
-
+        
         # If a gamer-only view is requested by a non-gamer, block it
         if current_name in gamer_allowed_names and user_role != 'gamer':
             messages.error(request, 'Access denied. This page is for gamers only.')
             return redirect('core:home')
-
+        
         # If a shop-owner-only view is requested by a non-shop-owner, block it
         if current_name in shop_owner_allowed_names and user_role != 'shop_owner':
             # Exception: Allow gamers with pending shops to access shop_owner_dashboard (inactive mode)
@@ -154,7 +157,7 @@ class RoleAccessMiddleware:
             
             messages.error(request, 'Access denied. This page is for shop owners only.')
             return redirect('core:home')
-
+        
         # Gamer profile completion enforcement
         if user_role == 'gamer':
             try:
@@ -181,7 +184,7 @@ class RoleAccessMiddleware:
                     ]
                     current_path = request.path
                     allowed = current_path in allowed_names or any(current_path.startswith(p) for p in allowed_prefixes)
-
+                    
                     if not allowed:
                         messages.warning(request, 'Complete your profile to access this page')
                         return redirect('accounts:gamer_dashboard')

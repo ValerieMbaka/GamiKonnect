@@ -225,14 +225,16 @@ def register_submit(request):
                     role=role,
                 )
             
-            # Use EmailManager
-            email_sent = EmailManager.send_verification(email, uid, role)
+            # Actionable return value handling
+            username = f"{first_name} {last_name}".strip()
+            email_sent = EmailManager.send_verification(email, uid, role, username=username)
             if not email_sent:
                 logger.error("Failed to send verification email during registration for %s", email)
                 return JsonResponse({
                     'success': False,
                     'message': 'We could not send the verification email. Please try again or contact support.'
                 })
+            
             return JsonResponse({
                 'success': True,
                 'message': 'Registration successful. Please check your email to verify your account.'
@@ -355,8 +357,10 @@ def session_login(request):
             request.session.set_expiry(86400)
             
             if not user_obj.last_login:
-                # Use EmailManager
-                EmailManager.send_welcome(account.email, role, account.first_name)
+                email_sent = EmailManager.send_welcome(account.email, role, account.first_name)
+                if not email_sent:
+                    logger.warning(f"Failed to send welcome email for user {account.email}")
+                
                 user_obj.last_login = timezone.now()
                 user_obj.save()
             
@@ -446,8 +450,10 @@ def resend_verification(request):
                 if firebase_user.email_verified:
                     return JsonResponse({'success': False, 'message': 'Email already verified'})
                 
-                # Use EmailManager
-                EmailManager.send_verification(email, uid, role)
+                email_sent = EmailManager.send_verification(email, uid, role)
+                if not email_sent:
+                    return JsonResponse(
+                        {'success': False, 'message': 'Could not send verification email. Try again later.'})
             
             except PendingRegistration.DoesNotExist:
                 try:
@@ -461,12 +467,17 @@ def resend_verification(request):
                         return JsonResponse({'success': False, 'message': 'Email already verified'})
                     role = 'gamer' if hasattr(account, 'gamer') else 'shop_owner'
                     
-                    # Use EmailManager
-                    EmailManager.send_verification(email, firebase_user.uid, role)
+                    email_sent = EmailManager.send_verification(email, firebase_user.uid, role)
+                    if not email_sent:
+                        return JsonResponse(
+                            {'success': False, 'message': 'Could not send verification email. Try again later.'})
                 
                 except (Gamer.DoesNotExist, ShopOwner.DoesNotExist):
                     firebase_user = firebase_auth.get_user_by_email(email)
-                    EmailManager.send_verification(email, firebase_user.uid, 'gamer')
+                    email_sent = EmailManager.send_verification(email, firebase_user.uid, 'gamer')
+                    if not email_sent:
+                        return JsonResponse(
+                            {'success': False, 'message': 'Could not send verification email. Try again later.'})
             
             return JsonResponse({
                 'success': True,
@@ -512,8 +523,9 @@ def change_password(request):
             except Gamer.DoesNotExist:
                 account = ShopOwner.objects.get(uid=firebase_uid)
             
-            # Use EmailManager
-            EmailManager.send_password_change(account.email, account.first_name)
+            email_sent = EmailManager.send_password_change(account.email, account.first_name)
+            if not email_sent:
+                logger.warning(f"Failed to send password change notification for user {account.email}")
             
             return JsonResponse({
                 'success': True,
@@ -573,7 +585,7 @@ def delete_account(request):
             account.delete()
             request.session.flush()
             
-            # Use EmailManager
+            # Deletion notifications can fail silently without blocking the UI response
             EmailManager.send_account_deletion(user_email)
             EmailManager.send_admin_account_deletion(user_email)
             
@@ -765,8 +777,9 @@ def gamer_profile_completion(request):
                 gamer.profile_completed = True
                 gamer.save()
                 
-                # Use EmailManager
-                EmailManager.send_profile_completion(gamer.email, gamer.custom_username)
+                email_sent = EmailManager.send_profile_completion(gamer.email, gamer.custom_username)
+                if not email_sent:
+                    logger.warning(f"Failed to send profile completion email for user {gamer.email}")
                 
                 profile_picture_url = gamer.profile_picture.url if gamer.profile_picture else '/static/core/images/player.jpeg'
                 return JsonResponse({
@@ -1413,8 +1426,18 @@ def create_shop(request):
                 if games_to_add:
                     shop.games_available.set(games_to_add)
                 
-                # Use EmailManager for admin notification
-                EmailManager.send_admin_new_shop(shop)
+                email_sent = EmailManager.send_admin_new_shop(shop)
+                if not email_sent:
+                    messages.warning(
+                        request,
+                        'Shop created, but there was an issue notifying the admin. Please contact support if you don\'t receive an update soon.'
+                    )
+                    logger.warning(f"Failed to send admin notification for new shop {shop.id}")
+                else:
+                    messages.success(
+                        request,
+                        'Registration in progress. Check your email for shop verification status'
+                    )
                 
                 pricing_data = request.POST.get('game_pricing', '[]')
                 if pricing_data:
@@ -1451,11 +1474,6 @@ def create_shop(request):
                                 price_per_hour=price,
                                 is_premium=is_premium
                             )
-                
-                messages.success(
-                    request,
-                    'Registration in progress. Check your email for shop verification status'
-                )
                 
                 return redirect('accounts:gamer_dashboard')
         
@@ -1719,7 +1737,6 @@ def quick_approve_shop(request, token):
     try:
         data = signer.unsign_object(token, max_age=604800)  # 7-day expiry
         
-        # Verify the token is specifically for approval
         if data.get('action') != 'approve':
             raise BadSignature("Invalid action type for this token.")
         
@@ -1731,13 +1748,11 @@ def quick_approve_shop(request, token):
                        'message': f"Shop '{shop.name}' is already approved. No action needed."}
             return render(request, template_name, context)
         
-        # 1. Approve the shop
         shop.is_approved = True
         shop.is_active = True
         shop.approved_at = timezone.now()
         shop.save(update_fields=['is_approved', 'is_active', 'approved_at'])
         
-        # 2. Promote user to ShopOwner if needed
         if shop.owners.count() == 0 and (shop.submitted_by_email or shop.submitted_by_uid):
             shop_owner = None
             if shop.submitted_by_uid:
@@ -1768,8 +1783,9 @@ def quick_approve_shop(request, token):
             if shop_owner:
                 shop.owners.add(shop_owner)
         
-        # 3. Send the notification email
-        EmailManager.send_shop_approval(shop, approved=True)
+        email_sent = EmailManager.send_shop_approval(shop, approved=True)
+        if not email_sent:
+            logger.warning(f"Failed to send shop approval notification for shop {shop.id}")
         
         context = {'status': 'success', 'title': 'Success!',
                    'message': f"<b>{shop.name}</b> has been securely approved and is now live."}
@@ -1798,7 +1814,6 @@ def quick_reject_shop(request, token):
     try:
         data = signer.unsign_object(token, max_age=604800)
         
-        # Verify the token is specifically for rejection
         if data.get('action') != 'reject':
             raise BadSignature("Invalid action type for this token.")
         
@@ -1810,9 +1825,9 @@ def quick_reject_shop(request, token):
                        'message': f"Shop '{shop.name}' is already approved and active. To revoke access, please use the admin panel."}
             return render(request, template_name, context)
         
-        # We don't alter the shop database states here because pending shops are inactive by default.
-        # We simply dispatch the rejection communication to the owner.
-        EmailManager.send_shop_approval(shop, approved=False)
+        email_sent = EmailManager.send_shop_approval(shop, approved=False)
+        if not email_sent:
+            logger.warning(f"Failed to send shop rejection notification for shop {shop.id}")
         
         context = {'status': 'success', 'title': 'Shop Rejected',
                    'message': f"<b>{shop.name}</b> has been rejected and the owner has been notified."}

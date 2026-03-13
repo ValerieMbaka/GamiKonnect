@@ -1,235 +1,71 @@
 from django.contrib import admin
-from django.utils.html import format_html
-from django.db import transaction, IntegrityError
+from django.contrib import messages
 from django.utils import timezone
-from django.http import HttpRequest
-from .models import Shop, Console, GamePricing
-from accounts.models import ShopOwner, Account
+from .models import Shop
 from core.email_service import EmailManager
-
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-class ConsoleInline(admin.TabularInline):
-    model = Console
-    extra = 0
-    fields = ('console_type', 'quantity')
-    classes = ('collapse',)
-    
-    def has_add_permission(self, request, obj=None):
-        return False
-    
-    def has_change_permission(self, request, obj=None):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-
-class GamePricingInline(admin.TabularInline):
-    model = GamePricing
-    extra = 0
-    fields = ('game', 'price_per_hour', 'is_premium')
-    classes = ('collapse',)
-    
-    def has_add_permission(self, request, obj=None):
-        return False
-    
-    def has_change_permission(self, request, obj=None):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
-        return False
 
 
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'location', 'screen_number', 'console_platforms_list',
-                    'premium_games_count', 'base_price_per_hour', 'is_active', 'is_approved', 'owner_count')
-    list_filter = ('is_active', 'is_approved', 'city', 'location', 'consoles__console_type', 'created_at')
-    search_fields = ('name', 'city', 'location', 'address', 'owners__first_name', 'owners__last_name')
-    list_editable = ('is_active', 'is_approved')
-    readonly_fields = ('name', 'owners', 'city', 'location', 'building', 'floor', 'room_number',
-                       'address', 'screen_number', 'games_available', 'base_price_per_hour',
-                       'opening_hours', 'closing_hours', 'logo', 'description',
-                       'business_permit', 'submitted_by_uid', 'submitted_by_email',
-                       'created_at', 'updated_at', 'approved_at', 'total_consoles_display',
-                       'console_summary_display', 'supported_platform_categories_display')
-    filter_horizontal = ('owners', 'games_available')
-    inlines = [ConsoleInline, GamePricingInline]
-    list_per_page = 20
+    list_display = ('name', 'location', 'is_approved', 'is_active', 'created_at')
+    list_filter = ('is_approved', 'is_active')
+    search_fields = ('name', 'location', 'submitted_by_email')
     
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('name', 'logo', 'description', 'owners', 'is_active', 'is_approved')
-        }),
-        ('Location Details', {
-            'fields': ('city', 'location', 'building', 'floor', 'room_number', 'address')
-        }),
-        ('Shop Facilities', {
-            'fields': ('screen_number', 'games_available', 'business_permit', 'total_consoles_display',
-                       'console_summary_display', 'supported_platform_categories_display')
-        }),
-        ('Pricing & Hours', {
-            'fields': ('base_price_per_hour', 'opening_hours', 'closing_hours')
-        }),
-        ('Submission Details', {
-            'fields': ('submitted_by_uid', 'submitted_by_email'),
-            'classes': ('collapse',)
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at', 'approved_at'),
-            'classes': ('collapse',)
-        }),
-    )
+    # Register the custom dropdown actions
+    actions = ['approve_shops', 'reject_shops']
     
-    def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related(
-            'owners',
-            'consoles',
-            'consoles__console_type',
-            'game_prices__game'
-        )
-    
-    @admin.display(description='Owners')
-    def owner_count(self, obj: Shop):
-        return obj.owners.count()
-    
-    @admin.display(description='Total Consoles')
-    def total_consoles_display(self, obj: Shop):
-        return obj.total_consoles()
-    
-    @admin.display(description='Console Summary')
-    def console_summary_display(self, obj: Shop):
-        return obj.console_summary()
-    
-    @admin.display(description='Console Platforms')
-    def console_platforms_list(self, obj: Shop):
-        platforms = obj.available_console_platforms()
-        return ", ".join(platforms) if platforms else "None"
-    
-    @admin.display(description='Supported Platform Categories')
-    def supported_platform_categories_display(self, obj: Shop):
-        categories = obj.supported_platform_categories()
-        return ", ".join([category.name for category in categories]) if categories else "None"
-    
-    @admin.display(description='Premium Games')
-    def premium_games_count(self, obj: Shop):
-        return obj.premium_games_count()
-    
-    def save_model(self, request: HttpRequest, obj: Shop, form, change: bool):
-        # Track prior approval state
-        previous_approved = None
-        if obj.pk and change:
-            try:
-                previous = Shop.objects.get(pk=obj.pk)
-                previous_approved = previous.is_approved
-            except Shop.DoesNotExist:
-                previous_approved = None
+    def save_model(self, request, obj, form, change):
+        """Handles manual state changes inside the individual shop edit page"""
+        if change:
+            old_shop = Shop.objects.get(pk=obj.pk)
+            
+            # If the admin just changed 'is_approved' from False to True
+            if not old_shop.is_approved and obj.is_approved:
+                obj.is_active = True
+                if hasattr(obj, 'approved_at'):
+                    obj.approved_at = timezone.now()
+                EmailManager.send_shop_approval(obj, approved=True)
+            
+            # If the admin just revoked the approval (True to False)
+            elif old_shop.is_approved and not obj.is_approved:
+                obj.is_active = False
+                EmailManager.send_shop_approval(obj, approved=False)
         
+        # Proceed with saving the object to the database
         super().save_model(request, obj, form, change)
+    
+    @admin.action(description='Approve selected shops')
+    def approve_shops(self, request, queryset):
+        """Allows 1-click approval from the main list view"""
+        count = 0
+        for shop in queryset.filter(is_approved=False):
+            shop.is_approved = True
+            shop.is_active = True
+            if hasattr(shop, 'approved_at'):
+                shop.approved_at = timezone.now()
+            shop.save(update_fields=['is_approved', 'is_active', 'approved_at'])
+            
+            # Trigger the approval email
+            EmailManager.send_shop_approval(shop, approved=True)
+            count += 1
         
-        # Handle approval transitions
-        if obj.is_approved and previous_approved is not True:
-            # Set approved timestamp if missing
-            if not obj.approved_at:
-                obj.approved_at = timezone.now()
+        self.message_user(request, f"Successfully approved {count} shop(s).", messages.SUCCESS)
+    
+    @admin.action(description='Reject selected pending shops')
+    def reject_shops(self, request, queryset):
+        """Allows explicitly triggering rejection emails for pending shops"""
+        count = 0
+        # Only process shops that are currently pending/unapproved
+        for shop in queryset.filter(is_approved=False):
             
-            # Activate the shop upon approval
-            obj.is_active = True
-            obj.save(update_fields=['approved_at', 'is_active'])
+            # Trigger the rejection email using your EmailManager
+            email_sent = EmailManager.send_shop_approval(shop, approved=False)
             
-            # If no owners yet but we have submitter, create ShopOwner and attach
-            if obj.owners.count() == 0 and (obj.submitted_by_email or obj.submitted_by_uid):
-                # Try to find an existing ShopOwner or Account by email or UID
-                shop_owner = None
-                
-                # Check for ShopOwner first
-                if obj.submitted_by_uid:
-                    shop_owner = ShopOwner.objects.filter(uid=obj.submitted_by_uid).first()
-                if not shop_owner and obj.submitted_by_email:
-                    shop_owner = ShopOwner.objects.filter(email=obj.submitted_by_email).first()
-                
-                # If not a ShopOwner, check if they have an Account to promote
-                if not shop_owner:
-                    account = None
-                    if obj.submitted_by_uid:
-                        account = Account.objects.filter(uid=obj.submitted_by_uid).first()
-                    if not account and obj.submitted_by_email:
-                        account = Account.objects.filter(email=obj.submitted_by_email).first()
-                    
-                    if account:
-                        try:
-                            with transaction.atomic():
-                                # Promote Account to ShopOwner
-                                shop_owner = ShopOwner(
-                                    account_ptr_id=account.id,
-                                    date_joined=timezone.now()
-                                )
-                                # Fill up inherited fields
-                                for field in Account._meta.fields:
-                                    if field.name != 'id':
-                                        setattr(shop_owner, field.name, getattr(account, field.name))
-                                
-                                shop_owner.save()
-                                logger.info(f"Promoted Account {account.id} to ShopOwner (UID: {account.uid})")
-                        except Exception as e:
-                            logger.error(f"Failed to promote Account to ShopOwner: {e}")
-                            # Fallback re-fetch in case of race condition
-                            if obj.submitted_by_uid:
-                                shop_owner = ShopOwner.objects.filter(uid=obj.submitted_by_uid).first()
-                
-                if shop_owner:
-                    obj.owners.add(shop_owner)
-                    logger.info(f"Added owner {shop_owner.email} to shop {obj.name}")
-            
-            # Send approval email
-            EmailManager.send_shop_approval(obj, approved=True)
+            if email_sent:
+                count += 1
         
-        elif previous_approved is True and not obj.is_approved:
-            # Send rejection email
-            EmailManager.send_shop_approval(obj, approved=False)
-
-
-@admin.register(Console)
-class ConsoleAdmin(admin.ModelAdmin):
-    list_display = ('shop', 'console_type', 'quantity')
-    list_filter = ('console_type', 'shop', 'created_at')
-    search_fields = ('shop__name', 'console_type__name')
-    readonly_fields = ('shop', 'console_type', 'quantity', 'notes', 'created_at', 'updated_at')
-    list_per_page = 20
-    
-    def has_add_permission(self, request):
-        return False
-    
-    def has_change_permission(self, request, obj=None):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
-        return False
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('shop', 'console_type')
-
-
-@admin.register(GamePricing)
-class GamePricingAdmin(admin.ModelAdmin):
-    list_display = ('shop', 'game', 'price_per_hour', 'is_premium')
-    list_filter = ('is_premium', 'shop', 'created_at')
-    search_fields = ('game__name', 'shop__name')
-    readonly_fields = ('shop', 'game', 'price_per_hour', 'is_premium', 'notes', 'created_at', 'updated_at')
-    list_per_page = 20
-    
-    def has_add_permission(self, request):
-        return False
-    
-    def has_change_permission(self, request, obj=None):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
-        return False
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('shop', 'game')
+        self.message_user(
+            request,
+            f"Successfully processed {count} shop(s) and sent rejection notifications.",
+            messages.SUCCESS
+        )

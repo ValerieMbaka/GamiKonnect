@@ -35,7 +35,8 @@ class Gamer(Account):
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(blank=True, null=True)
     profile_completed = models.BooleanField(default=False)
-    points = models.PositiveIntegerField(default=0, help_text="User's total points earned from gaming activities")
+    points = models.PositiveIntegerField(default=0,
+                                         help_text="User's total points earned from gaming activities")
     
     class Meta:
         verbose_name = 'Gamer'

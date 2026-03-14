@@ -1,4 +1,8 @@
 /* Shared Auth Styles */
+.navbar, footer {
+    display: none !important;
+}
+
 .auth-form-container {
     min-height: 100vh;
     display: flex;
@@ -77,12 +81,11 @@
     font-weight: var(--font-medium);
 }
 
-.auth-tab:hover {
+.auth-tab:hover, .auth-tab.active {
     color: var(--primary);
 }
 
 .auth-tab.active {
-    color: var(--primary);
     border-bottom-color: var(--primary);
 }
 
@@ -123,10 +126,6 @@
 .form-group input::placeholder,
 .form-group textarea::placeholder {
     color: var(--text-muted);
-}
-
-.auth-submit-btn {
-    display:none;
 }
 
 .required {
@@ -176,18 +175,17 @@
     }
 }
 
-/* Responsive Styles */
 @media (max-width: 768px) {
     .auth-form-wrapper {
         padding: var(--spacing-md);
         margin: var(--spacing-sm);
     }
+    
     .auth-form-header h1 {
         font-size: var(--text-2xl);
     }
 }
 
-/* Mobile Phones */
 @media (max-width: 480px) {
     .auth-form-container {
         padding: var(--spacing-sm);

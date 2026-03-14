@@ -6,9 +6,6 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'accounts/css/auth_styles.css' %}">
 	<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}">
-    <style>
-        .navbar, footer { display: none; }
-    </style>
 {% endblock %}
 
 {% block body %}
@@ -17,12 +14,9 @@
             <div class="auth-form-header">
                 <img src="{% static 'core/images/gamepad.jpeg' %}" alt="GamiKonnect Logo" class="auth-logo">
                 <h1>Register</h1>
-                <p class="auth-subtitle">
-                    Create your account to begin.
-                </p>
+                <p class="auth-subtitle">Create your account to begin.</p>
             </div>
 
-            <!-- Tab Navigation -->
             <div class="auth-tabs">
                 <a href="{% url 'accounts:login' %}" class="auth-tab">Sign In</a>
                 <a href="#" class="auth-tab active">Sign Up</a>
@@ -62,33 +56,16 @@
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required>
                     <div class="password-requirements-popup" id="passwordRequirements">
-                        <div class="popup-header">
-                            <strong>Password must contain:</strong>
-                        </div>
+                        <div class="popup-header"><strong>Password must contain:</strong></div>
                         <ul>
-                            <li id="req-length" class="req-invalid">
-                                <span class="req-icon">○</span>
-                                At least 8 characters
-                            </li>
-                            <li id="req-uppercase" class="req-invalid">
-                                <span class="req-icon">○</span>
-                                One uppercase letter
-                            </li>
-                            <li id="req-lowercase" class="req-invalid">
-                                <span class="req-icon">○</span>
-                                One lowercase letter
-                            </li>
-                            <li id="req-number" class="req-invalid">
-                                <span class="req-icon">○</span>
-                                One number
-                            </li>
-                            <li id="req-special" class="req-invalid">
-                                <span class="req-icon">○</span>
-                                One special character
-                            </li>
+                            <li id="req-length" class="req-invalid"><span class="req-icon">○</span> At least 8 characters</li>
+                            <li id="req-uppercase" class="req-invalid"><span class="req-icon">○</span> One uppercase letter</li>
+                            <li id="req-lowercase" class="req-invalid"><span class="req-icon">○</span> One lowercase letter</li>
+                            <li id="req-number" class="req-invalid"><span class="req-icon">○</span> One number</li>
+                            <li id="req-special" class="req-invalid"><span class="req-icon">○</span> One special character</li>
                         </ul>
                         <div class="password-strength">
-                            <div class="strength-bar"></div>
+                            <div class="strength-bar" id="strengthBar"></div>
                         </div>
                     </div>
                 </div>

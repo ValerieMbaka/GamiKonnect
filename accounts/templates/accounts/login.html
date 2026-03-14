@@ -6,9 +6,6 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'accounts/css/auth_styles.css' %}">
 	<link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
-    <style>
-        .navbar, footer { display: none; }
-    </style>
 {% endblock %}
 
 {% block body %}
@@ -20,7 +17,6 @@
                 <p class="auth-subtitle">Sign in to your account or create a new one to get started</p>
             </div>
 
-            <!-- Tab Navigation -->
             <div class="auth-tabs">
                 <a href="{% url 'accounts:login' %}" class="auth-tab active">Sign In</a>
                 <a href="{% url 'accounts:register' %}" class="auth-tab">Sign Up</a>
@@ -55,7 +51,6 @@
                 <button type="submit" class="btn btn-primary btn-shimmer w-100" id="loginSubmitBtn">Sign In</button>
             </form>
 
-            <!-- Resend Verification Section -->
             <div id="resendVerificationSection" class="resend-verification-section" {% if request.session.show_resend %}style="display:block"{% else %}style="display:none"{% endif %}>
                 <p class="resend-message">Did not receive verification email. Click the button below to resend the verification email</p>
                 <form id="resendForm" method="post" action="{% url 'accounts:resend_verification' %}">

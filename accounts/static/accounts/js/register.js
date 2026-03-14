@@ -1,40 +1,47 @@
-class RegistrationManager {
+class RegistrationManager extends BaseAuthManager {
     constructor() {
-        this.form = document.getElementById('registerForm');
-        this.passwordInput = document.getElementById('password');
-        this.confirmInput = document.getElementById('confirm_password');
-        this.requirementsPopup = document.getElementById('passwordRequirements');
-        this.strengthBar = document.querySelector('.strength-bar');
-        this.matchFeedback = document.getElementById('password-match');
-
+        super();
+        this.cacheDOM();
         if (this.form || this.passwordInput) {
             this.init();
         }
     }
 
-    init() {
-        this.setupPasswordListeners();
-        this.setupFormListener();
+    cacheDOM() {
+        this.form = document.getElementById('registerForm');
+        this.passwordInput = document.getElementById('password');
+        this.confirmInput = document.getElementById('confirm_password');
+        this.requirementsPopup = document.getElementById('passwordRequirements');
+        this.strengthBar = document.getElementById('strengthBar');
+        this.matchFeedback = document.getElementById('password-match');
+        this.submitBtn = document.getElementById('registerSubmitBtn');
+        this.uidInput = document.getElementById('firebase_uid');
+        this.emailInput = document.getElementById('email');
     }
 
-    setupPasswordListeners() {
+    init() {
+        this.bindPasswordEvents();
+        this.bindFormEvents();
+    }
+
+    bindPasswordEvents() {
         if (this.passwordInput) {
-            this.passwordInput.addEventListener('focus', () => this.showRequirements());
+            this.passwordInput.addEventListener('focus', () => this.toggleRequirements(true));
             this.passwordInput.addEventListener('input', (e) => this.handlePasswordInput(e.target.value));
             
             this.passwordInput.addEventListener('blur', () => {
                 setTimeout(() => {
                     if (document.activeElement !== this.confirmInput) {
-                        this.hideRequirements();
+                        this.toggleRequirements(false);
                     }
                 }, 100);
             });
 
             document.addEventListener('click', (e) => {
-                if (this.requirementsPopup && 
-                    !this.passwordInput.contains(e.target) && 
+                if (this.requirementsPopup &&
+                    !this.passwordInput.contains(e.target) &&
                     !this.requirementsPopup.contains(e.target)) {
-                    this.hideRequirements();
+                    this.toggleRequirements(false);
                 }
             });
         }
@@ -43,17 +50,17 @@ class RegistrationManager {
             this.confirmInput.addEventListener('input', () => this.checkMatch());
             this.confirmInput.addEventListener('focus', () => {
                 if (this.passwordInput.value.length > 0) {
-                    this.showRequirements();
+                    this.toggleRequirements(true);
                 }
             });
         }
-           
+        
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') this.hideRequirements();
+            if (e.key === 'Escape') this.toggleRequirements(false);
         });
     }
 
-    setupFormListener() {
+    bindFormEvents() {
         if (this.form) {
             this.form.addEventListener('submit', (e) => this.handleRegistration(e));
         }
@@ -76,22 +83,17 @@ class RegistrationManager {
         this.checkMatch();
         
         if (value.length > 0) {
-            this.showRequirements();
+            this.toggleRequirements(true);
         }
     }
 
     updateRequirementsUI(requirements) {
-        Object.keys(requirements).forEach(key => {
+        Object.entries(requirements).forEach(([key, isValid]) => {
             const element = document.getElementById(`req-${key}`);
             if (element) {
                 const icon = element.querySelector('.req-icon');
-                if (requirements[key]) {
-                    element.className = 'req-valid';
-                    icon.textContent = '✓';
-                } else {
-                    element.className = 'req-invalid';
-                    icon.textContent = '○';
-                }
+                element.className = isValid ? 'req-valid' : 'req-invalid';
+                icon.textContent = isValid ? '✓' : '○';
             }
         });
     }
@@ -103,19 +105,13 @@ class RegistrationManager {
         const totalCount = Object.keys(requirements).length;
         const strength = metCount / totalCount;
         
-        this.strengthBar.className = 'strength-bar';
+        this.strengthBar.style.setProperty('--strength-width', password.length === 0 ? '0%' : `${strength * 100}%`);
         
-        if (password.length === 0) {
-            this.strengthBar.style.width = '0%';
-        } else if (strength < 0.6) {
-            this.strengthBar.className += ' strength-weak';
-            this.strengthBar.style.width = `${strength * 100}%`;
-        } else if (strength < 0.8) {
-            this.strengthBar.className += ' strength-medium';
-            this.strengthBar.style.width = `${strength * 100}%`;
-        } else {
-            this.strengthBar.className += ' strength-strong';
-            this.strengthBar.style.width = `${strength * 100}%`;
+        this.strengthBar.className = 'strength-bar';
+        if (password.length > 0) {
+            if (strength < 0.6) this.strengthBar.classList.add('strength-weak');
+            else if (strength < 0.8) this.strengthBar.classList.add('strength-medium');
+            else this.strengthBar.classList.add('strength-strong');
         }
     }
 
@@ -137,53 +133,39 @@ class RegistrationManager {
         }
     }
 
-    showRequirements() {
-        if (this.requirementsPopup) this.requirementsPopup.classList.add('show');
-    }
-
-    hideRequirements() {
-        if (this.requirementsPopup) this.requirementsPopup.classList.remove('show');
+    toggleRequirements(show) {
+        if (!this.requirementsPopup) return;
+        if (show) {
+            this.requirementsPopup.classList.add('show');
+        } else {
+            this.requirementsPopup.classList.remove('show');
+        }
     }
 
     async handleRegistration(e) {
         e.preventDefault();
         
-        const btn = document.getElementById('registerSubmitBtn');
-        btn.disabled = true; 
-        btn.textContent = 'Creating Account...';
-
+        this.toggleButtonState(this.submitBtn, true, 'Creating Account...');
         window.toastManager.info('Creating Account', 'Please wait while we set things up...');
 
-        const email = document.getElementById('email').value;
-        const password = this.passwordInput.value;
-        
         try {
-            const cred = await window.firebaseAuthCreateUser(email, password);
-            document.getElementById('firebase_uid').value = cred.user.uid;
+            const cred = await window.firebaseAuthCreateUser(this.emailInput.value, this.passwordInput.value);
+            this.uidInput.value = cred.user.uid;
             
-            const formData = new FormData(this.form);
-            const resp = await fetch(this.form.action, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: formData
-            });
-            const data = await resp.json();
+            const data = await this.sendFormRequest(this.form);
             
             if (data.success) {
                 window.toastManager.success('Registration Successful', 'Account created. We\'ve sent a verification email. Please verify to proceed.');
                 setTimeout(() => { window.location.href = this.form.dataset.loginUrl; }, 1200);
             } else {
                 window.toastManager.error('Registration Failed', data.message || 'Please try again.');
-                btn.disabled = false; 
-                btn.textContent = 'Sign Up';
+                this.toggleButtonState(this.submitBtn, false, 'Sign Up');
             }
         } catch(err) {
             window.toastManager.error('Registration Failed', err.message || 'Unknown error');
-            btn.disabled = false; 
-            btn.textContent = 'Sign Up';
+            this.toggleButtonState(this.submitBtn, false, 'Sign Up');
         }
     }
 }
 
-// Initialize the class when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => new RegistrationManager());

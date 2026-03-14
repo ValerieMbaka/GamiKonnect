@@ -1,4 +1,4 @@
-/* Login Specific Styles */
+/* Login Styles */
 .form-options {
     display: flex;
     justify-content: space-between;
@@ -45,10 +45,6 @@
     color: var(--text-primary);
     margin-bottom: var(--spacing-sm);
     font-size: var(--text-sm);
-}
-
-.btn-resend-verification {
-    display:none;
 }
 
 @media (max-width: 480px) {

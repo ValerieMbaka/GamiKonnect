@@ -31,6 +31,12 @@ class RoleAccessMiddleware:
         Always allow access to Django admin URLs (including its own login)
         This prevents the custom auth gating from hijacking /admin/ flows.
         """
+        # Always allow access to Django admin and our Custom Admin Panel
+        if resolver_match and resolver_match.app_name in ['admin', 'admin_panel']:
+            return None
+        if request.path.startswith('/admin/') or request.path.startswith('/admin-panel/'):
+            return None
+        
         if resolver_match and resolver_match.app_name == 'admin':
             return None
         if request.path.startswith('/admin/'):

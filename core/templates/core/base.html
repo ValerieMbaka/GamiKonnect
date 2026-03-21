@@ -1,12 +1,9 @@
 {% load static %}
-
 <!doctype html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport"
-	      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,
-	      minimum-scale=1.0">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
 	<title>
@@ -19,73 +16,51 @@
 	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'core/images/gamepad.jpeg' %}">
 	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/gamepad.jpeg' %}">
 
-	<!-- CSS Dependencies -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'core/css/variables.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/base_styles.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/toast.css' %}">
 
 	{% block extra_css %} {% endblock %}
-
-    {% if site_style %}
-        <style id="site-style-override">
-            html, body {
-                font-family: {{ site_style.font_family|default:'Roboto' }}, sans-serif;
-                color: {{ site_style.font_color|default:'#222222' }};
-                font-size: {{ site_style.font_size|default:'16px' }};
-                background-color: {{ site_style.background_color|default:'#ffffff' }};
-            }
-            a, .link {
-                color: {{ site_style.link_color|default:'#007bff' }};
-            }
-            .btn, button, input[type="submit"] {
-                background-color: {{ site_style.button_color|default:'#28a745' }};
-                color: {{ site_style.button_text_color|default:'#ffffff' }};
-            }
-            .bg-primary, .navbar, .nav-link.active {
-	            background-color: {{ site_style.primary_color|default:'#007bff' }} !important;
-            }
-            .bg-secondary {
-                background-color: {{ site_style.secondary_color|default:'#6c757d' }} !important;
-            }
-        </style>
-    {% endif %}
 </head>
-<body>
+<body style="
+    {% if site_style %}
+    --site-font: {{ site_style.font_family|default:'Roboto' }}, sans-serif;
+    --site-color: {{ site_style.font_color|default:'#222222' }};
+    --site-font-size: {{ site_style.font_size|default:'16px' }};
+    --site-bg: {{ site_style.background_color|default:'#ffffff' }};
+    --site-link: {{ site_style.link_color|default:'#007bff' }};
+    --site-btn-bg: {{ site_style.button_color|default:'#28a745' }};
+    --site-btn-text: {{ site_style.button_text_color|default:'#ffffff' }};
+    --site-primary: {{ site_style.primary_color|default:'#007bff' }};
+    --site-secondary: {{ site_style.secondary_color|default:'#6c757d' }};
+    {% endif %}
+">
     {% include 'core/includes/toast_container.html' %}
 
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container-fluid px-4">
-            <!-- Logo + Name -->
             <a class="navbar-brand me-0" href="{% url 'core:home' %}">
 	            {% if project_detail and project_detail.logo %}
-	                <img src="{{ project_detail.logo.url }}" alt="{{ project_detail.title }}"
-	                     width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
+	                <img src="{{ project_detail.logo.url }}" alt="{{ project_detail.title }}" width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
 	            {% else %}
-	                <img src="{% static 'core/images/gamepad.jpeg' %}" alt="{{ project_detail.title }}"
-	                     width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
+	                <img src="{% static 'core/images/gamepad.jpeg' %}" alt="{{ project_detail.title }}" width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
 	            {% endif %}
                 <span class="brand-text">{{ project_detail.title|default:'GamiKonnect' }}</span>
             </a>
 
-            <!-- Mobile Toggle -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- Navigation Links -->
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav me-0">
                     <li class="nav-item me-2">
-	                    <a class="nav-link
-							{% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}">
-	                        <i class="fas fa-home me-1"></i>
-		                    Home
+	                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}">
+	                        <i class="fas fa-home me-1"></i> Home
 	                    </a>
                     </li>
 
@@ -93,11 +68,9 @@
                         {% for nav in navigation_links %}
                             {% if nav.is_active %}
                             <li class="nav-item me-2">
-                                <a class="nav-link
-									{% if nav.link == request.path %}active{% endif %}" href="{{ nav.link }}">
+                                <a class="nav-link {% if nav.link == request.path %}active{% endif %}" href="{{ nav.link }}">
                                     {% if nav.link_icon %}
-                                        <img src="{{ nav.link_icon.url }}"
-                                             alt="{{ nav.link_text }}" width="16" height="16" class="me-1">
+                                        <img src="{{ nav.link_icon.url }}" alt="{{ nav.link_text }}" width="16" height="16" class="me-1">
                                     {% endif %}
                                     {{ nav.link_text }}
                                 </a>
@@ -106,43 +79,29 @@
                         {% endfor %}
                     {% endif %}
 
-                    <!-- Auth / Dashboard Links -->
                     {% if request.session.user_id %}
                         <li class="nav-item me-2">
                             {% if request.session.role == 'gamer' %}
-                                <a class="nav-link" href="{% url 'accounts:gamer_dashboard' %}">
-                                    <i class="fas fa-th-large me-1"></i> Dashboard
-                                </a>
+                                <a class="nav-link" href="{% url 'accounts:gamer_dashboard' %}"><i class="fas fa-th-large me-1"></i> Dashboard</a>
                             {% elif request.session.role == 'shop_owner' %}
-                                <a class="nav-link" href="{% url 'accounts:shop_owner_dashboard' %}">
-                                    <i class="fas fa-th-large me-1"></i> Dashboard
-                                </a>
+                                <a class="nav-link" href="{% url 'accounts:shop_owner_dashboard' %}"><i class="fas fa-th-large me-1"></i> Dashboard</a>
                             {% endif %}
                         </li>
                         <li class="nav-item me-0">
-                            <a class="nav-link" href="{% url 'accounts:logout' %}">
-                                <i class="fas fa-sign-out-alt me-1"></i> Logout
-                            </a>
+                            <a class="nav-link" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
                         </li>
                     {% else %}
                         <li class="nav-item me-2">
-                            <a class="nav-link" href="{% url 'accounts:register' %}?role=gamer">
-                                <i class="fas fa-user-plus me-1"></i> Join Us
-                            </a>
+                            <a class="nav-link" href="{% url 'accounts:register' %}?role=gamer"><i class="fas fa-user-plus me-1"></i> Join Us</a>
                         </li>
 	                    <li class="nav-item me-2">
-                            <a class="nav-link" href="{% url 'accounts:login' %}">
-                                <i class="fas fa-sign-in me-1"></i> Sign In
-                            </a>
+                            <a class="nav-link" href="{% url 'accounts:login' %}"><i class="fas fa-sign-in me-1"></i> Sign In</a>
                         </li>
 	                    <li class="nav-item me-2">
-                            <a class="nav-link" href="{% url 'accounts:create_shop' %}">
-                                <i class="fas fa-shop me-1"></i> Register Shop
-                            </a>
+                            <a class="nav-link" href="{% url 'accounts:create_shop' %}"><i class="fas fa-shop me-1"></i> Register Shop</a>
                         </li>
                     {% endif %}
 
-                    <!-- Theme Toggle -->
                     <li class="nav-item ms-2">
                         <button class="btn btn-outline-primary btn-sm" id="themeToggle" title="Toggle theme">
                             <i class="fas fa-sun" id="lightIcon"></i>
@@ -154,124 +113,92 @@
         </div>
     </nav>
 
-	<!-- Main Content -->
 	<div>
-		{% block body %}
-
-		{% endblock %}
+		{% block body %}{% endblock %}
 	</div>
 
-    <!-- Footer -->
 	<footer class="py-5 bg-secondary text-dark">
-    <div class="container-fluid px-4">
-        <div class="row g-4">
-            <div class="col-lg-3">
-                <div class="d-flex align-items-center mb-2">
-                    {% if project_detail and project_detail.logo %}
-                        <img src="{{ project_detail.logo.url }}" alt="{{ project_detail.title }}"
-                             width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
-                    {% else %}
-                        <img src="{% static 'core/images/gamepad.jpeg' %}" alt="{{ project_detail.title }}"
-                             width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
-                    {% endif %}
-                    <span class="fs-6 fw-bold brand-text"> {{ project_detail.title|default:'GamiKonnect' }} </span>
+        <div class="container-fluid px-4">
+            <div class="row g-4">
+                <div class="col-lg-3">
+                    <div class="d-flex align-items-center mb-2">
+                        {% if project_detail and project_detail.logo %}
+                            <img src="{{ project_detail.logo.url }}" alt="{{ project_detail.title }}" width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
+                        {% else %}
+                            <img src="{% static 'core/images/gamepad.jpeg' %}" alt="{{ project_detail.title }}" width="30" height="30" class="d-inline-block align-top me-2" loading="lazy">
+                        {% endif %}
+                        <span class="fs-6 fw-bold brand-text"> {{ project_detail.title|default:'GamiKonnect' }} </span>
+                    </div>
+                    <p class="mb-2"> {{ project_detail.description|default:'A unified hub for gamers.' }} </p>
                 </div>
-                <p class="mb-2"> {{ project_detail.description|default:'A unified hub for gamers.' }} </p>
+
+                {% for footer_section in footer_sections %}
+                    <div class="col-6 col-md-3 col-lg-3">
+                        <h6 class="mb-2 fs-6">{{ footer_section.title }}</h6>
+                        <ul class="list-unstyled">
+                            {% for link in footer_section.links.all %}
+                                {% if link.is_active %}
+                                    <li class="mb-1"><a href="{{ link.link }}">{{ link.link_text }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% empty %}
+                    <div class="col-6 col-md-3 col-lg-3">
+                        <h6 class="mb-2 fs-6">Quick Links</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-1"><a href="#">Home</a></li>
+                            <li class="mb-1"><a href="#">About</a></li>
+                            <li class="mb-1"><a href="#">Communities</a></li>
+                            <li class="mb-1"><a href="#">Competitions</a></li>
+                        </ul>
+                    </div>
+                {% endfor %}
             </div>
 
-            {% for footer_section in footer_sections %}
-                <div class="col-6 col-md-3 col-lg-3">
-                    <h6 class="mb-2 fs-6">{{ footer_section.title }}</h6>
-                    <ul class="list-unstyled">
-                        {% for link in footer_section.links.all %}
-                            {% if link.is_active %}
-                                <li class="mb-1"><a href="{{ link.link }}">{{ link.link_text }}</a></li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
+            <hr class="my-2 bg-secondary">
+
+            <div class="row">
+                <div class="col-10 text-center">
+                    <p class="mt-2 small" style="color: rgba(2,1,2,0.81)">{{ footer.copy_right_text|default:'© 2025 GamiKonnect. All rights reserved.' }}</p>
                 </div>
-            {% empty %}
-                <!-- Fallback if no footer sections exist -->
-                <div class="col-6 col-md-3 col-lg-3">
-                    <h6 class="mb-2 fs-6">Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li class="mb-1"><a href="#">Home</a></li>
-                        <li class="mb-1"><a href="#">About</a></li>
-                        <li class="mb-1"><a href="#">Communities</a></li>
-                        <li class="mb-1"><a href="#">Competitions</a></li>
-                    </ul>
+                <div class="col-2 text-right">
+                    <p class="mt-2 text-muted small" style="font-size: 10px;">{{ footer.ownership_text|default:'A product by JM | In partnership with Biztimam Ventures' }} </p>
                 </div>
-            {% endfor %}
-        </div>
-
-        <hr class="my-2 bg-secondary">
-
-        <div class="row">
-            <div class="col-10 text-center">
-                <p class="mt-2 small" style="color: rgba(2,1,2,0.81)">
-                        {{ footer.copy_right_text|default:'© 2025 GamiKonnect. All rights reserved.' }}</p>
-            </div>
-
-            <div class="col-2 text-right">
-                <p class="mt-2 text-muted small" style="font-size: 10px;">
-                    {{ footer.ownership_text|default:'A product by JM | In partnership with Biztimam Ventures' }} </p>
             </div>
         </div>
-    </div>
-</footer>
+    </footer>
 
-    <!-- Back to Top Button -->
     <a href="#" class="btn btn-primary btn-lg back-to-top" id="backToTop">
         <i class="fas fa-arrow-up"></i>
     </a>
 
-
-    <!-- JavaScript Dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'core/js/base_scripts.js' %}"></script>
-    <script src="{% static 'core/js/toast.js' %}"></script>
-
-    <!-- Django Messages Data -->
-    <script type="application/json" id="django-messages">{% if messages %}[
-        {% for message in messages %}
-	        {"text":"{{ message|escapejs }}","tags":"{{ message.tags }}"}
-	        {% if not forloop.last %},
-	        {% endif %}
-		{% endfor %}
-    ]{% else %}[]{% endif %}</script>
-
-    <!-- Auto-display Django messages as toasts -->
-    <script>
-        (function(){
-            const el = document.getElementById('django-messages');
-            if(!el) return; let data=[]; try{data=JSON.parse(el.textContent);}catch(e){return;}
-            data.forEach(m=>{
-                const tags=(m.tags||'').split(' '); let type='info';
-                if(tags.includes('error')) type='error';
-                else if(tags.includes('success')) type='success';
-                else if(tags.includes('warning')) type='warning';
-                else if(tags.includes('info')) type='info';
-                Toast.show({type:type,title:type.charAt(0).toUpperCase()+type.slice(1),message:m.text});
-            });
-        })();
+    <script type="application/json" id="django-messages">
+        {% if messages %}[
+            {% for message in messages %}
+                {"text":"{{ message|escapejs }}","tags":"{{ message.tags }}"}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]{% else %}[]{% endif %}
     </script>
 
-    <!-- Firebase SDK -->
     {% if firebase_config %}
-        <script>
-            window.firebaseConfig = {
-                apiKey: "{{ firebase_config.api_key }}",
-                authDomain: "{{ firebase_config.auth_domain }}",
-                projectId: "{{ firebase_config.project_id }}",
-                storageBucket: "{{ firebase_config.storage_bucket }}",
-                messagingSenderId: "{{ firebase_config.messaging_sender_id }}",
-                appId: "{{ firebase_config.app_id }}",
-                measurementId: "{{ firebase_config.measurement_id }}"
-            };
-        </script>
+    <script type="application/json" id="firebase-config-data">
+        {
+            "apiKey": "{{ firebase_config.api_key }}",
+            "authDomain": "{{ firebase_config.auth_domain }}",
+            "projectId": "{{ firebase_config.project_id }}",
+            "storageBucket": "{{ firebase_config.storage_bucket }}",
+            "messagingSenderId": "{{ firebase_config.messaging_sender_id }}",
+            "appId": "{{ firebase_config.app_id }}",
+            "measurementId": "{{ firebase_config.measurement_id }}"
+        }
+    </script>
     {% endif %}
 
-    {% block extra_scripts %} {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'core/js/toast.js' %}"></script>
+    <script src="{% static 'core/js/base_scripts.js' %}"></script>
 
+    {% block extra_scripts %} {% endblock %}
 </body>
 </html>

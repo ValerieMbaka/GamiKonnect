@@ -10,7 +10,6 @@ function initializePrivacyPolicy() {
 
 function animatePrivacyFeatures() {
     const features = document.querySelectorAll('.privacy-feature-card');
-    
     features.forEach((feature, index) => {
         setTimeout(() => {
             feature.classList.add('animate__animated', 'animate__fadeInUp');
@@ -20,7 +19,6 @@ function animatePrivacyFeatures() {
 
 function initializeDataFlow() {
     const dataFlowItems = document.querySelectorAll('.data-flow-item');
-    
     dataFlowItems.forEach((item, index) => {
         setTimeout(() => {
             item.classList.add('animate__animated', 'animate__bounceIn');
@@ -30,7 +28,6 @@ function initializeDataFlow() {
 
 function initializeRightsExercise() {
     const rightButtons = document.querySelectorAll('.exercise-right-btn');
-    
     rightButtons.forEach(button => {
         button.addEventListener('click', function() {
             const right = this.getAttribute('data-right');
@@ -50,17 +47,16 @@ function simulateRightExercise(right) {
     };
     
     const message = messages[right] || 'Processing your request...';
-    showToast(message, 'info');
+    window.toastManager.info('Processing', message);
     
     setTimeout(() => {
-        showToast(`Your ${right} request has been processed successfully!`, 'success');
+        window.toastManager.success('Complete', `Your ${right} request has been processed successfully!`);
     }, 1500);
 }
 
 function exportMyData() {
-    showToast('Preparing your data export...', 'info');
-    
+    window.toastManager.info('Preparing', 'Preparing your data export...');
     setTimeout(() => {
-        showToast('Your data export is ready for download!', 'success');
+        window.toastManager.success('Ready', 'Your data export is ready for download!');
     }, 2500);
 }

@@ -69,10 +69,37 @@ venv/
 /firebase_config.py
 /debug_accounts.py
 
+
+# Custom Admin
+admin_panel/*
+/admin_panel/
+
+
+accounts/templates/accounts/gamers/*
+accounts/templates/accounts/gamers
+
+
+accounts/static/accounts/css/gamers/
+accounts/static/accounts/css/gamers/*
+
+accounts/static/accounts/js/gamers/
+accounts/static/accounts/js/gamers/*
+
+
+
+accounts/templates/accounts/shop_owners/*
+accounts/templates/accounts/shop_owners
 accounts/templates/accounts/shop_owners/competitions/*
 accounts/templates/accounts/shop_owners/competitions
 accounts/templates/accounts/shop_owners/competitions/detail.html
 accounts/templates/accounts/shop_owners/competitions/list.html
 accounts/templates/accounts/shop_owners/competitions/submit_result.html
 
+
+accounts/static/accounts/css/shop_owners/
+accounts/static/accounts/css/shop_owners/*
 accounts/static/accounts/css/shop_owners/competitions.css
+
+accounts/static/accounts/js/shop_owners/
+accounts/static/accounts/js/shop_owners/*
+/accounts/templates/accounts/gamers/

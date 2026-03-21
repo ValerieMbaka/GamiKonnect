@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'games',
     'accounts',
     'shops',
+    'admin_panel',
     
 ]
 

@@ -20,7 +20,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # Default admin route
     path('admin/', admin.site.urls),
+    
+    # Custom admin route
+    path('management/', include('admin_panel.urls', namespace='admin_panel')),
+    
+    # Project Routes
     path('', include('core.urls')),
     path('games/', include('games.urls')),
     path('accounts/', include('accounts.urls')),

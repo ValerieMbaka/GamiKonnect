@@ -1,14 +1,33 @@
 /* Import variables */
 @import url('variables.css');
 
-/* Base elements */
-body {
-    font-family: 'Poppins', 'Segoe UI', sans-serif;
-    color: var(--text-primary);
+/* Base Elements */
+html, body {
+    font-family: var(--site-font, 'Poppins', 'Segoe UI', sans-serif), sans-serif;
+    color: var(--site-color, var(--text-primary));
+    font-size: var(--site-font-size, 16px);
+    background-color: var(--site-bg, var(--bg-primary));
     line-height: 1.6;
     overflow-x: hidden;
-    background-color: var(--bg-primary);
+    
     transition: all 0.3s ease;
+}
+
+a, .link {
+    color: var(--site-link, var(--primary));
+}
+
+.btn, button, input[type="submit"] {
+    background-color: var(--site-btn-bg, var(--primary));
+    color: var(--site-btn-text, #ffffff);
+}
+
+.bg-primary, .navbar, .nav-link.active {
+    background-color: var(--site-primary, var(--primary)) !important;
+}
+
+.bg-secondary {
+    background-color: var(--site-secondary, var(--secondary)) !important;
 }
 
 h1, h2, h3, h4, h5, h6 {

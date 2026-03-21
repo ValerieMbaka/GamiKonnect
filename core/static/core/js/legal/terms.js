@@ -12,9 +12,8 @@ function initializeSectionNavigation() {
     const sections = document.querySelectorAll('.terms-section');
     const navLinks = document.querySelectorAll('.terms-nav-link');
     
-    window.addEventListener('scroll', debounce(function() {
+    window.addEventListener('scroll', LegalUtils.debounce(function() {
         let current = '';
-        
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
             if (pageYOffset >= sectionTop - 100) {
@@ -33,7 +32,6 @@ function initializeSectionNavigation() {
 
 function highlightImportantTerms() {
     const importantTerms = document.querySelectorAll('.terms-highlight');
-    
     importantTerms.forEach(term => {
         term.style.animation = 'pulse 2s infinite';
     });
@@ -41,12 +39,11 @@ function highlightImportantTerms() {
 
 function initializeQuickJump() {
     const quickJumpLinks = document.querySelectorAll('.quick-jump-link');
-    
     quickJumpLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const targetId = this.getAttribute('href');
-            smoothScrollTo(targetId, 120);
+            LegalUtils.smoothScrollTo(targetId, 120);
         });
     });
 }
@@ -56,9 +53,8 @@ function printTerms() {
 }
 
 function downloadTermsPDF() {
-    showToast('Downloading Terms & Conditions as PDF...', 'info');
-    
+    window.toastManager.info('Downloading', 'Downloading Terms & Conditions as PDF...');
     setTimeout(() => {
-        showToast('Terms & Conditions downloaded successfully!', 'success');
+        window.toastManager.success('Success', 'Terms & Conditions downloaded successfully!');
     }, 2000);
 }

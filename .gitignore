@@ -75,6 +75,12 @@ admin_panel/views.py
 admin_panel/urls.py
 admin_panel/decorators.py
 admin_panel/forms.py
+
+admin_panel/static/admin_panel/*
+/admin_panel/static/
+
+
+
 admin_panel/templates/admin_panel/*
 
 

@@ -1,0 +1,104 @@
+/* static/admin_panel/css/specific/tables.css */
+.table-card {
+    background-color: var(--clr-surface);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.02);
+    border: 1px solid var(--clr-border);
+    overflow: hidden;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: #f9fbfd;
+    color: var(--clr-text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 15px 25px;
+    border-bottom: 1px solid var(--clr-border);
+}
+
+.admin-table td {
+    padding: 15px 25px;
+    border-bottom: 1px solid var(--clr-border);
+    color: var(--clr-text-main);
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+    background-color: #fcfcfd;
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status Badges */
+.badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.badge-active { background-color: #e8fff3; color: #50cd89; }
+.badge-inactive { background-color: var(--clr-danger-bg); color: var(--clr-danger-text); }
+
+/* Actions Button */
+.btn-action {
+    padding: 6px 12px;
+    background-color: var(--clr-bg-light);
+    color: var(--clr-primary);
+    border: 1px solid var(--clr-border);
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.btn-action:hover {
+    background-color: var(--clr-primary);
+    color: white;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background-color: var(--clr-surface);
+    border-top: 1px solid var(--clr-border);
+}
+
+.page-info {
+    color: var(--clr-text-muted);
+    font-size: 0.9rem;
+}
+
+.page-links a {
+    padding: 8px 12px;
+    border: 1px solid var(--clr-border);
+    border-radius: 4px;
+    color: var(--clr-text-main);
+    text-decoration: none;
+    margin-left: 5px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.page-links a:hover {
+    background-color: var(--clr-bg-light);
+    border-color: #d8dce6;
+}

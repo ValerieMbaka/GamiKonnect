@@ -71,8 +71,12 @@ venv/
 
 
 # Custom Admin
-admin_panel/*
-/admin_panel/
+admin_panel/views.py
+admin_panel/urls.py
+admin_panel/decorators.py
+admin_panel/forms.py
+admin_panel/templates/admin_panel/*
+
 
 
 accounts/templates/accounts/gamers/*

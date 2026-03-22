@@ -71,28 +71,19 @@ venv/
 
 
 # Custom Admin
-admin_panel/forms.py
-
 admin_panel/static/admin_panel/*
 /admin_panel/static/
 
-
-
 admin_panel/templates/admin_panel/*
-
-
 
 accounts/templates/accounts/gamers/*
 accounts/templates/accounts/gamers
-
 
 accounts/static/accounts/css/gamers/
 accounts/static/accounts/css/gamers/*
 
 accounts/static/accounts/js/gamers/
 accounts/static/accounts/js/gamers/*
-
-
 
 accounts/templates/accounts/shop_owners/*
 accounts/templates/accounts/shop_owners

@@ -1,0 +1,147 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}Admin Profile · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'admin_panel/css/base/admin_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-center-wrapper">
+    <div class="admin-card identity-card">
+        <div class="identity-header">
+            <div class="identity-avatar-wrapper">
+                <img src="{% if request.user.admin_profile.avatar %}{{ request.user.admin_profile.avatar.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}"
+                     alt="Admin Avatar" id="displayAvatar">
+            </div>
+            <h2 id="displayFullName">{{ request.user.first_name }} {{ request.user.last_name }}</h2>
+            <p class="identity-role" id="displayJobTitle">{{ request.user.admin_profile.job_title|default:"System Administrator" }}</p>
+            <span class="profile-badge">
+                <i class="fas fa-shield-alt"></i>
+                {% if request.user.is_superuser %} Superuser {% else %} Staff {% endif %}
+            </span>
+        </div>
+
+        <div class="identity-body">
+            <div class="info-row">
+                <span class="info-label"><i class="fas fa-user"></i> Username</span>
+                <span class="info-value">{{ request.user.username }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label"><i class="fas fa-envelope"></i> Email</span>
+                <span class="info-value" id="displayEmail">{{ request.user.email }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label"><i class="fas fa-globe"></i> Timezone</span>
+                <span class="info-value" id="displayTimezone">{{ request.user.admin_profile.timezone }}</span>
+            </div>
+        </div>
+
+        <div class="identity-actions">
+            <button class="btn-admin-primary" onclick="adminProfile.openModal('editProfileModal')">
+                <i class="fas fa-user-edit"></i> Edit Details
+            </button>
+            <button class="btn-admin-secondary" onclick="adminProfile.openModal('changePasswordModal')">
+                <i class="fas fa-key"></i> Change Password
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="admin-modal-overlay" id="editProfileModal">
+    <div class="admin-modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
+            <button type="button" class="modal-close" onclick="adminProfile.closeModal('editProfileModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="editProfileForm" method="POST" action="{% url 'admin_panel:profile' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="avatar-upload-wrapper text-center mb-4">
+                    <label for="id_avatar" class="avatar-label" data-tooltip="Click to change avatar">
+                        <img src="{% if request.user.admin_profile.avatar %}{{ request.user.admin_profile.avatar.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" alt="Preview" id="avatarPreview" class="avatar-preview-img">
+                        <div class="avatar-overlay"><i class="fas fa-camera"></i></div>
+                    </label>
+                    <input type="file" name="avatar" id="id_avatar" class="hidden-file-input" accept="image/*">
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        {{ u_form.first_name }}
+                        <div class="error-msg" id="error-first_name"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        {{ u_form.last_name }}
+                        <div class="error-msg" id="error-last_name"></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Email Address</label>
+                        {{ u_form.email }}
+                        <div class="error-msg" id="error-email"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Job Title</label>
+                        {{ p_form.job_title }}
+                        <div class="error-msg" id="error-job_title"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Timezone</label>
+                        {{ p_form.timezone }}
+                        <div class="error-msg" id="error-timezone"></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer mt-4">
+                    <button type="button" class="btn-admin-secondary" onclick="adminProfile.closeModal('editProfileModal')">Cancel</button>
+                    <button type="submit" class="btn-admin-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="admin-modal-overlay" id="changePasswordModal">
+    <div class="admin-modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-key"></i> Change Password</h3>
+            <button type="button" class="modal-close" onclick="adminProfile.closeModal('changePasswordModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="changePasswordForm" method="POST" action="{% url 'admin_panel:change_password' %}">
+                {% csrf_token %}
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    {% for field in password_form %}
+                        <div class="form-group full-width">
+                            <label>{{ field.label }}</label>
+                            {{ field }}
+                            <div class="error-msg" id="error-{{ field.name }}"></div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer mt-4">
+                    <button type="button" class="btn-admin-secondary" onclick="adminProfile.closeModal('changePasswordModal')">Cancel</button>
+                    <button type="submit" class="btn-admin-primary" id="savePasswordBtn">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'admin_panel/js/base/admin_profile.js' %}"></script>
+    <script>
+        // Apply our CSS classes to Django's auto-generated form inputs
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.admin-modal input, .admin-modal select').forEach(input => {
+                if (input.type !== 'file' && input.type !== 'hidden') {
+                    input.classList.add('form-control');
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,4 +1,10 @@
 /* Admin Panel Base Styles */
+
+/* Global Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 :root {
     --admin-sidebar-width: 260px;
     --admin-sidebar-collapsed: 76px;
@@ -11,9 +17,20 @@
     background-color: #F8FAFC;
     font-family: 'Poppins', sans-serif;
     color: #1E293B;
-    margin: 0;
+    margin: 0 !important;
+    padding: 0 !important;
     overflow-x: hidden;
     transition: background-color 0.3s ease;
+}
+
+.dashboard-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    min-height: 100vh;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden;
 }
 
 /* Top Navigation Bar & Buttons */
@@ -193,7 +210,7 @@
 .admin-avatar {
     width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: 50%;
     object-fit: cover;
 }
 
@@ -274,13 +291,16 @@
     padding: 0 20px;
     border-bottom: 1px solid var(--admin-border);
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .admin-brand-logo {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     flex-shrink: 0;
+    object-fit: cover;
+    border: 2px solid var(--admin-border);
 }
 
 .admin-brand-text {
@@ -307,13 +327,28 @@
     color: #64748B;
 }
 
+/* Navigation Links & Scrollbar */
 .dashboard-nav {
     padding: var(--spacing-md) 0;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Enable vertical scrolling */
+    scrollbar-width: none; /* Hide scrollbar */
+    -ms-overflow-style: none;
+}
+
+.dashboard-nav::-webkit-scrollbar {
+    display: none;
 }
 
 .nav-section {
     margin-bottom: var(--spacing-md);
+}
+
+.logout-section {
+    margin-top: auto;
+    margin-bottom: 0;
 }
 
 .section-header {
@@ -401,6 +436,7 @@
     padding: var(--spacing-lg);
     min-height: calc(100vh - var(--admin-header-height));
     transition: margin-left 0.3s var(--smooth);
+    flex: 1;
 }
 
 .admin-main-content.sidebar-collapsed {
@@ -486,4 +522,65 @@
 [data-theme="dark"] .nav-icon:hover {
     background: #334155;
     color: var(--primary-light);
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 1025;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s var(--smooth);
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
+        z-index: 1040;
+    }
+    
+    .admin-sidebar.sidebar-open {
+        transform: translateX(0);
+    }
+    
+    .admin-top-nav {
+        left: 0 !important;
+    }
+    
+    .admin-main-content {
+        margin-left: 0 !important;
+        width: 100%;
+        padding: var(--spacing-md);
+    }
+    
+    .admin-search {
+        display: none;
+    }
+    
+    .back-to-home-btn span {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-top-nav {
+        padding: 0 12px;
+    }
+    
+    .admin-profile-btn .username {
+        display: none;
+    }
+    
+    :root {
+        --admin-header-height: 60px;
+    }
 }

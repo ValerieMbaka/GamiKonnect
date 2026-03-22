@@ -208,3 +208,21 @@
 [data-theme="dark"] .admin-auth-body {
     background-color: #0B1120;
 }
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .login-wrapper, .admin-login-container {
+        padding: 20px 15px;
+    }
+    
+    .admin-login-card, .login-card {
+        width: 100%;
+        max-width: 100%;
+        padding: 24px 20px;
+        border-radius: 12px;
+    }
+    
+    .admin-login-card h2 {
+        font-size: 20px;
+    }
+}

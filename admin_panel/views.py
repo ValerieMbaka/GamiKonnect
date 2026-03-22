@@ -44,7 +44,7 @@ def admin_logout(request):
 # Admin Management & Profile Views
 @admin_required
 def admin_dashboard(request):
-    return render(request, 'admin_panel/base/includes/admin_base.html')
+    return render(request, 'admin_panel/base/admin_dashboard.html')
 
 
 @admin_required

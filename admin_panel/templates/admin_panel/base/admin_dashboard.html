@@ -1,0 +1,126 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}Dashboard · {{ project_detail.title|default:"Admin Panel" }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'admin_panel/css/base/admin_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-page-header flex-between">
+    <div class="header-content">
+        <h1 class="page-title">Platform Overview</h1>
+        <p class="page-subtitle">Real-time metrics and system analytics.</p>
+    </div>
+    <div class="header-actions">
+        <button class="btn-admin-secondary" data-tooltip="Generate CSV Report">
+            <i class="fas fa-download"></i> Export Data
+        </button>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="admin-card kpi-card">
+        <div class="kpi-icon blue"><i class="fas fa-users"></i></div>
+        <div class="kpi-details">
+            <h3>Total Gamers</h3>
+            <div class="kpi-value">14,208</div>
+            <div class="kpi-trend positive"><i class="fas fa-arrow-up"></i> 12% this month</div>
+        </div>
+    </div>
+
+    <div class="admin-card kpi-card">
+        <div class="kpi-icon purple"><i class="fas fa-network-wired"></i></div>
+        <div class="kpi-details">
+            <h3>Active Communities</h3>
+            <div class="kpi-value">842</div>
+            <div class="kpi-trend positive"><i class="fas fa-arrow-up"></i> 5% this month</div>
+        </div>
+    </div>
+
+    <div class="admin-card kpi-card">
+        <div class="kpi-icon green"><i class="fas fa-gamepad"></i></div>
+        <div class="kpi-details">
+            <h3>Games in Database</h3>
+            <div class="kpi-value">3,105</div>
+            <div class="kpi-trend neutral"><i class="fas fa-minus"></i> No change</div>
+        </div>
+    </div>
+
+    <div class="admin-card kpi-card">
+        <div class="kpi-icon orange"><i class="fas fa-server"></i></div>
+        <div class="kpi-details">
+            <h3>Server Load</h3>
+            <div class="kpi-value">42%</div>
+            <div class="kpi-trend negative"><i class="fas fa-arrow-up"></i> +8% (Monitor)</div>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="admin-card chart-card">
+        <div class="card-header">
+            <h2><i class="fas fa-chart-area"></i> Registration Growth (Last 7 Days)</h2>
+        </div>
+        <div class="card-body">
+            <canvas id="growthChart"></canvas>
+        </div>
+    </div>
+
+    <div class="admin-card chart-card">
+        <div class="card-header">
+            <h2><i class="fas fa-chart-pie"></i> User Distribution</h2>
+        </div>
+        <div class="card-body">
+            <canvas id="distributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="activity-grid">
+    <div class="admin-card activity-card">
+        <div class="card-header flex-between">
+            <h2><i class="fas fa-list-ul"></i> Recent System Activity</h2>
+            <a href="#" class="view-all-link">View All Logs</a>
+        </div>
+        <div class="card-body p-0">
+            <ul class="activity-list">
+                <li class="activity-item">
+                    <div class="activity-indicator success"></div>
+                    <div class="activity-content">
+                        <p><strong>New User:</strong> 'GamerKing99' registered.</p>
+                        <span class="activity-time">2 mins ago</span>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-indicator primary"></div>
+                    <div class="activity-content">
+                        <p><strong>Community Created:</strong> 'Valorant Tryhards' was established.</p>
+                        <span class="activity-time">15 mins ago</span>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-indicator warning"></div>
+                    <div class="activity-content">
+                        <p><strong>Database Update:</strong> 50 new titles synced from IGDB.</p>
+                        <span class="activity-time">1 hour ago</span>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-indicator danger"></div>
+                    <div class="activity-content">
+                        <p><strong>Failed Login:</strong> 5 failed attempts on user 'Admin'.</p>
+                        <span class="activity-time">3 hours ago</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'admin_panel/js/base/admin_dashboard.js' %}"></script>
+{% endblock %}

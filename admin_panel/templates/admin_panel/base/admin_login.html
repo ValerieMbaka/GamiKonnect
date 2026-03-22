@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
 		{% block title %}
-			Admin Panel · {{ project_detail.short_description }}
+			Admin Panel · {{ project_detail.title }}
 		{% endblock %}
 	</title>
 
@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="{% static 'admin_panel/css/base/admin_login.css' %}">
 </head>
 <body class="admin-auth-body">
+	{% include 'core/includes/toast_container.html' %}
 
     <main class="admin-login-wrapper">
         <div class="admin-login-card">

@@ -86,6 +86,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processor.site_style',
                 'core.context_processor.firebase_config',
+                'core.context_processor.global_site_context',
             ],
         },
     },

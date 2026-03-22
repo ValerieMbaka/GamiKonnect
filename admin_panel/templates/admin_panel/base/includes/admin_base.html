@@ -1,0 +1,195 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+	    {% block title %}Admin Panel · {{ project_detail.title }}{% endblock %}
+    </title>
+
+
+	<link rel="icon" type="image/x-icon" href="{% static 'core/images/gamepad.jpeg' %}">
+	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'core/images/gamepad.jpeg' %}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/gamepad.jpeg' %}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'core/css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/toast.css' %}">
+    <link rel="stylesheet" href="{% static 'admin_panel/css/base/base_admin.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="admin-workspace-body">
+
+    {% include 'core/includes/toast_container.html' %}
+
+    <nav class="top-nav admin-top-nav">
+        <div class="nav-left">
+            <button class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="{% url 'core:home' %}" class="back-to-home-btn" target="_blank" data-tooltip="Open public site in new tab">
+                <i class="fas fa-external-link-alt"></i>
+                <span>View Public Site</span>
+            </a>
+            <div class="search-bar admin-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search users, games, settings... (Press '/')">
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <button class="nav-icon theme-toggle-btn" id="darkModeToggle" aria-label="Toggle dark mode" data-tooltip="Workspace Theme">
+                <i class="fas fa-moon"></i>
+                <i class="fas fa-sun"></i>
+            </button>
+
+            <div class="nav-dropdown">
+                <button class="nav-icon" title="System Alerts" data-tooltip="System Alerts">
+                    <i class="fas fa-shield-alt"></i>
+                    <span class="notification-bubble admin-alert-bubble">!</span>
+                </button>
+            </div>
+
+            <div class="nav-dropdown profile-dropdown">
+                <button class="profile-btn admin-profile-btn" aria-label="Admin profile">
+                    <img src="{% static 'core/images/gamepad.jpeg' %}" class="profile-avatar admin-avatar" alt="Admin Avatar">
+                    <span class="username">
+                        {{ request.user.username|default:"Admin" }}
+                    </span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="nav-dropdown-content profile-dropdown-content">
+                    <div class="profile-header admin-profile-header">
+                        <img src="{% static 'core/images/gamepad.jpeg' %}" class="dropdown-avatar admin-avatar" alt="Admin Avatar">
+                        <div class="profile-info">
+                            <h4>{{ request.user.username|default:"Admin" }}</h4>
+                            <small>System Administrator</small>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user-shield"></i> Admin Profile
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'admin_panel:login' %}" class="dropdown-item text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Secure Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-wrapper">
+        <div class="sidebar-overlay"></div>
+
+        <aside class="dashboard-sidebar admin-sidebar">
+            <div class="admin-brand-header">
+                <img src="{% static 'core/images/gamepad.jpeg' %}" alt="Logo" class="admin-brand-logo">
+                <div class="admin-brand-text">
+                    <h3>Command Center</h3>
+                    <small>{{ project_detail.short_description|default:"System Admin" }}</small>
+                </div>
+            </div>
+
+            <nav class="dashboard-nav">
+                <div class="nav-section">
+                    <div class="section-header">
+                        <i class="fas fa-satellite-dish"></i>
+                        <span>Core</span>
+                    </div>
+                    <ul class="nav-list">
+                        <li>
+                            <a href="{% url 'admin_panel:dashboard' %}" class="nav-link" data-tooltip="Dashboard">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="section-header">
+                        <i class="fas fa-database"></i>
+                        <span>Management</span>
+                    </div>
+                    <ul class="nav-list">
+                        <li>
+                            <a href="#" class="nav-link" data-tooltip="User Management">
+                                <i class="fas fa-users-cog"></i>
+                                <span>Users & Staff</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-tooltip="Game Database">
+                                <i class="fas fa-gamepad"></i>
+                                <span>Game Database</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-tooltip="Communities">
+                                <i class="fas fa-network-wired"></i>
+                                <span>Communities</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="section-header">
+                        <i class="fas fa-cogs"></i>
+                        <span>System</span>
+                    </div>
+                    <ul class="nav-list">
+                        <li>
+                            <a href="#" class="nav-link" data-tooltip="Site Settings">
+                                <i class="fas fa-sliders-h"></i>
+                                <span>Site Settings</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-tooltip="Platform Logs">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>Activity Logs</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section logout-section">
+                    <a href="{% url 'admin_panel:login' %}" class="nav-link logout-link admin-logout" data-tooltip="Secure Logout">
+                        <i class="fas fa-power-off"></i>
+                        <span>Secure Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="dashboard-content admin-main-content">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <script type="application/json" id="django-messages">
+        {% if messages %}[
+            {% for message in messages %}{"text":"{{ message.message|escapejs }}","tags":"{{ message.tags }}"}{% if not forloop.last %},{% endif %}{% endfor %}
+        ]{% else %}[]{% endif %}
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'core/js/toast.js' %}"></script>
+
+    <script src="{% static 'core/js/base_sidebar.js' %}"></script>
+
+    <script src="{% static 'admin_panel/js/base/base_admin.js' %}"></script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

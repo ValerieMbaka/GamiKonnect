@@ -42,9 +42,5 @@ def admin_login(request):
 # Admin Management Views
 @admin_required
 def admin_dashboard(request):
-    """
-    The main landing page after a successful admin login.
-    Protected by the @admin_required decorator.
-    """
-    # Placeholder response to test the routing and decorator
-    return HttpResponse(f"<h1>Secure Command Center</h1><p>Welcome, Commander {request.user.username}</p>")
+    # The main landing page after a successful admin login.
+    return render(request, 'admin_panel/base/admin_dashboard.html')

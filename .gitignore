@@ -71,9 +71,6 @@ venv/
 
 
 # Custom Admin
-admin_panel/views.py
-admin_panel/urls.py
-admin_panel/decorators.py
 admin_panel/forms.py
 
 admin_panel/static/admin_panel/*

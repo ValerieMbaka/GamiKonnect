@@ -131,7 +131,8 @@
                         <li>
                             <a href="#" class="nav-link" data-tooltip="Game Database">
                                 <i class="fas fa-gamepad"></i>
-                                <span>Game Database</span>
+                                <span>Games</span>
+	                            <span class="nav-badge">2</span>
                             </a>
                         </li>
                         <li>
@@ -150,7 +151,7 @@
                     </div>
                     <ul class="nav-list">
                         <li>
-                            <a href="#" class="nav-link" data-tooltip="Site Settings">
+                            <a href="{% url 'admin_panel:site_settings' %}" class="nav-link" data-tooltip="Site Settings">
                                 <i class="fas fa-sliders-h"></i>
                                 <span>Site Settings</span>
                             </a>

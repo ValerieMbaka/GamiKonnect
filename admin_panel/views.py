@@ -4,9 +4,13 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 
+# Model imports
+from core.models import ProjectDetail, SiteStyle
+from games.models import Game
+
 # Imports for custom logic
 from .decorators import admin_required
-from .forms import AdminUserUpdateForm, AdminProfileUpdateForm
+from .forms import AdminUserUpdateForm, AdminProfileUpdateForm, ProjectDetailForm, SiteStyleForm, GameForm
 
 
 # Admin Authentication Views
@@ -108,3 +112,114 @@ def admin_change_password(request):
             return JsonResponse({'success': False, 'errors': dict(form.errors)}, status=400)
     
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+
+@admin_required
+def admin_site_settings(request):
+    # Manages global platform identity and theme styling.
+    # Fetch the active instances, or instantiate empty ones if the DB is blank
+    project_detail = ProjectDetail.objects.filter(is_active=True).first() or ProjectDetail()
+    site_style = SiteStyle.get_active() or SiteStyle()
+    
+    if request.method == 'POST':
+        project_form = ProjectDetailForm(request.POST, request.FILES, instance=project_detail)
+        style_form = SiteStyleForm(request.POST, instance=site_style)
+        
+        if project_form.is_valid() and style_form.is_valid():
+            # Save Project Details
+            p_detail = project_form.save(commit=False)
+            p_detail.is_active = True
+            p_detail.save()
+            
+            # Save Site Style
+            s_style = style_form.save(commit=False)
+            s_style.pk = None  # Forces a new object to track historical changes based on updated_at
+            s_style.save()
+            
+            messages.success(request, 'Global site settings updated successfully.')
+            return redirect('admin_panel:site_settings')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        project_form = ProjectDetailForm(instance=project_detail)
+        style_form = SiteStyleForm(instance=site_style)
+    
+    context = {
+        'project_form': project_form,
+        'style_form': style_form,
+        'current_logo': project_detail.logo if project_detail.logo else None
+    }
+    
+    return render(request, 'admin_panel/settings/site_settings.html', context)
+
+
+@admin_required
+def admin_game_list(request):
+    """Displays the main Game Database table."""
+    games = Game.objects.all().order_by('-created_at')
+    
+    context = {
+        'games': games,
+    }
+    # Updated Template Path
+    return render(request, 'admin_panel/games/admin_game_list.html', context)
+
+
+@admin_required
+def admin_game_create(request):
+    """Handles the creation of a new game."""
+    if request.method == 'POST':
+        form = GameForm(request.POST, request.FILES)
+        if form.is_valid():
+            game = form.save()
+            messages.success(request, f'Game "{game.name}" was added successfully.')
+            return redirect('admin_panel:game_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = GameForm()
+    
+    context = {
+        'form': form,
+        'page_title': 'Add New Game',
+        'is_edit': False
+    }
+    # Updated Template Path
+    return render(request, 'admin_panel/games/admin_game_form.html', context)
+
+
+@admin_required
+def admin_game_edit(request, game_id):
+    """Handles updating an existing game."""
+    game = get_object_or_404(Game, id=game_id)
+    
+    if request.method == 'POST':
+        form = GameForm(request.POST, request.FILES, instance=game)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Game "{game.name}" was updated successfully.')
+            return redirect('admin_panel:game_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = GameForm(instance=game)
+    
+    context = {
+        'form': form,
+        'game': game,
+        'page_title': 'Edit Game',
+        'is_edit': True
+    }
+    # Updated Template Path
+    return render(request, 'admin_panel/games/admin_game_form.html', context)
+
+
+@admin_required
+def admin_game_delete(request, game_id):
+    """Secure endpoint to delete a game."""
+    if request.method == 'POST':
+        game = get_object_or_404(Game, id=game_id)
+        game_name = game.name
+        game.delete()
+        messages.success(request, f'Game "{game_name}" was permanently deleted.')
+    return redirect('admin_panel:game_list')

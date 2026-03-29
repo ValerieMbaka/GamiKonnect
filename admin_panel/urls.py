@@ -14,5 +14,6 @@ urlpatterns = [
     
     # Admin Dashboard
     path('', views.admin_dashboard, name='dashboard'),
+    path('settings/', views.admin_site_settings, name='site_settings'),
 
 ]

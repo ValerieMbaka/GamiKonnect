@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'accounts',
     'shops',
     'admin_panel',
+    'activities',
     
 ]
 

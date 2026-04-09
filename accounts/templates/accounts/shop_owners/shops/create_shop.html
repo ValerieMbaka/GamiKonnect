@@ -1,0 +1,217 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %} Create Shop · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shops/create_shop.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="create-shop-deploy-wrapper card-modern shadow-lg">
+
+        <div class="wizard-progress-tracker mt-2 mb-4">
+            <div class="step-indicator active" data-step="1">
+                <div class="step-number">1</div>
+                <span class="step-label">Brand & Location</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="2">
+                <div class="step-number">2</div>
+                <span class="step-label">Verification</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="3">
+                <div class="step-number">3</div>
+                <span class="step-label">Consoles</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="4">
+                <div class="step-number">4</div>
+                <span class="step-label">Game Library</span>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="shop-creation-form" id="createShopForm">
+            {% csrf_token %}
+
+            <div class="wizard-step active" id="step-1">
+                <div class="wizard-inner-content">
+                    <div class="step-introduction mb-4 pb-4 border-bottom">
+                        <h2 class="mb-1 text-primary"><i class="fas fa-store me-2"></i> Configure Your Arena</h2>
+                    </div>
+
+                    <h3><i class="fas fa-id-card text-accent"></i> Basic Information</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="shop_name">Shop Name *</label>
+                            <input type="text" id="shop_name" name="shop_name" required placeholder="Enter your shop name">
+                        </div>
+                        <div class="form-group">
+                            <label for="logo">Shop Logo *</label>
+                            <input type="file" id="logo" name="logo" accept="image/*" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Shop Description *</label>
+                        <textarea id="description" name="description" required placeholder="Tell gamers what makes your shop special..." rows="3"></textarea>
+                    </div>
+
+                    <h3 class="mt-4 pt-3"><i class="fas fa-map-marker-alt text-accent"></i> Location Details</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City/Town *</label>
+                            <input type="text" id="city" name="city" required placeholder="e.g. Nairobi">
+                        </div>
+                        <div class="form-group">
+                            <label for="building">Building *</label>
+                            <input type="text" id="building" name="building" required placeholder="e.g. GamiKonnect Plaza">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="floor">Floor *</label>
+                            <input type="text" id="floor" name="floor" required placeholder="e.g. 2nd Floor">
+                        </div>
+                        <div class="form-group">
+                            <label for="room_number">Room/Shop Number *</label>
+                            <input type="text" id="room_number" name="room_number" required placeholder="e.g. Shop B12">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="shop_location">Specific Address & Landmarks *</label>
+                        <textarea id="shop_location" name="shop_location" required placeholder="Any additional details to help people find you..." rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step" id="step-2">
+                <div class="wizard-inner-content">
+                    <h3><i class="fas fa-shield-alt text-accent"></i> Shop Verification</h3>
+                    <p class="text-secondary mb-3">Upload your business permit for verification and full platform access.</p>
+                    <div class="form-group">
+                        <label for="business_permit">Business Permit (PDF or Image) *</label>
+                        <input type="file" id="business_permit" name="business_permit" accept=".pdf,image/*" required class="form-control">
+                    </div>
+
+                    <h3 class="mt-4 pt-3"><i class="fas fa-clock text-accent"></i> Operating Setup</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="opening_hours">Opening Hours *</label>
+                            <input type="text" id="opening_hours" name="opening_hours" required placeholder="e.g., 8:00 AM">
+                        </div>
+                        <div class="form-group">
+                            <label for="closing_hours">Closing Hours *</label>
+                            <input type="text" id="closing_hours" name="closing_hours" required placeholder="e.g., 10:00 PM">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="screen_number">Number of Screens *</label>
+                            <input type="number" id="screen_number" name="screen_number" min="1" required placeholder="e.g., 10">
+                        </div>
+                        <div class="form-group">
+                            <label for="base_price_per_hour">Base Price (Ksh/Hr) *</label>
+                            <input type="number" id="base_price_per_hour" name="base_price_per_hour" step="0.01" min="0" required placeholder="e.g., 200">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step" id="step-3">
+                <div class="wizard-inner-content">
+                    <h3><i class="fas fa-gamepad text-accent"></i> Gaming Consoles</h3>
+                    <p class="text-secondary mb-3">Define the console inventory available at your arena.</p>
+
+                    <div class="console-selection-container">
+                        <div class="popular-consoles">
+                            <label class="group-label">Primary Console</label>
+                            <div class="console-checkbox-list">
+                                {% for platform in consoles_platforms %}
+                                    {% if platform.name == "PS4" %}
+                                    <div class="console-checkbox-item" data-platform-slug="{{ platform.slug }}">
+                                        <div class="console-info">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" name="console_types" value="{{ platform.slug }}" class="console-checkbox">
+                                                {{ platform.name }}
+                                            </label>
+                                        </div>
+                                        <div class="console-quantity-input">
+                                            <input type="number" name="console_quantity_{{ platform.slug }}" min="1" value="1" class="form-control quantity-input" disabled>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="other-consoles-section mt-4">
+                            <label for="otherConsolesDropdown" class="group-label">Add Other Platforms</label>
+                            <div class="other-consoles-selector">
+                                <select id="otherConsolesDropdown" class="form-control">
+                                    <option value="">-- Select a platform --</option>
+                                    {% for platform in consoles_platforms %}
+                                        {% if platform.name != "PS4" %}
+                                            <option value="{{ platform.slug }}" data-name="{{ platform.name }}">{{ platform.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <button type="button" id="addOtherConsoleBtn" class="btn btn-outline-primary px-4">
+                                    <i class="fas fa-plus me-1"></i> Add
+                                </button>
+                            </div>
+                            <div id="selectedOtherConsolesList" class="console-checkbox-list mt-3"></div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="consoles" id="consoles" value="[]">
+                </div>
+            </div>
+
+            <div class="wizard-step" id="step-4">
+                <div class="wizard-inner-content">
+                    <h3><i class="fas fa-dice text-accent"></i> Game Library</h3>
+                    <p class="text-secondary mb-3">Add the games you offer to attract players to your arena.</p>
+
+                    <div class="form-group">
+                        <label>Search Games *</label>
+                        <div class="game-input-section single-column">
+                            <input type="text" id="gameSearchInput" placeholder="Type a game title (e.g., FIFA 24)..." class="game-input form-control" autocomplete="off">
+                            <div id="gameSearchSuggestions" class="game-suggestions"></div>
+                        </div>
+                        <div class="selected-games-wrapper mt-3">
+                            <div class="chips" id="selectedGamesTags"></div>
+                        </div>
+                        <input type="hidden" name="games_available" id="games_available" value="[]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-actions mt-4 pt-4 border-top">
+                <button type="button" class="btn btn-outline-secondary" id="btnPrev" style="display: none;">
+                    <i class="fas fa-chevron-left me-2"></i> Back
+                </button>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-primary px-5" id="btnNext">
+                        Next <i class="fas fa-chevron-right ms-2"></i>
+                    </button>
+                    <button type="submit" class="btn btn-success px-5" id="btnSubmit" style="display: none;">
+                        <i class="fas fa-rocket me-2"></i> Deploy Arena
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+	{{ games_json|json_script:"games-data" }}
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'accounts/js/shop_owners/shops/create_shop.js' %}"></script>
+{% endblock %}

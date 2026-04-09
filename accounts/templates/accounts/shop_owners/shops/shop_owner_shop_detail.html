@@ -1,0 +1,207 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}{{ shop.name }} Details · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shop_owner_dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shops/shop_owner_shop_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="shop-detail-wrapper mt-2 anim-fade-in-up">
+
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'accounts:shop_owner_venues' %}" class="text-decoration-none text-muted"><i class="fas fa-arrow-left me-1"></i> Venues</a></li>
+                <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">{{ shop.name }}</li>
+            </ol>
+        </nav>
+
+        <section class="card-admin border-blue p-4 mb-4 position-relative shop-hero-card d-flex flex-column">
+
+            <div class="position-absolute top-0 start-0 m-4 z-2">
+                {% if shop.is_active %}
+                    <span class="trend-pill bg-green-soft text-green fw-bold small pulse-live"><i class="fas fa-check-circle me-1"></i> Live</span>
+                {% else %}
+                    <span class="trend-pill bg-yellow-soft text-yellow fw-bold small pulse-pending"><i class="fas fa-hourglass-half me-1"></i> Pending</span>
+                {% endif %}
+            </div>
+
+            <div class="row mt-5 mb-3 position-relative z-1">
+                <div class="col-12 d-flex flex-column flex-md-row gap-4 align-items-md-center">
+                    {% if shop.logo and shop.logo.url != '/media/shop_logos/placeholder.png' %}
+                        <img src="{{ shop.logo.url }}" alt="{{ shop.name }}" class="rounded-4 shadow-sm border border-light object-fit-cover shop-detail-logo flex-shrink-0">
+                    {% else %}
+                        <div class="icon-box-soft bg-blue-soft text-blue rounded-4 shadow-sm shop-detail-logo d-flex justify-content-center align-items-center fs-1 flex-shrink-0">
+                            <i class="fas fa-store"></i>
+                        </div>
+                    {% endif %}
+
+                    <div class="flex-grow-1 pe-md-5">
+                        <h1 class="h3 fw-bold mb-2 text-dark">{{ shop.name }}</h1>
+                        <p class="text-muted small fw-semibold mb-0"><i class="fas fa-map-marker-alt text-primary me-2"></i> {{ shop.location }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-auto position-relative z-2">
+                <a href="{% url 'accounts:edit_shop' shop.pk %}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-semibold d-flex align-items-center">
+                    <i class="fas fa-cog me-2"></i> Configure Venue
+                </a>
+            </div>
+
+            <div class="position-absolute top-0 end-0 pe-none hero-watermark-icon z-0">
+                <i class="fas fa-gamepad"></i>
+            </div>
+        </section>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-4 col-xl-3">
+                <section class="card-admin border-purple p-4 h-100">
+                    <h2 class="h6 fw-bold text-dark mb-4 text-uppercase tracking-wide"><i class="fas fa-clock text-purple me-2"></i> Operations</h2>
+
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
+                        <li class="d-flex flex-column border-bottom border-light pb-3">
+                            <span class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.05em;">Standard Rate</span>
+                            <span class="fw-bold fs-4 text-dark text-nowrap">Ksh {{ shop.base_price_per_hour|floatformat:2 }}<span class="text-muted fs-6 fw-normal">/hr</span></span>
+                        </li>
+                        <li class="d-flex flex-column border-bottom border-light pb-3">
+                            <span class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.05em;">Opening Time</span>
+                            <span class="fw-bold fs-5 text-dark">{{ shop.opening_hours }}</span>
+                        </li>
+                        <li class="d-flex flex-column">
+                            <span class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.05em;">Closing Time</span>
+                            <span class="fw-bold fs-5 text-dark">{{ shop.closing_hours }}</span>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+
+            <div class="col-lg-8 col-xl-9">
+                <section class="card-admin border-green p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h2 class="h6 fw-bold text-dark mb-0 text-uppercase tracking-wide"><i class="fas fa-desktop text-green me-2"></i> Hardware Inventory</h2>
+                        <span class="badge bg-light text-dark border rounded-pill px-3 py-1 fw-bold">{{ shop.total_consoles }} Total Screens</span>
+                    </div>
+
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                        {% if shop.consoles.all %}
+                            {% for console in shop.consoles.all %}
+                            <div class="col">
+                                <div class="p-2 pe-3 bg-light rounded-3 border border-light d-flex align-items-center gap-3 transition-all hover-lift-subtle h-100">
+                                    <div class="icon-box-compact bg-white text-dark shadow-sm border border-light hardware-icon-box d-flex justify-content-center align-items-center flex-shrink-0">
+                                        <i class="fas fa-gamepad small"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <span class="fw-bold text-dark d-block console-title text-truncate" style="font-size: 0.9rem;">{{ console.console_type.name }}</span>
+                                        <span class="text-muted small fw-semibold" style="font-size: 0.75rem;">{{ console.quantity }} Unit{{ console.quantity|pluralize }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12 text-center py-5 text-muted w-100">
+                                <i class="fas fa-plug fs-3 mb-2 opacity-50"></i>
+                                <p class="mb-0">No hardware configured yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <section class="card-admin border-red p-0 overflow-hidden anim-fade-in-up anim-delay-100">
+            <div class="p-4 border-bottom border-light bg-white d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h2 class="h5 fw-bold text-dark mb-1"><i class="fas fa-dice text-red me-2"></i> Game Library Matrix</h2>
+                    <p class="text-muted small mb-0">Manage your <span id="totalGamesCount">{{ shop.games_available.count }}</span> installed titles.</p>
+                </div>
+
+                <div class="search-box position-relative matrix-search-container">
+                    <i class="fas fa-search position-absolute text-muted matrix-search-icon"></i>
+                    <input type="text" id="gameSearch" class="form-control form-control-sm rounded-pill bg-light border-0 ps-5 py-2" placeholder="Search games...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-modern table-hover mb-0 align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 text-uppercase text-muted fw-bold small tracking-wide">Game Title</th>
+                            <th class="py-3 text-uppercase text-muted fw-bold small tracking-wide">Rate Type</th>
+                            <th class="pe-4 py-3 text-end text-uppercase text-muted fw-bold small tracking-wide">Hourly Rate (Ksh)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gamesTableBody">
+                        {% for game in games %}
+                            <tr class="game-row" data-name="{{ game.name|lower }}">
+                                <td class="ps-4 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-blue-soft text-blue rounded flex-shrink-0 d-flex align-items-center justify-content-center game-icon-box">
+                                            <i class="fas fa-play text-opacity-75"></i>
+                                        </div>
+                                        <span class="fw-bold text-dark game-title">{{ game.name }}</span>
+                                    </div>
+                                </td>
+
+                                <td class="py-3">
+                                    {% if game.shop_pricing %}
+                                        {% if game.shop_pricing.is_premium %}
+                                            <span class="badge bg-red-soft text-red rounded-pill border px-3 py-1"><i class="fas fa-star me-1"></i> Premium</span>
+                                        {% else %}
+                                            <span class="badge bg-purple-soft text-purple rounded-pill border px-3 py-1"><i class="fas fa-tags me-1"></i> Custom</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-light text-muted rounded-pill border px-3 py-1">Standard</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="pe-4 py-3 text-end">
+                                    {% if game.shop_pricing %}
+                                        <span class="fw-bold text-dark fs-5">{{ game.shop_pricing.price_per_hour|floatformat:2 }}</span>
+                                    {% else %}
+                                        <span class="fw-bold text-muted fs-5">{{ shop.base_price_per_hour|floatformat:2 }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr id="emptyStateRow">
+                                <td colspan="3" class="text-center py-5 text-muted">
+                                    <i class="fas fa-folder-open fs-3 mb-3 opacity-25"></i>
+                                    <p class="mb-0">No games added to this venue yet.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                        <tr id="noSearchResultsRow" class="d-none">
+                            <td colspan="3" class="text-center py-5 text-muted">
+                                <i class="fas fa-search fs-3 mb-3 opacity-25"></i>
+                                <p class="mb-0">No games found matching your search.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {% if games %}
+            <div class="d-flex justify-content-between align-items-center p-3 bg-white border-top border-light">
+                <span class="text-muted small fw-semibold" id="paginationInfo">Showing ...</span>
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-sm btn-light border border-light text-secondary hover-primary" id="prevPageBtn" title="Previous Page">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light border border-light text-secondary hover-primary" id="nextPageBtn" title="Next Page">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'accounts/js/shop_owners/shops/shop_owner_shop_detail.js' %}"></script>
+{% endblock %}

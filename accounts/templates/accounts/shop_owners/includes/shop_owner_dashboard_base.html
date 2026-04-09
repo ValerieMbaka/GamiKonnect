@@ -1,0 +1,202 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Shop Owner Command Center · {{ project_detail.title }}{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'core/css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/base_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/toast.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/base_dashboard_styles.css' %}">
+
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shop_owner_dashboard_base.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="shop-owner-dashboard-body" data-dashboard-theme>
+    {% include 'core/includes/toast_container.html' %}
+
+    <nav class="top-nav">
+        <div class="nav-left">
+            <button class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="{% url 'core:home' %}" class="back-to-home-btn" data-tooltip="Back to Public Site">
+                <i class="fas fa-home"></i>
+                <span>Back to Home</span>
+            </a>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search shops, games, tasks...">
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <button class="nav-icon theme-toggle-btn" id="darkModeToggle" aria-label="Toggle dark mode" data-tooltip="Toggle Theme">
+                <i class="fas fa-moon"></i>
+                <i class="fas fa-sun"></i>
+            </button>
+
+            <div class="nav-dropdown">
+                <button class="nav-icon" title="Notifications" data-tooltip="Notifications" onclick="window.location.href=''">
+                    <i class="fas fa-bell"></i>
+                    {% if shop_owner_unread_notifications_count and shop_owner_unread_notifications_count > 0 %}
+                        <span class="notification-bubble">{{ shop_owner_unread_notifications_count }}</span>
+                    {% endif %}
+                </button>
+            </div>
+
+            <div class="nav-dropdown profile-dropdown">
+                <button class="profile-btn" aria-label="User profile">
+                    <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="profile-avatar" alt="User Avatar">
+                    <span class="username">
+                        {{ shop_owner.first_name }} {{ shop_owner.last_name }}
+                    </span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="nav-dropdown-content profile-dropdown-content">
+                    <div class="profile-header">
+                        <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="dropdown-avatar" alt="User Avatar">
+                        <div class="profile-info">
+                            <h4>{{ shop_owner.first_name }} {{ shop_owner.last_name }}</h4>
+                            <small>Shop Owner</small>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+
+                    <a href="{% url 'accounts:toggle_gamer_mode' %}" class="dropdown-item text-primary">
+                        <i class="fas fa-gamepad"></i> Switch to Gamer
+                    </a>
+
+                    <div class="dropdown-divider"></div>
+                    <a {% if inactive_mode %}href="#" class="dropdown-item disabled-link" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_profile' %}" class="dropdown-item"{% endif %}>
+                        <i class="fas fa-user-cog"></i> My Account
+					</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'accounts:logout' %}" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-wrapper">
+        <div class="sidebar-overlay"></div>
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-profile">
+                <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="sidebar-avatar" alt="User Avatar">
+                <div class="sidebar-profile-info">
+                    <h4>{{ shop_owner.first_name }} {{ shop_owner.last_name }}</h4>
+                    <small>Shop Owner</small>
+                    {% if shop_owner_unread_notifications_count and shop_owner_unread_notifications_count > 0 %}
+                        <span class="badge">{{ shop_owner_unread_notifications_count }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <nav class="dashboard-nav">
+                {% with request.path as current_path %}
+
+                <div class="nav-section">
+                    <div class="section-header">
+                        <i class="fas fa-th-large"></i>
+                        <span>Overview</span>
+                    </div>
+                    <ul class="nav-list">
+                        <li>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if current_path == '/accounts/shop-owner-dashboard/' %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_dashboard' %}" class="nav-link {% if current_path == '/accounts/shop-owner-dashboard/' %}active{% endif %}" data-tooltip="Dashboard"{% endif %}>
+                                <i class="fas fa-gauge"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="section-header">
+                        <i class="fas fa-store"></i>
+                        <span>Shop</span>
+                    </div>
+                    <ul class="nav-list">
+
+                        <li>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if '/accounts/shop-owner-competition' in current_path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_competitions' %}" class="nav-link {% if '/accounts/shop-owner-competition' in current_path %}active{% endif %}" data-tooltip="Competitions"{% endif %}>
+                                <i class="fas fa-trophy"></i>
+                                <span>Competitions</span>
+                            </a>
+                        </li>
+                    <li>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if current_path == '/accounts/create-shop/' %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_venues' %}" class="nav-link {% if current_path == '/accounts/shop-owner-venues/' %}active{% endif %}" data-tooltip="Manage Shops"{% endif %}>
+                                <i class="fas fa-box-open"></i>
+                                <span>Manage Shops</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="section-header">
+                        <i class="fas fa-user"></i>
+                        <span>Account</span>
+                    </div>
+                    <ul class="nav-list">
+{#                        <li>#}
+{#                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if '/accounts/shop-owner-wallet' in current_path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="" class="nav-link {% if '/accounts/shop-owner-wallet' in current_path %}active{% endif %}" data-tooltip="Wallet"{% endif %}>#}
+{#                                <i class="fas fa-wallet"></i>#}
+{#                                <span>Wallet</span>#}
+{#                            </a>#}
+{#                        </li>#}
+	                    <li>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if current_path == '/accounts/shop-owner-profile/' %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_profile' %}" class="nav-link {% if current_path == '/accounts/shop-owner-profile/' %}active{% endif %}" data-tooltip="Account"{% endif %}>
+                                <i class="fas fa-user-cog"></i>
+                                <span>Account</span>
+                            </a>
+						</li>
+                    </ul>
+                </div>
+
+                <div class="nav-section logout-section">
+                    <ul class="nav-list">
+                        <li>
+                            <a href="{% url 'accounts:logout' %}" class="nav-link logout-link" data-tooltip="Logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% endwith %}
+            </nav>
+        </aside>
+
+        <main class="dashboard-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script type="application/json" id="django-messages">
+        {% if messages %}[
+            {% for message in messages %}{"text":"{{ message|escapejs }}","tags":"{{ message.tags }}"}{% if not forloop.last %},{% endif %}{% endfor %}
+        ]{% else %}[]{% endif %}
+    </script>
+
+    <script src="{% static 'core/js/toast.js' %}"></script>
+    <script src="{% static 'core/js/base_sidebar.js' %}"></script>
+
+    <script src="{% static 'accounts/js/shop_owners/shop_owner_dashboard_base.js' %}"></script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

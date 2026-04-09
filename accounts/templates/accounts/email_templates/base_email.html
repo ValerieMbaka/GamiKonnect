@@ -14,7 +14,6 @@
             margin: 0;
             padding: 0;
             width: 100% !important;
-            -webkit-text-size-adjust: 100%;
         }
 
         .container {
@@ -70,7 +69,6 @@
             background-color: #35A8F0;
             box-shadow: 0 8px 24px rgba(53, 168, 240, 0.25);
             margin: 20px 0;
-            transition: background-color 0.3s ease;
         }
 
         .btn:hover {
@@ -79,6 +77,7 @@
 
         .section-divider {
             height: 1px;
+            background-color: #E2E8FF;
             background: linear-gradient(to right, transparent, #E2E8FF, transparent);
             margin: 25px 0;
         }
@@ -189,6 +188,7 @@
             }
 
             .section-divider {
+                background-color: #4A5568 !important;
                 background: linear-gradient(to right, transparent, #4A5568, transparent) !important;
             }
         }
@@ -197,7 +197,7 @@
 <body class="body-wrapper">
     <div class="body-wrapper">
         <div class="container">
-            <div class="header" style="{% block header_bg %}background: linear-gradient(135deg, #35A8F0 0%, #7FDBFF 100%);{% endblock %}">
+            <div class="header" style="{% block header_bg %}background-color: #35A8F0; background: linear-gradient(135deg, #35A8F0 0%, #7FDBFF 100%);{% endblock %}">
                 <h1>{% block header_title %}{{ project_name }}{% endblock %}</h1>
                 <p>{% block header_subtitle %}{% endblock %}</p>
             </div>

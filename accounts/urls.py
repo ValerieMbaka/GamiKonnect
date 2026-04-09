@@ -31,8 +31,8 @@ urlpatterns = [
     path('shop-owner-dashboard/', views.shop_owner_dashboard, name='shop_owner_dashboard'),
     path('shop-owner-profile/', views.shop_owner_profile, name='shop_owner_profile'),
     path('shop-owner-profile-edit/', views.shop_owner_profile_edit, name='shop_owner_profile_edit'),
-    path('shop-owner-settings/', views.shop_owner_settings, name='shop_owner_settings'),
-    path('shop-owner-shop/<int:pk>/', views.shop_owner_shop_detail, name='shop_owner_shop_detail'),
+    path('shop-owner-venues/', views.shop_owner_venues, name='shop_owner_venues'),
+    path('shop-owner-venues/<int:pk>/', views.shop_owner_shop_detail, name='shop_owner_shop_detail'),
     path('edit-shop/<int:pk>/', views.edit_shop, name='edit_shop'),
     path('create-shop/', views.create_shop, name='create_shop'),
     
@@ -48,7 +48,4 @@ urlpatterns = [
     # Admin Quick Actions
     path('quick-approve-shop/<str:token>/', views.quick_approve_shop, name='quick_approve_shop'),
     path('quick-reject-shop/<str:token>/', views.quick_reject_shop, name='quick_reject_shop'),
-    
-    # Test URL
-    path('test-firebase/', views.test_firebase, name='test_firebase'),
 ]

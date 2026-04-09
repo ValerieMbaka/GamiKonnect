@@ -156,9 +156,67 @@ class SidebarManager {
     }
 }
 
+class ThemeManager {
+    constructor() {
+        this.body = document.body;
+        this.headerToggle = document.getElementById('darkModeToggle'); // Top nav button
+        this.accountSwitch = document.getElementById('accountThemeSwitch'); // Settings tab switch
+        
+        this.initTheme();
+        this.initEvents();
+    }
+
+    initTheme() {
+        // Check browser storage to remember user's preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            this.setDark();
+        } else {
+            this.setLight();
+        }
+    }
+
+    initEvents() {
+        // Listen for clicks on EITHER toggle (if they exist on the page)
+        if (this.headerToggle) {
+            this.headerToggle.addEventListener('click', () => this.toggleTheme());
+        }
+        if (this.accountSwitch) {
+            this.accountSwitch.addEventListener('click', () => this.toggleTheme());
+        }
+    }
+
+    toggleTheme() {
+        if (this.body.getAttribute('data-dashboard-theme') === 'dark') {
+            this.setLight();
+        } else {
+            this.setDark();
+        }
+    }
+
+    setDark() {
+        this.body.setAttribute('data-dashboard-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        
+        // Visually sync UI elements
+        if (this.accountSwitch) this.accountSwitch.classList.add('on');
+        if (this.headerToggle) this.headerToggle.classList.add('active');
+    }
+
+    setLight() {
+        this.body.removeAttribute('data-dashboard-theme');
+        localStorage.setItem('theme', 'light');
+        
+        // Visually sync UI elements
+        if (this.accountSwitch) this.accountSwitch.classList.remove('on');
+        if (this.headerToggle) this.headerToggle.classList.remove('active');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     new DropdownManager();
     new SidebarManager();
+    new ThemeManager(); // Initialize the global theme sync
 
     document.querySelectorAll('.nav-group .nav-header').forEach(header => {
         header.addEventListener('click', (e) => {

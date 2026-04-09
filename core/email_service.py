@@ -6,6 +6,11 @@ from django.conf import settings
 from django.core.signing import TimestampSigner
 from django.core.exceptions import ImproperlyConfigured
 from premailer import transform
+import cssutils
+
+# Suppress cssutils validation errors/warnings that trigger terminal noise
+cssutils.log.setLog(logging.getLogger('cssutils'))
+logging.getLogger('cssutils').setLevel(logging.CRITICAL)
 
 logger = logging.getLogger(__name__)
 
@@ -162,6 +167,9 @@ class EmailManager:
         signer = TimestampSigner()
         approve_token = signer.sign_object({'shop_id': shop.id, 'action': 'approve'})
         reject_token = signer.sign_object({'shop_id': shop.id, 'action': 'reject'})
+        
+        quick_approve_url = f"{site_url}/accounts/quick-approve-shop/{approve_token}"
+        quick_reject_url = f"{site_url}/accounts/quick-reject-shop/{reject_token}"
         
         context = {
             'shop': shop,

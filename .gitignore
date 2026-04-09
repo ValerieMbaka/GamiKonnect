@@ -85,8 +85,7 @@ accounts/static/accounts/css/gamers/*
 accounts/static/accounts/js/gamers/
 accounts/static/accounts/js/gamers/*
 
-accounts/templates/accounts/shop_owners/*
-accounts/templates/accounts/shop_owners
+accounts/templates/accounts/shop_owners/shops/
 accounts/templates/accounts/shop_owners/competitions/*
 accounts/templates/accounts/shop_owners/competitions
 accounts/templates/accounts/shop_owners/competitions/detail.html
@@ -101,3 +100,8 @@ accounts/static/accounts/css/shop_owners/competitions.css
 accounts/static/accounts/js/shop_owners/
 accounts/static/accounts/js/shop_owners/*
 /accounts/templates/accounts/gamers/
+/accounts/static/accounts/css/modals/
+/accounts/static/accounts/js/modals/
+/accounts/templates/accounts/includes/
+/accounts/templates/accounts/shop_owners/shop_owner_account.html
+/accounts/templates/accounts/shop_owners/shop_owner_dashboard.html

@@ -96,7 +96,5 @@ accounts/templates/accounts/shop_owners/competitions/submit_result.html
 accounts/static/accounts/css/shop_owners/competitions.css
 
 /accounts/templates/accounts/gamers/
-/accounts/static/accounts/css/modals/
-/accounts/static/accounts/js/modals/
 /accounts/static/accounts/css/shop_owners/shops/
 /accounts/static/accounts/js/shop_owners/shops/

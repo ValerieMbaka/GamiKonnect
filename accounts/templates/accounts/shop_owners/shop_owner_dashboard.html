@@ -1,0 +1,204 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Shop Owner Dashboard · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shop_owner_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% if inactive_mode %}
+    <div class="inactive-overlay anim-fade-in">
+        <div class="glass-card shadow-2xl p-5 text-center">
+            <div class="icon-pulse mb-4">
+                <i class="fas fa-hourglass-half text-warning fs-1"></i>
+            </div>
+            <h2 class="fw-bold mb-2 text-dark">Awaiting Admin Verification</h2>
+            <p class="text-muted mb-4 px-3">Your arena deployment is securely logged and is currently under review by the admins.</p>
+
+            <ul class="checklist text-start mx-auto mb-5 list-unstyled">
+                <li class="py-2 border-bottom"><i class="fas fa-check-circle text-success me-3"></i> Venue Details Submitted</li>
+                <li class="py-2 border-bottom"><i class="fas fa-spinner fa-spin text-warning me-3"></i> Admin Verification (In Progress)</li>
+                <li class="py-2 text-muted"><i class="fas fa-lock me-3"></i> Command Center Unlocked</li>
+            </ul>
+
+            <a href="{% url 'accounts:gamer_dashboard' %}" class="btn btn-primary rounded-pill px-5 py-2 shadow-sm">
+                <i class="fas fa-gamepad me-2"></i> Return to Gamer Dashboard
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="dashboard-wrapper {% if inactive_mode %}blurred-locked{% endif %} mt-2">
+
+        <section class="metrics-grid row g-3 mb-4 anim-fade-in-up">
+            <div class="col-md-6 col-lg-3">
+                <div class="card-admin kpi-card blue h-100">
+                    <div class="kpi-top">
+                        <div class="kpi-icon blue"><i class="fas fa-store"></i></div>
+                        <span class="kpi-label">Total Arenas</span>
+                    </div>
+                    <div class="kpi-bottom">
+                        <h3 class="kpi-value">{{ shop_count|default:0 }}</h3>
+                        <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> {{ verification_percent|default:0 }}% Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card-admin kpi-card purple h-100">
+                    <div class="kpi-top">
+                        <div class="kpi-icon purple"><i class="fas fa-trophy"></i></div>
+                        <span class="kpi-label">Competitions</span>
+                    </div>
+                    <div class="kpi-bottom">
+                        <h3 class="kpi-value">0</h3>
+                        <span class="kpi-trend neutral"><i class="fas fa-minus"></i> 0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card-admin kpi-card green h-100">
+                    <div class="kpi-top">
+                        <div class="kpi-icon success"><i class="fas fa-dollar-sign"></i></div>
+                        <span class="kpi-label">Earnings</span>
+                    </div>
+                    <div class="kpi-bottom">
+                        <h3 class="kpi-value">Ksh 0.00</h3>
+                        <span class="kpi-trend neutral"><i class="fas fa-minus"></i> 0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card-admin kpi-card red h-100">
+                    <div class="kpi-top">
+                        <div class="kpi-icon orange"><i class="fas fa-server"></i></div>
+                        <span class="kpi-label">Game Library</span>
+                    </div>
+                    <div class="kpi-bottom">
+                        <h3 class="kpi-value">{{ shop_stats.total_games|default:0 }}</h3>
+                        <span class="kpi-trend negative"><i class="fas fa-arrow-up"></i> {{ shop_stats.premium_games|default:0 }} Premium</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="operations-section row g-4 mb-4 anim-fade-in-up" style="animation-delay: 0.1s;">
+            <div class="col-lg-7">
+                <div class="card-admin h-100 p-4">
+                    <header class="d-flex justify-content-between align-items-center mb-4 pb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-list-ul text-primary fs-5"></i>
+                            <h2 class="section-title">Recent Activity</h2>
+                        </div>
+                        <a href="#" class="view-all-link">View All</a>
+                    </header>
+
+                    <div class="timeline-hollow mt-2">
+                        {% if recent_activity %}
+                            {% for activity in recent_activity %}
+                            <div class="timeline-item d-flex gap-3 mb-4">
+                                <div class="timeline-indicator mt-1">
+                                    <div class="indicator-dot {% if activity.is_active %}border-green{% elif forloop.counter == 2 %}border-blue{% elif forloop.counter == 3 %}border-yellow{% else %}border-red{% endif %}"></div>
+                                    <div class="indicator-line"></div>
+                                </div>
+                                <div class="timeline-content w-100 pb-1">
+                                    <h4 class="timeline-title">{{ activity.title }}</h4>
+                                    <p class="timeline-meta">{{ activity.timestamp }} · {{ activity.meta }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center py-4 mb-0">No recent activity found.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card-admin h-100 p-4">
+                    <header class="d-flex justify-content-between align-items-center mb-4 pb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="far fa-calendar-alt text-warning fs-5"></i>
+                            <h2 class="section-title">Upcoming Events</h2>
+                        </div>
+                    </header>
+
+                    <div class="events-list d-flex flex-column gap-4 mt-2">
+                        <div class="event-item d-flex align-items-center gap-3">
+                            <div class="event-date-box bg-blue-soft text-blue">
+                                <span class="day">15</span>
+                                <span class="month">AUG</span>
+                            </div>
+                            <div class="event-details">
+                                <h4 class="event-title">Summer Esports Tournament</h4>
+                                <p class="event-meta">Global Platform Event</p>
+                            </div>
+                        </div>
+                        <div class="event-item d-flex align-items-center gap-3">
+                            <div class="event-date-box bg-yellow-soft text-yellow">
+                                <span class="day">18</span>
+                                <span class="month">AUG</span>
+                            </div>
+                            <div class="event-details">
+                                <h4 class="event-title">Scheduled Maintenance</h4>
+                                <p class="event-meta">Database Optimization (2 Hours)</p>
+                            </div>
+                        </div>
+                        <div class="event-item d-flex align-items-center gap-3">
+                            <div class="event-date-box bg-green-soft text-green">
+                                <span class="day">22</span>
+                                <span class="month">AUG</span>
+                            </div>
+                            <div class="event-details">
+                                <h4 class="event-title">Community Payouts</h4>
+                                <p class="event-meta">Automated Shop Disbursements</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="analytics-section row g-4 anim-fade-in-up" style="animation-delay: 0.2s;">
+            <div class="col-lg-7">
+                <div class="card-admin p-4 h-100">
+                    <header class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-light">
+                        <div class="d-flex align-items-center gap-2">
+                            <h2 class="section-title">Revenue Trends</h2>
+                        </div>
+                        <select class="form-select form-select-sm w-auto border-0 bg-light text-muted fw-semibold">
+                            <option>Last 7 Days</option>
+                            <option>This Month</option>
+                        </select>
+                    </header>
+                    <div class="chart-container w-100" style="height: 300px;">
+                        <canvas id="earningsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card-admin p-4 h-100">
+                    <header class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-light">
+                        <div class="d-flex align-items-center gap-2">
+                            <h2 class="section-title">Consoles</h2>
+                        </div>
+                    </header>
+                    <div class="chart-container w-100 d-flex justify-content-center" style="height: 300px;">
+                        <canvas id="hardwareChart" style="max-height: 280px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'accounts/js/shop_owners/shop_owner_dashboard.js' %}"></script>
+{% endblock %}

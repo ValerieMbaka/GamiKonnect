@@ -103,5 +103,3 @@ accounts/static/accounts/js/shop_owners/*
 /accounts/static/accounts/css/modals/
 /accounts/static/accounts/js/modals/
 /accounts/templates/accounts/includes/
-/accounts/templates/accounts/shop_owners/shop_owner_account.html
-/accounts/templates/accounts/shop_owners/shop_owner_dashboard.html

@@ -1,0 +1,41 @@
+<div id="deleteAccountModal" class="modal">
+    <div class="modal-content card-admin p-0 overflow-hidden" style="max-width: 500px; border-left: none;">
+        <div class="modal-header bg-red-soft p-4 border-bottom border-light d-flex justify-content-between align-items-center">
+            <h3 class="text-red m-0 h5 fw-bold"><i class="fas fa-exclamation-triangle me-2"></i> Confirm Deletion</h3>
+            <button type="button" class="btn-close text-muted" id="closeDeleteModalIcon"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body p-4">
+            <p class="text-dark fw-semibold">This action cannot be undone. All your data will be permanently erased from the network.</p>
+
+            <div class="bg-light p-3 rounded-3 mb-4 border border-light">
+                <p class="mb-2 text-dark fw-bold small text-uppercase tracking-wide">What will be deleted:</p>
+                <ul class="text-muted small mb-0 ps-3 d-flex flex-column gap-1">
+                    <li>Your personal profile data</li>
+                    <li>All connected arenas</li>
+                    <li>Active pricing and operational settings</li>
+                </ul>
+            </div>
+
+            <form id="deleteAccountForm">
+                {% csrf_token %}
+                <input type="hidden" id="delete_firebase_uid" value="{{ request.session.firebase_uid }}">
+                <input type="hidden" id="delete_user_email" value="{{ request.session.email }}">
+
+                <div class="form-group mb-4">
+                    <label for="delete_confirm_password" class="fw-bold small text-dark mb-2">Enter password to confirm</label>
+                    <div class="input-group">
+                        <input type="password" name="password" id="delete_confirm_password" class="form-control bg-light border-light" required>
+                        <button type="button" class="btn btn-light border border-light text-muted modular-toggle-password" data-target="delete_confirm_password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end pt-3 border-top border-light">
+                    <button type="button" class="btn btn-light border rounded-pill px-4 fw-semibold text-secondary" id="closeDeleteModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm"><i class="fas fa-trash me-2"></i>Erase Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

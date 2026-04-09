@@ -1,0 +1,352 @@
+@import url('core/static/core/css/variables.css');
+
+.card-admin {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-admin:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.view-all-link {
+    font-size: 0.875rem;
+    color: #35a8f0;
+    font-weight: 500;
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.view-all-link:hover {
+    text-decoration: underline;
+    color: #0284c7;
+}
+
+.timeline-title, .event-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+}
+
+.timeline-meta, .event-meta {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* KPI Cards */
+.kpi-card {
+    padding: 20px;
+    border-left: 3px solid transparent;
+}
+
+.kpi-card.blue {
+    border-left-color: #35a8f0;
+}
+
+.kpi-card.purple {
+    border-left-color: #8b5cf6;
+}
+
+.kpi-card.green {
+    border-left-color: #10b981;
+}
+
+.kpi-card.red {
+    border-left-color: #ef4444;
+}
+
+.kpi-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.kpi-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #FFFFFF;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.kpi-icon.blue {
+    background: #35a8f0;
+}
+
+.kpi-icon.purple {
+    background: #8b5cf6;
+}
+
+.kpi-icon.success {
+    background: #10b981;
+}
+
+.kpi-icon.orange {
+    background: #f59e0b;
+}
+
+.kpi-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+.kpi-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 550;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1;
+}
+
+.kpi-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.kpi-trend.positive {
+    color: #059669;
+    background: #d1fae5;
+}
+
+.kpi-trend.negative {
+    color: #dc2626;
+    background: #fee2e2;
+}
+
+.kpi-trend.neutral {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+/* Soft Background Colors & Text (For Events) */
+.bg-blue-soft {
+    background-color: #e0f2fe !important;
+}
+
+.text-blue {
+    color: #0284c7 !important;
+}
+
+.bg-purple-soft {
+    background-color: #ede9fe !important;
+}
+
+.text-purple {
+    color: #7c3aed !important;
+}
+
+.bg-green-soft {
+    background-color: #d1fae5 !important;
+}
+
+.text-green {
+    color: #059669 !important;
+}
+
+.bg-yellow-soft {
+    background-color: #fef3c7 !important;
+}
+
+.text-yellow {
+    color: #d97706 !important;
+}
+
+.bg-red-soft {
+    background-color: #fee2e2 !important;
+}
+
+.text-red {
+    color: #dc2626 !important;
+}
+
+/* Timeline Activity */
+.timeline-hollow {
+    position: relative;
+}
+
+.timeline-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 16px;
+}
+
+.indicator-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--border-color, #ccc);
+    z-index: 2;
+}
+
+.indicator-dot.border-green {
+    border-color: #10b981;
+}
+
+.indicator-dot.border-blue {
+    border-color: #35a8f0;
+}
+
+.indicator-dot.border-yellow {
+    border-color: #f59e0b;
+}
+
+.indicator-dot.border-red {
+    border-color: #ef4444;
+}
+
+.indicator-line {
+    width: 2px;
+    flex-grow: 1;
+    background-color: #f1f5f9;
+    margin-top: 4px;
+    margin-bottom: -16px;
+}
+
+.timeline-item:last-child .indicator-line {
+    display: none;
+}
+
+/* Upcoming Events Calendar Boxes */
+.event-date-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    font-weight: 500;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.event-date-box .day {
+    font-size: 1.1rem;
+}
+
+.event-date-box .month {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Inactive Overlay */
+.inactive-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1050;
+    background: rgba(248, 250, 252, 0.6);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    max-width: 500px;
+    width: 90%;
+}
+
+.icon-pulse {
+    animation: gentlePulse 2s infinite ease-in-out;
+}
+
+.checklist li {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.blurred-locked {
+    filter: blur(8px) grayscale(0.2);
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.7;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Animations */
+.anim-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.anim-fade-in-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes gentlePulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

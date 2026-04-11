@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from accounts.models import Account
 
 
-class ActivityLog(models.fields):
+class ActivityLog(models.Model):
     class ActionTypes(models.TextChoices):
         CREATE = 'CREATE', 'Created'
         UPDATE = 'UPDATE', 'Updated'

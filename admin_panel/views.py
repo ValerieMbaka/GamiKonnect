@@ -1,12 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
+from datetime import timedelta
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 # Model imports
 from core.models import ProjectDetail, SiteStyle
-from games.models import Game
+from games.models import Game, Genre, Platform, PlatformCategory
 
 # Imports for custom logic
 from .decorators import admin_required
@@ -53,7 +57,6 @@ def admin_dashboard(request):
 
 @admin_required
 def admin_profile(request):
-    # Handles the display of the profile page and AJAX POST requests for updates.
     if request.method == 'POST':
         u_form = AdminUserUpdateForm(request.POST, instance=request.user)
         p_form = AdminProfileUpdateForm(request.POST, request.FILES, instance=request.user.admin_profile)
@@ -61,10 +64,7 @@ def admin_profile(request):
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
-            
-            # Return fresh data so JavaScript can update the UI instantly
             avatar_url = request.user.admin_profile.avatar.url if request.user.admin_profile.avatar else None
-            
             return JsonResponse({
                 'success': True,
                 'message': 'Your profile has been successfully updated.',
@@ -78,12 +78,10 @@ def admin_profile(request):
                 }
             })
         else:
-            # Merge errors from both forms and send them back to the modal
             errors = dict(u_form.errors)
             errors.update(dict(p_form.errors))
             return JsonResponse({'success': False, 'errors': errors}, status=400)
     
-    # GET Request: Render the page with empty forms for the modals
     u_form = AdminUserUpdateForm(instance=request.user)
     p_form = AdminProfileUpdateForm(instance=request.user.admin_profile)
     password_form = PasswordChangeForm(request.user)
@@ -98,26 +96,19 @@ def admin_profile(request):
 
 @admin_required
 def admin_change_password(request):
-    # AJAX endpoint for secure password rotation via modal.
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # Prevents logging the admin out
-            return JsonResponse({
-                'success': True,
-                'message': 'Your password was securely rotated.'
-            })
+            update_session_auth_hash(request, user)
+            return JsonResponse({'success': True, 'message': 'Your password was securely rotated.'})
         else:
             return JsonResponse({'success': False, 'errors': dict(form.errors)}, status=400)
-    
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 
 @admin_required
 def admin_site_settings(request):
-    # Manages global platform identity and theme styling.
-    # Fetch the active instances, or instantiate empty ones if the DB is blank
     project_detail = ProjectDetail.objects.filter(is_active=True).first() or ProjectDetail()
     site_style = SiteStyle.get_active() or SiteStyle()
     
@@ -126,14 +117,12 @@ def admin_site_settings(request):
         style_form = SiteStyleForm(request.POST, instance=site_style)
         
         if project_form.is_valid() and style_form.is_valid():
-            # Save Project Details
             p_detail = project_form.save(commit=False)
             p_detail.is_active = True
             p_detail.save()
             
-            # Save Site Style
             s_style = style_form.save(commit=False)
-            s_style.pk = None  # Forces a new object to track historical changes based on updated_at
+            s_style.pk = None
             s_style.save()
             
             messages.success(request, 'Global site settings updated successfully.')
@@ -149,77 +138,122 @@ def admin_site_settings(request):
         'style_form': style_form,
         'current_logo': project_detail.logo if project_detail.logo else None
     }
-    
     return render(request, 'admin_panel/settings/site_settings.html', context)
 
 
+# Game Management Views
 @admin_required
 def admin_game_list(request):
-    """Displays the main Game Database table."""
-    games = Game.objects.all().order_by('-created_at')
+    # Start with all games
+    games_list = Game.objects.all().order_by('-created_at')
+    
+    # Filtering Logic
+    query = request.GET.get('q')
+    genre_id = request.GET.get('genre')
+    platform_id = request.GET.get('platform')
+    status = request.GET.get('status')
+    
+    if query:
+        games_list = games_list.filter(
+            Q(name__icontains=query) | Q(integer_id__icontains=query)
+        )
+    if genre_id:
+        games_list = games_list.filter(genres__id=genre_id)
+    if platform_id:
+        games_list = games_list.filter(supported_platforms__id=platform_id)
+    
+    if status == 'active':
+        games_list = games_list.filter(is_active=True)
+    elif status == 'inactive':
+        games_list = games_list.filter(is_active=False)
+    elif status == 'verified':
+        games_list = games_list.filter(is_verified=True)
+    elif status == 'unverified':
+        games_list = games_list.filter(is_verified=False)
+    
+    # Pagination
+    paginator = Paginator(games_list, 15)
+    page_number = request.GET.get('page')
+    games = paginator.get_page(page_number)
+    
+    # KPI Calculations
+    total_games = Game.objects.count()
+    total_categories = PlatformCategory.objects.count()
+    total_platforms = Platform.objects.count()
+    total_genres = Genre.objects.count()
+    
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    new_games_this_week = Game.objects.filter(created_at__gte=seven_days_ago).count()
+    new_platforms_this_week = Platform.objects.filter(created_at__gte=seven_days_ago).count()
     
     context = {
         'games': games,
+        'all_genres': Genre.objects.all().order_by('name'),
+        'all_platforms': Platform.objects.all().order_by('name'),
+        
+        # KPI Context Variables
+        'total_games': total_games,
+        'total_categories': total_categories,
+        'total_platforms': total_platforms,
+        'total_genres': total_genres,
+        'new_games_this_week': new_games_this_week,
+        'new_platforms_this_week': new_platforms_this_week,
+        'form': GameForm()
     }
-    # Updated Template Path
-    return render(request, 'admin_panel/games/admin_game_list.html', context)
+    return render(request, 'admin_panel/games/admin_games.html', context)
 
 
 @admin_required
-def admin_game_create(request):
-    """Handles the creation of a new game."""
+def admin_game_save(request):
     if request.method == 'POST':
-        form = GameForm(request.POST, request.FILES)
+        game_id = request.POST.get('game_id')
+        if game_id:
+            game = get_object_or_404(Game, integer_id=game_id)
+            form = GameForm(request.POST, request.FILES, instance=game)
+        else:
+            form = GameForm(request.POST, request.FILES)
+        
         if form.is_valid():
             game = form.save()
-            messages.success(request, f'Game "{game.name}" was added successfully.')
-            return redirect('admin_panel:game_list')
+            return JsonResponse({'success': True, 'message': f"Game '{game.name}' saved successfully."})
         else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = GameForm()
-    
-    context = {
-        'form': form,
-        'page_title': 'Add New Game',
-        'is_edit': False
-    }
-    # Updated Template Path
-    return render(request, 'admin_panel/games/admin_game_form.html', context)
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 @admin_required
-def admin_game_edit(request, game_id):
-    """Handles updating an existing game."""
-    game = get_object_or_404(Game, id=game_id)
-    
-    if request.method == 'POST':
-        form = GameForm(request.POST, request.FILES, instance=game)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Game "{game.name}" was updated successfully.')
-            return redirect('admin_panel:game_list')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = GameForm(instance=game)
-    
-    context = {
-        'form': form,
-        'game': game,
-        'page_title': 'Edit Game',
-        'is_edit': True
-    }
-    # Updated Template Path
-    return render(request, 'admin_panel/games/admin_game_form.html', context)
+def admin_game_detail(request, game_id):
+    game = get_object_or_404(Game, integer_id=game_id)
+    return JsonResponse({
+        'success': True,
+        'data': {
+            'game_id': game.integer_id,
+            'name': game.name,
+            'description': game.description,
+            'is_verified': game.is_verified,
+            'is_active': game.is_active,
+            'genres': list(game.genres.values_list('id', flat=True)),
+            'supported_platforms': list(game.supported_platforms.values_list('id', flat=True))
+        }
+    })
 
 
 @admin_required
 def admin_game_delete(request, game_id):
-    """Secure endpoint to delete a game."""
     if request.method == 'POST':
-        game = get_object_or_404(Game, id=game_id)
-        game_name = game.name
+        game = get_object_or_404(Game, integer_id=game_id)
+        name = game.name
         game.delete()
-        messages.success(request, f'Game "{game_name}" was permanently deleted.')
-    return redirect('admin_panel:game_list')
+        return JsonResponse({'success': True, 'message': f"Game '{name}' deleted."})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@admin_required
+def admin_game_toggle_status(request, game_id):
+    if request.method == 'POST':
+        game = get_object_or_404(Game, integer_id=game_id)
+        game.is_active = not game.is_active
+        game.save()
+        status_text = "Activated" if game.is_active else "Deactivated"
+        return JsonResponse({'success': True, 'message': f"Game {status_text}."})
+    return JsonResponse({'error': 'Invalid request'}, status=400)

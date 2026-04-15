@@ -14,8 +14,9 @@ pip-wheel-metadata/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+
+# Media files
 media
-#staticfiles/
 
 # PyInstaller
 *.manifest
@@ -47,12 +48,6 @@ var/
 # PyCharm
 .idea/
 
-# Django migrations - Ignore all migration files and compiled migration files except for __init__.py files
-migrations/
-**/migrations/*.py
-!**/migrations/__init__.py
-**/migrations/*.pyc
-
 # Environments
 .env
 .venv/
@@ -65,7 +60,6 @@ venv/
 /django-4c5e9-firebase-adminsdk.json
 /core/static/core/js/firebase-init.js
 /core/static/core/js/firebase_config.js
-/core/email_service.py
 /firebase_config.py
 /debug_accounts.py
 

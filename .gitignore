@@ -55,6 +55,7 @@ venv/
 .env/
 .env.*
 
+
 # DB Data dump
 /datadump.json
 

@@ -55,6 +55,8 @@ venv/
 .env/
 .env.*
 
+# DB Data dump
+/datadump.json
 
 # Keys and credentials
 /django-4c5e9-firebase-adminsdk.json

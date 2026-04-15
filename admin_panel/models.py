@@ -28,6 +28,8 @@ class AdminProfile(models.Model):
 @receiver(post_save, sender=User)
 def manage_admin_profile(sender, instance, created, **kwargs):
     # Automatically creates an AdminProfile whenever a User is granted staff or superuser privileges.
+    if kwargs.get('raw'):
+        return
     
     if instance.is_staff or instance.is_superuser:
         AdminProfile.objects.get_or_create(user=instance)

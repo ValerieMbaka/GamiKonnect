@@ -1,5 +1,5 @@
 /* Import variables */
-@import url('variables.css');
+@import "variables.css";
 
 /* Base Elements */
 html, body {
@@ -9,7 +9,6 @@ html, body {
     background-color: var(--site-bg, var(--bg-primary));
     line-height: 1.6;
     overflow-x: hidden;
-    
     transition: all 0.3s ease;
 }
 

@@ -74,7 +74,6 @@ accounts/static/accounts/css/gamers/gamer_public_profile.css
 accounts/static/accounts/css/gamers/gamer_profile_edit.css
 accounts/static/accounts/css/gamers/gamer_settings.css
 accounts/static/accounts/css/gamers/gamer_games.css
-accounts/static/accounts/css/gamers/test.css
 
 
 accounts/static/accounts/js/gamers/gamer_public_profile.js

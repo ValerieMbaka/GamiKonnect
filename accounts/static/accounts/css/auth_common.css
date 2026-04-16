@@ -1,4 +1,4 @@
-/* Shared Auth Styles */
+/* Shared Auth Styles (Common between login and registration) */
 .navbar, footer {
     display: none !important;
 }

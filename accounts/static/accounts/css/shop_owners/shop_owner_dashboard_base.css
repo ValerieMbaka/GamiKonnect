@@ -1,5 +1,5 @@
 /* Import variables */
-@import url('../../../core/css/variables.css');
+@import "../../../../../core/static/core/css/variables.css";
 
 body.shop-owner-dashboard-body {
     font-family: var(--font-sans), sans-serif;
@@ -116,7 +116,6 @@ body.shop-owner-dashboard-body {
     .top-nav { left: 0; }
     .dashboard-sidebar { transform: translateX(-100%); z-index: 999; }
     .dashboard-sidebar.sidebar-open { transform: translateX(0); }
-    .dashboard-content { margin-left: 0; }
 }
 
 @media (max-width: 768px) {

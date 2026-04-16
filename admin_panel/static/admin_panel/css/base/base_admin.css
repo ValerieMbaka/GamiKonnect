@@ -1,5 +1,5 @@
 /* Admin Panel Base Styles */
-@import url('../../../core/css/variables.css');
+@import "../../../../../core/static/core/css/variables.css";
 
 /* Global Reset */
 *, *::before, *::after {

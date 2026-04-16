@@ -1,4 +1,6 @@
 import logging
+import sys
+import django.utils.timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -20,9 +22,9 @@ class EmailManager:
     
     @staticmethod
     def _get_site_url():
-        site_url = getattr(settings, 'SITE_URL', None)
-        if not site_url:
-            raise ImproperlyConfigured("SITE_URL must be defined in Django settings (e.g., via environment variables).")
+        # Prefer the current request's host if available (injected via context if needed)
+        # but for simplicity, we rely on the dynamic SITE_URL in settings.
+        site_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
         return site_url.rstrip('/')
     
     @staticmethod
@@ -96,18 +98,32 @@ class EmailManager:
     @classmethod
     def send_password_change(cls, email, username=None):
         subject = f"Password Changed - {settings.PROJECT_NAME}"
-        return cls._send_html_email(subject, 'shared/password_change.html', {'username': username}, [email])
+        context = {
+            'username': username,
+            'site_url': cls._get_site_url(),
+            'now': django.utils.timezone.now()
+        }
+        return cls._send_html_email(subject, 'shared/password_change.html', context, [email])
     
     @classmethod
     def send_password_reset(cls, email, reset_link, username=None):
         subject = f"Password Reset Request - {settings.PROJECT_NAME}"
-        context = {'username': username, 'reset_link': reset_link, 'expiration_minutes': 30}
+        context = {
+            'username': username,
+            'reset_link': reset_link,
+            'expiration_minutes': 30,
+            'site_url': cls._get_site_url()
+        }
         return cls._send_html_email(subject, 'shared/password_reset.html', context, [email])
     
     @classmethod
-    def send_account_deletion(cls, email):
+    def send_account_deletion(cls, email, username=None):
         subject = f"Account Deleted - {settings.PROJECT_NAME}"
-        return cls._send_html_email(subject, 'shared/account_deleted.html', {}, [email])
+        context = {
+            'username': username,
+            'site_url': cls._get_site_url()
+        }
+        return cls._send_html_email(subject, 'shared/account_deletion.html', context, [email])
     
     # Gamer emails
     @classmethod
@@ -183,10 +199,16 @@ class EmailManager:
         return cls._send_html_email(subject, 'admin/admin_new_shop.html', context, [admin_email])
     
     @classmethod
-    def send_admin_account_deletion(cls, email):
+    def send_admin_account_deletion(cls, email, username=None, account_type=None):
         subject = f"SYSTEM ALERT: Account Deletion - {settings.PROJECT_NAME}"
         admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
-        context = {'deleted_email': email}
+        context = {
+            'deleted_email': email,
+            'username': username or 'N/A',
+            'account_type': account_type or 'User',
+            'deletion_date': django.utils.timezone.now(),
+            'site_url': cls._get_site_url()
+        }
         return cls._send_html_email(subject, 'admin/admin_account_deletion.html', context, [admin_email])
     
     @classmethod

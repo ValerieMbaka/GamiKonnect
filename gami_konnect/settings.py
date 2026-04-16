@@ -57,8 +57,12 @@ INSTALLED_APPS = [
     'shops',
     'admin_panel',
     'activities',
+    'competitions',
     
 ]
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 25
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -201,7 +205,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Project metadata and base URLs
 PROJECT_NAME = env('PROJECT_NAME', default='GamiKonnect')
-SITE_URL = env('SITE_URL', default='http://localhost:8000')
+
+# Dynamically set SITE_URL based on environment
+if 'RENDER_EXTERNAL_URL' in os.environ:
+    SITE_URL = os.environ.get('RENDER_EXTERNAL_URL')
+elif env('SITE_URL', default=''):
+    SITE_URL = env('SITE_URL')
+else:
+    # If no environment variable is set, default to localhost
+    SITE_URL = 'http://localhost:8000'
+
+# Ensure SITE_URL doesn't end with a slash for consistency
+SITE_URL = SITE_URL.rstrip('/')
 
 
 # Email configuration

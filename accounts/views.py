@@ -463,8 +463,12 @@ def delete_account(request):
             account.delete()
             request.session.flush()
             
-            EmailManager.send_account_deletion(user_email)
-            EmailManager.send_admin_account_deletion(user_email)
+            EmailManager.send_account_deletion(user_email, username=getattr(account, 'custom_username', None))
+            EmailManager.send_admin_account_deletion(
+                user_email,
+                username=getattr(account, 'custom_username', None),
+                account_type=role.replace('_', ' ').title()
+            )
             
             return JsonResponse(
                 {'success': True, 'message': 'Account permanently deleted', 'redirect_url': '/accounts/login/'})

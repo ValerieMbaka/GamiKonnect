@@ -70,14 +70,17 @@ admin_panel/static/admin_panel/*
 
 admin_panel/templates/admin_panel/*
 
-accounts/templates/accounts/gamers/*
-accounts/templates/accounts/gamers
+accounts/static/accounts/css/gamers/gamer_public_profile.css
+accounts/static/accounts/css/gamers/gamer_profile_edit.css
+accounts/static/accounts/css/gamers/gamer_settings.css
+accounts/static/accounts/css/gamers/gamer_games.css
+accounts/static/accounts/css/gamers/test.css
 
-accounts/static/accounts/css/gamers/
-accounts/static/accounts/css/gamers/*
 
-accounts/static/accounts/js/gamers/
-accounts/static/accounts/js/gamers/*
+accounts/static/accounts/js/gamers/gamer_public_profile.js
+accounts/static/accounts/js/gamers/gamer_profile_edit.js
+accounts/static/accounts/js/gamers/gamer_settings.js
+accounts/static/accounts/js/gamers/gamer_games.js
 
 accounts/templates/accounts/shop_owners/competitions/*
 accounts/templates/accounts/shop_owners/competitions
@@ -88,4 +91,7 @@ accounts/templates/accounts/shop_owners/competitions/submit_result.html
 
 accounts/static/accounts/css/shop_owners/competitions.css
 
-/accounts/templates/accounts/gamers/
+/accounts/templates/accounts/gamers/gamer_games.html
+/accounts/templates/accounts/gamers/gamer_profile_edit.html
+/accounts/templates/accounts/gamers/gamer_public_profile.html
+/accounts/templates/accounts/gamers/gamer_settings.html

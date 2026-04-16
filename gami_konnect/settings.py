@@ -104,15 +104,24 @@ WSGI_APPLICATION = 'gami_konnect.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 # Check if Render's PostgreSQL URL is provided in the environment
 if 'DATABASE_URL' in os.environ:
     # Use django-environ to parse the Postgres URL automatically
     DATABASES = {
         'default': env.db('DATABASE_URL')
     }
+    
+    # Use Cloudinary and WhiteNoise ONLY in production
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 else:
-    # Fallback to local MySQL configuration
+    # Fallback to local MySQL configuration for your laptop
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -135,15 +144,6 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
 }
 
-# Storage Configuration
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -294,7 +294,15 @@ def session_login(request):
                 else:
                     next_url = reverse('accounts:gamer_dashboard')
             
-            success_message = 'Login successful, loading dashboard' if role == 'gamer' else 'Login successful, please upload your game shop details to proceed'
+            if role == 'gamer':
+                success_message = 'Login successful, loading dashboard'
+            else:
+                has_shops = Shop.objects.filter(owners__id=account.id).exists()
+                if has_shops:
+                    success_message = 'Login successful, loading dashboard'
+                else:
+                    success_message = 'Login successful, please upload your arena details to continue'
+
             return JsonResponse({'success': True, 'message': success_message, 'role': role, 'next': next_url})
         
         except Exception as e:

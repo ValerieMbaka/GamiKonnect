@@ -1,5 +1,5 @@
 /* Import variables */
-@import "variables.css";
+@import url('variables.css');
 
 /* Base Elements */
 html, body {

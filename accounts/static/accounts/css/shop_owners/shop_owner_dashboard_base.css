@@ -1,5 +1,5 @@
 /* Import variables */
-@import url('core/static/core/css/variables.css');
+@import url('../../../core/css/variables.css');
 
 body.shop-owner-dashboard-body {
     font-family: var(--font-sans), sans-serif;

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'storages',
     'cloudinary_storage',
     'cloudinary',
+    'django_apscheduler',
     
     # Local apps
     'core',
@@ -57,12 +58,11 @@ INSTALLED_APPS = [
     'shops',
     'admin_panel',
     'activities',
-    'competitions',
     
 ]
 
-APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
-APSCHEDULER_RUN_NOW_TIMEOUT = 25
+# APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+# APSCHEDULER_RUN_NOW_TIMEOUT = 25
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

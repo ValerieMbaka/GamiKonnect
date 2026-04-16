@@ -31,5 +31,5 @@ urlpatterns = [
     path('games/', include('games.urls')),
     path('accounts/', include('accounts.urls')),
     path('shops/', include('shops.urls')),
-    path('competitions/', include('competitions.urls')),
+    # path('competitions/', include('competitions.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

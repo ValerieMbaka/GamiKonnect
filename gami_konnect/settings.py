@@ -15,13 +15,14 @@ from pathlib import Path
 
 # Initialize environ
 env = environ.Env()
-environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Read the .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# Read the .env file only if it exists (primarily for local development)
+env_file = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_file):
+    environ.Env.read_env(env_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/

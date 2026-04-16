@@ -1,0 +1,707 @@
+/* Custom Properties */
+:root {
+    /* Extended spacing system */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    
+    /* Extended shadows */
+    --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    
+    /* Extended properties */
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+    
+    /* Color */
+    --primary-color: var(--primary);
+}
+
+/* Hero Section */
+.index-hero-section {
+    height: 60vh;
+    max-height: 500px;
+    position: relative;
+    color: white;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent-primary) 100%);
+}
+
+/* Carousel */
+.index-hero-section #heroCarousel {
+    height: 100%;
+    width: 100%;
+}
+
+.index-hero-section .carousel-inner {
+    height: 100%;
+}
+
+.index-hero-section .carousel-item {
+    height: 100%;
+    position: relative;
+}
+
+.index-hero-section .carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Dark overlay */
+.index-hero-section .carousel-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%);
+    z-index: 1;
+}
+
+.index-hero-section .carousel-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    min-height: 80px;
+}
+
+.index-hero-section .carousel-caption .text-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    max-width: 600px;
+    margin-bottom: 0;
+}
+
+.index-hero-section .carousel-caption h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    text-transform: none;
+    margin-bottom: var(--spacing-xs);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    line-height: 1.2;
+    text-align: left;
+    max-width: 600px;
+}
+
+.index-hero-section .carousel-caption p {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.6;
+    margin-bottom: 0;
+    color: #ffffff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    max-width: 600px;
+    text-align: left;
+}
+
+.index-hero-section .carousel-caption .btn-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    margin-bottom: 0;
+}
+
+.index-hero-section .carousel-caption .btn-primary {
+    background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+    border: none;
+    padding: 0.75rem var(--spacing-md);
+    font-weight: 600;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.index-hero-section .carousel-caption .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+}
+
+.index-hero-section .carousel-control-prev,
+.index-hero-section .carousel-control-next {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: var(--transition);
+}
+
+.index-hero-section .carousel-control-prev:hover,
+.index-hero-section .carousel-control-next:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.index-hero-section .carousel-control-prev {
+    left: 20px;
+}
+
+.index-hero-section .carousel-control-next {
+    right: 20px;
+}
+
+.index-hero-section .carousel-indicators {
+    bottom: 5px;
+    gap: 5px;
+}
+
+.index-hero-section .carousel-indicators button {
+    width: 5px;
+    height: 5px;
+    border-radius: 45%;
+    background: rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: var(--transition);
+}
+
+.index-hero-section .carousel-indicators button.active {
+    background: #ffffff;
+    border-color: #ffffff;
+    transform: scale(1.2);
+}
+
+.index-hero-section .carousel-indicators button:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: scale(1.1);
+}
+
+/* About Section */
+#about {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+#about::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at 25% 25%, rgba(53, 168, 240, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* About Feature Cards */
+.about-feature-card {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--turquoise) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.about-feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(53, 168, 240, 0.2) 0%, rgba(64, 224, 208, 0.2) 100%);
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.about-feature-card:hover::before {
+    opacity: 1;
+}
+
+.about-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-lg);
+    border-color: var(--primary);
+}
+
+.about-feature-card .card-body {
+    position: relative;
+    z-index: 2;
+}
+
+.about-feature-card h5 {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: #ffffff;
+}
+
+.about-feature-card p {
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.about-feature-card i {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Trending Games Section */
+#games {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+#games::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at 75% 75%, rgba(95, 211, 179, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Trending Games Section */
+.game-card {
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    height: 100%;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-lg);
+    border-color: var(--border-medium);
+}
+
+.game-card .card-img-top {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.game-card .card-img-top img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: var(--transition);
+}
+
+.game-card:hover .card-img-top img {
+    transform: scale(1.05);
+}
+
+.game-card .card-body {
+    padding: var(--spacing-sm);
+    display: block;
+}
+
+.game-info {
+    display: block;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.game-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0;
+    flex: 1;
+}
+
+.game-genre {
+    background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-left: var(--spacing-sm);
+}
+
+.game-platforms {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.game-platforms i {
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+.game-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--spacing-xs);
+}
+
+.game-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.game-rating i {
+    font-size: 0.8rem;
+}
+
+.game-players {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.game-players i {
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+/* Game Badges */
+.game-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+.trending-badge {
+    background: linear-gradient(135deg, var(--gold), var(--warning));
+    color: var(--text-primary);
+    border-color: rgba(255, 215, 0, 0.5);
+}
+
+.hot-badge {
+    background: linear-gradient(135deg, var(--alert), var(--danger));
+    color: white;
+    border-color: rgba(240, 53, 75, 0.5);
+}
+
+.new-badge {
+    background: linear-gradient(135deg, var(--emerald), var(--success));
+    color: white;
+    border-color: rgba(80, 200, 120, 0.5);
+}
+
+/* Platforms Section */
+#platforms {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--accent-primary-light) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+#platforms::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at 25% 75%, rgba(64, 224, 208, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Competitions Section */
+#competitions {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-tertiary) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+#competitions::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at 75% 25%, rgba(204, 204, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+
+/* Competitions Section */
+#competitions .card-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) 0;
+    border-bottom: 2px solid var(--border-light);
+    margin-bottom: 0;
+}
+
+#competitions .card-header h3 i {
+    font-size: 1.75rem;
+    padding: var(--spacing-sm);
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(53, 168, 240, 0.1) 0%, rgba(30, 144, 255, 0.1) 100%);
+    color: var(--primary);
+    box-shadow: 0 2px 8px rgba(53, 168, 240, 0.2);
+}
+
+#competitions .card-header h3 .text-warning {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 228, 77, 0.1) 100%);
+    color: var(--warning);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+}
+
+/* Competition entries layout */
+#competitions .card-body .d-flex {
+    width: 100%;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.25rem;
+    border-radius: var(--border-radius);
+    background: var(--bg-secondary);
+    margin-bottom: 0.25rem;
+    transition: var(--transition);
+}
+
+#competitions .card-body .d-flex:hover {
+    background: var(--bg-tertiary);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+#competitions .card-body .d-flex .flex-shrink-0 {
+    flex-shrink: 0;
+}
+
+#competitions .card-body .d-flex > div:last-child {
+    flex: 1;
+    margin-left: 0.25rem;
+}
+
+/* Player rankings layout */
+#competitions .card-body .d-flex.align-items-center {
+    width: 100%;
+    justify-content: flex-start;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius);
+    background: var(--bg-secondary);
+    margin-bottom: var(--spacing-xs);
+    transition: var(--transition);
+}
+
+#competitions .card-body .d-flex.align-items-center:hover {
+    background: var(--bg-tertiary);
+    transform: translateX(5px);
+    box-shadow: var(--box-shadow);
+}
+
+#competitions .card-body .d-flex.align-items-center .flex-grow-1 {
+    flex: 1;
+    margin-left: var(--spacing-xs);
+}
+
+#competitions .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+}
+
+#competitions .card-body .d-flex h5 {
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+#competitions .card-body .d-flex .small {
+    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+}
+
+#competitions .card-body .d-flex .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    width: 80px;
+    height: 30px;
+}
+
+#competitions .btn-outline-primary {
+    border-width: 2px;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    transition: var(--transition);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+#competitions .btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+    background: var(--primary);
+    color: white;
+}
+
+/* Dark mode for sections */
+[data-theme="dark"] #about {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+}
+
+[data-theme="dark"] #about::before {
+    background-image: radial-gradient(circle at 25% 25%, rgba(79, 184, 255, 0.1) 0%, transparent 50%);
+}
+
+[data-theme="dark"] #games {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+}
+
+[data-theme="dark"] #games::before {
+    background-image: radial-gradient(circle at 75% 75%, rgba(111, 232, 197, 0.1) 0%, transparent 50%);
+}
+
+[data-theme="dark"] #platforms {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+}
+
+[data-theme="dark"] #platforms::before {
+    background-image: radial-gradient(circle at 25% 75%, rgba(96, 240, 224, 0.1) 0%, transparent 50%);
+}
+
+[data-theme="dark"] #competitions {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+}
+
+[data-theme="dark"] #competitions::before {
+    background-image: radial-gradient(circle at 75% 25%, rgba(184, 184, 255, 0.1) 0%, transparent 50%);
+}
+
+/* Badge Animations */
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+    }
+}
+
+.game-badge:hover {
+    animation: badgeGlow 1s ease-in-out infinite;
+}
+
+@keyframes badgeGlow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    }
+}
+
+/* Responsive adjustments for game cards */
+@media (max-width: 768px) {
+    .game-card .card-img-top {
+        height: 180px;
+    }
+    
+    .game-card .card-body {
+        padding: var(--spacing-sm);
+    }
+    
+    .game-title {
+        font-size: 1rem;
+    }
+    
+    .game-genre {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .game-platforms {
+        font-size: 0.75rem;
+    }
+    
+    .game-rating i {
+        font-size: 0.75rem;
+    }
+    
+    .game-players {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .game-card .card-img-top {
+        height: 160px;
+    }
+    
+    .game-card .card-body {
+        padding: var(--spacing-xs);
+    }
+    
+    .game-title {
+        font-size: 0.95rem;
+    }
+    
+    .game-genre {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.35rem;
+    }
+    
+    .game-platforms {
+        font-size: 0.7rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .game-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .game-rating {
+        gap: 0.05rem;
+    }
+    
+    .game-rating i {
+        font-size: 0.7rem;
+    }
+    
+    .game-players {
+        font-size: 0.7rem;
+    }
+}

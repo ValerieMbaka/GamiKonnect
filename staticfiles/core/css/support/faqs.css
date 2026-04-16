@@ -1,0 +1,96 @@
+.faq-search-container {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.faq-search-input {
+    border-radius: 50px 0 0 50px;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    border: 2px solid var(--border-light);
+    border-right: none;
+}
+
+.faq-search-input:focus {
+    box-shadow: none;
+    border-color: var(--primary);
+}
+
+.faq-category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.faq-category-card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 12px;
+    text-align: center;
+    padding: 2rem 1rem;
+    cursor: pointer;
+}
+
+.faq-category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.faq-category-card.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+.faq-category-card.active i {
+    color: white !important;
+}
+
+.faq-accordion .accordion-item {
+    border: none;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+}
+
+.faq-accordion .accordion-button {
+    background: var(--bg-card);
+    border: none;
+    padding: 1.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: none;
+}
+
+.faq-accordion .accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+.faq-accordion .accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23333'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    transition: transform 0.2s ease;
+}
+
+.faq-accordion .accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+.faq-accordion .accordion-body {
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-light);
+}
+
+.faq-hidden {
+    display: none !important;
+}
+
+#faqResultsCounter {
+    font-size: 0.9rem;
+}
+
+.popular-faq-badge {
+    font-size: 0.7rem;
+}

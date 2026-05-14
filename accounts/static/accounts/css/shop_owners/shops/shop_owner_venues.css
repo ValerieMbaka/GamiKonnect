@@ -168,3 +168,43 @@
 .empty-state-large-icon-box { width: 80px; height: 80px; }
 .border-dashed { border: 2px dashed #cbd5e1; background: transparent; }
 .max-w-md { max-width: 28rem; }
+
+@media (max-width: 768px) {
+    .venues-surface {
+        padding: 1rem;
+    }
+
+    .venues-header {
+        padding: 1rem;
+    }
+
+    .status-badge-corner {
+        position: static;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .filter-pills {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .btn-filter {
+        font-size: 0.86rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .shop-logo-img,
+    .shop-logo-container {
+        width: 48px;
+        height: 48px;
+    }
+
+    .btn-icon-action-rounded {
+        width: 38px;
+        height: 38px;
+    }
+}

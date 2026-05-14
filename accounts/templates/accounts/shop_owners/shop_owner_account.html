@@ -22,7 +22,7 @@
         <section class="card-admin border-blue p-4 mb-4 position-relative overflow-hidden">
             <div class="row position-relative z-1 h-100">
                 <div class="col-lg-8 d-flex align-items-center gap-4 mb-3 mb-lg-0">
-                    <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" alt="{{ shop_owner.first_name }}" class="rounded-circle shadow-sm border border-light object-fit-cover" style="width: 90px; height: 90px;">
+                    <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" alt="{{ shop_owner.first_name }}" class="rounded-circle shadow-sm border border-light object-fit-cover account-owner-avatar">
                     <div>
                         <h2 class="h4 fw-bold mb-1 text-dark">{{ shop_owner.first_name }} {{ shop_owner.last_name }}</h2>
                         <p class="text-muted mb-2">{{ shop_owner.email }}</p>
@@ -152,7 +152,7 @@
                     </div>
 
                     <div class="col-12">
-                        <article class="card-admin border-red p-4 bg-red-soft" style="border-left-width: 6px;">
+                        <article class="card-admin border-red p-4 bg-red-soft danger-zone-card">
                             <header class="mb-3">
                                 <h2 class="h6 fw-bold text-red text-uppercase tracking-wide"><i class="fas fa-exclamation-triangle me-2"></i> Danger Zone</h2>
                             </header>
@@ -174,7 +174,7 @@
     </div>
 
     <div id="editProfileModal" class="modal">
-        <div class="modal-content card-admin p-0 overflow-hidden" style="max-width: 600px; border-left: none;">
+        <div class="modal-content card-admin p-0 overflow-hidden profile-edit-modal-content">
             <div class="modal-header bg-light p-4 border-bottom border-light d-flex justify-content-between align-items-center">
                 <h3 class="m-0 h5 fw-bold text-dark"><i class="fas fa-user-pen text-primary me-2"></i> Edit Profile Identity</h3>
                 <button type="button" class="btn-close text-muted" id="closeEditModalIcon"><i class="fas fa-times"></i></button>
@@ -184,8 +184,8 @@
                     {% csrf_token %}
                     <div class="text-center mb-4">
                         <div class="position-relative d-inline-block">
-                            <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" alt="Avatar" class="rounded-circle object-fit-cover shadow-sm border border-light" style="width: 100px; height: 100px;">
-                            <label for="profile_picture" class="btn btn-primary rounded-circle position-absolute bottom-0 end-0 shadow-sm d-flex align-items-center justify-content-center cursor-pointer" style="width: 32px; height: 32px; padding: 0;">
+                            <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" alt="Avatar" class="rounded-circle object-fit-cover shadow-sm border border-light profile-edit-avatar">
+                            <label for="profile_picture" class="btn btn-primary rounded-circle position-absolute bottom-0 end-0 shadow-sm d-flex align-items-center justify-content-center cursor-pointer profile-edit-avatar-trigger">
                                 <i class="fas fa-camera small"></i>
                             </label>
                             <input type="file" name="profile_picture" id="profile_picture" class="d-none" accept="image/*">

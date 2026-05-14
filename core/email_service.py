@@ -35,7 +35,7 @@ class EmailManager:
             if 'support_email' not in context:
                 context['support_email'] = getattr(settings, 'SUPPORT_EMAIL', 'support@gamikonnect.com')
             
-            # Render the raw HTML with standard <style> blocks
+            # Render the raw HTML
             html_message = render_to_string(f'accounts/email_templates/{template_path}', context)
             
             # Use premailer to automatically convert <style> tags to inline CSS
@@ -226,3 +226,335 @@ class EmailManager:
             'admin_dashboard_url': f"{site_url}/admin/"
         }
         return cls._send_html_email(subject, 'admin/admin_competition_result.html', context, [admin_email])
+    
+    
+
+# -----------------------------------------------------------------------
+    # Competition Emails — Shop Owner
+    # -----------------------------------------------------------------------
+
+    @classmethod
+    def send_competition_submission_confirmation(cls, shop_owner, competition, is_resubmission=False):
+        """Confirms to shop owner that their competition has been submitted/resubmitted for review."""
+        subject = f"{'Re-submission' if is_resubmission else 'Submission'} Received: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        context = {
+            'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip(),
+            'competition': competition,
+            'is_resubmission': is_resubmission,
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+        }
+        return cls._send_html_email(
+            subject,
+            'shop_owners/competitions/competition_submission_confirmation.html',
+            context,
+            [shop_owner.email]
+        )
+
+    @classmethod
+    def send_competition_approved(cls, competition):
+        """Notifies shop owner that their competition has been approved and is now live."""
+        subject = f"Competition Approved: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        shop_owner = competition.shop.owners.first()
+        context = {
+            'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
+            'competition': competition,
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+        }
+        recipients = [owner.email for owner in competition.shop.owners.all()]
+        return cls._send_html_email(
+            subject,
+            'shop_owners/competitions/competition_approved.html',
+            context,
+            recipients
+        )
+
+    @classmethod
+    def send_competition_rejected(cls, competition):
+        """Notifies shop owner that their competition has been rejected, with the rejection reason."""
+        subject = f"Competition Update: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        shop_owner = competition.shop.owners.first()
+        context = {
+            'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
+            'competition': competition,
+            'rejection_reason': competition.rejection_reason,
+            'edit_link': f"{site_url}/competitions/manage/{competition.integer_id}/edit/",
+        }
+        recipients = [owner.email for owner in competition.shop.owners.all()]
+        return cls._send_html_email(
+            subject,
+            'shop_owners/competitions/competition_rejected.html',
+            context,
+            recipients
+        )
+
+    @classmethod
+    def send_competition_registration_opened(cls, competition):
+        """Notifies shop owner that registration for their competition is now open."""
+        subject = f"Registration Now Open: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        shop_owner = competition.shop.owners.first()
+        context = {
+            'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
+            'competition': competition,
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+        }
+        recipients = [owner.email for owner in competition.shop.owners.all()]
+        return cls._send_html_email(
+            subject,
+            'shop_owners/competitions/competition_registration_opened.html',
+            context,
+            recipients
+        )
+
+    @classmethod
+    def send_competition_registration_closed(cls, competition, participant_count):
+        """Notifies shop owner that registration has closed, with final participant count."""
+        subject = f"Registration Closed: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        shop_owner = competition.shop.owners.first()
+        context = {
+            'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
+            'competition': competition,
+            'participant_count': participant_count,
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+        }
+        recipients = [owner.email for owner in competition.shop.owners.all()]
+        return cls._send_html_email(
+            subject,
+            'shop_owners/competitions/competition_registration_closed.html',
+            context,
+            recipients
+        )
+
+    @classmethod
+    def send_competition_checkins_confirmed(cls, competition):
+        """Notifies shop owner that admin has confirmed the check-in list and results can now be submitted."""
+        subject = f"Check-ins Confirmed — Submit Results: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        shop_owner = competition.shop.owners.first()
+        context = {
+            'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
+            'competition': competition,
+            'results_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+        }
+        recipients = [owner.email for owner in competition.shop.owners.all()]
+        return cls._send_html_email(
+            subject,
+            'shop_owners/competitions/competition_checkins_confirmed.html',
+            context,
+            recipients
+        )
+
+    @classmethod
+    def send_competition_results_verified(cls, competition):
+        """Notifies shop owner that the admin has verified and published the competition results."""
+        subject = f"Results Published: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        shop_owner = competition.shop.owners.first()
+        context = {
+            'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
+            'competition': competition,
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+        }
+        recipients = [owner.email for owner in competition.shop.owners.all()]
+        return cls._send_html_email(
+            subject,
+            'shop_owners/competitions/competition_results_verified.html',
+            context,
+            recipients
+        )
+
+    @classmethod
+    def send_competition_ended_prompt(cls, competition):
+        """Prompts shop owner to submit check-ins now that the competition end time has passed."""
+        subject = f"Action Required — Submit Check-ins: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        shop_owner = competition.shop.owners.first()
+        context = {
+            'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
+            'competition': competition,
+            'checkin_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+        }
+        recipients = [owner.email for owner in competition.shop.owners.all()]
+        return cls._send_html_email(
+            subject,
+            'shop_owners/competitions/competition_ended_prompt.html',
+            context,
+            recipients
+        )
+
+    # -----------------------------------------------------------------------
+    # Competition Emails — Gamer
+    # -----------------------------------------------------------------------
+
+    @classmethod
+    def send_competition_registration(cls, gamer, competition, registration):
+        """Sends registration confirmation and unique code to gamer."""
+        subject = f"You're Registered! {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        context = {
+            'gamer_name': gamer.custom_username or f"{gamer.first_name} {gamer.last_name}".strip(),
+            'competition': competition,
+            'registration': registration,
+            'unique_code': str(registration.unique_code),
+            'competition_link': f"{site_url}/competitions/{competition.integer_id}/",
+            'dashboard_link': f"{site_url}/competitions/my-competitions/",
+        }
+        return cls._send_html_email(
+            subject,
+            'gamers/competitions/competition_registration_confirmation.html',
+            context,
+            [gamer.email]
+        )
+
+    @classmethod
+    def send_competition_reminder(cls, gamer, competition, registration):
+        """Sends a day-before reminder to gamers with their unique code."""
+        subject = f"Competition Tomorrow — Don't Forget Your Code: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        context = {
+            'gamer_name': gamer.custom_username or f"{gamer.first_name} {gamer.last_name}".strip(),
+            'competition': competition,
+            'registration': registration,
+            'unique_code': str(registration.unique_code),
+            'competition_link': f"{site_url}/competitions/{competition.integer_id}/",
+        }
+        return cls._send_html_email(
+            subject,
+            'gamers/competitions/competition_reminder.html',
+            context,
+            [gamer.email]
+        )
+
+    @classmethod
+    def send_competition_result_to_gamer(cls, gamer, competition, result):
+        """Sends competition result and points awarded to individual gamer."""
+        subject = f"Your Results Are In: {competition.name} — {settings.PROJECT_NAME}"
+        site_url = cls._get_site_url()
+        context = {
+            'gamer_name': gamer.custom_username or f"{gamer.first_name} {gamer.last_name}".strip(),
+            'competition': competition,
+            'result': result,
+            'is_win': result.is_win(),
+            'result_link': f"{site_url}/competitions/{competition.integer_id}/my-result/",
+            'dashboard_link': f"{site_url}/competitions/my-competitions/",
+        }
+        return cls._send_html_email(
+            subject,
+            'gamers/competitions/competition_result_gamer.html',
+            context,
+            [gamer.email]
+        )
+
+    # -----------------------------------------------------------------------
+    # Competition Emails — Admin
+    # -----------------------------------------------------------------------
+
+    @classmethod
+    def send_competition_submitted(cls, competition):
+        """Notifies admin of a new competition submission pending review."""
+        subject = f"ACTION REQUIRED: New Competition Submission — {settings.PROJECT_NAME}"
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        site_url = cls._get_site_url()
+        context = {
+            'competition': competition,
+            'submitted_by': f"{competition.created_by.first_name} {competition.created_by.last_name}".strip(),
+            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+        }
+        return cls._send_html_email(
+            subject,
+            'admin/competitions/admin_competition_submitted.html',
+            context,
+            [admin_email]
+        )
+
+    @classmethod
+    def send_competition_resubmitted(cls, competition):
+        """Notifies admin that a previously rejected competition has been resubmitted."""
+        subject = f"ACTION REQUIRED: Competition Resubmitted — {settings.PROJECT_NAME}"
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        site_url = cls._get_site_url()
+        context = {
+            'competition': competition,
+            'submitted_by': f"{competition.created_by.first_name} {competition.created_by.last_name}".strip(),
+            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+        }
+        return cls._send_html_email(
+            subject,
+            'admin/competitions/admin_competition_resubmitted.html',
+            context,
+            [admin_email]
+        )
+
+    @classmethod
+    def send_competition_checkins_submitted(cls, competition, checked_in_count, registered_count):
+        """Notifies admin that the shop owner has submitted the check-in list."""
+        subject = f"ACTION REQUIRED: Check-in List Submitted — {competition.name} — {settings.PROJECT_NAME}"
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        site_url = cls._get_site_url()
+        context = {
+            'competition': competition,
+            'checked_in_count': checked_in_count,
+            'registered_count': registered_count,
+            'no_show_count': registered_count - checked_in_count,
+            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+        }
+        return cls._send_html_email(
+            subject,
+            'admin/competitions/admin_competition_checkins.html',
+            context,
+            [admin_email]
+        )
+
+    @classmethod
+    def send_competition_results_submitted(cls, competition):
+        """Notifies admin that results have been submitted and prize verification is needed (money/gift)."""
+        subject = f"ACTION REQUIRED: Results Pending Verification — {competition.name} — {settings.PROJECT_NAME}"
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        site_url = cls._get_site_url()
+        context = {
+            'competition': competition,
+            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+        }
+        return cls._send_html_email(
+            subject,
+            'admin/competitions/admin_competition_results.html',
+            context,
+            [admin_email]
+        )
+
+    @classmethod
+    def send_competition_results_auto_completed(cls, competition):
+        """Notifies admin that a points-based competition has auto-completed and points were allocated."""
+        subject = f"FYI: Competition Auto-Completed — {competition.name} — {settings.PROJECT_NAME}"
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        site_url = cls._get_site_url()
+        context = {
+            'competition': competition,
+            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+        }
+        return cls._send_html_email(
+            subject,
+            'admin/competitions/admin_competition_auto_completed.html',
+            context,
+            [admin_email]
+        )
+
+    @classmethod
+    def send_competition_prize_allocations(cls, competition, allocations):
+        """Sends admin a summary of prize allocations after verification.
+
+        allocations: list of dicts with keys 'gamer', 'rank', and either 'amount' or 'gift'
+        """
+        subject = f"Prize Allocations: {competition.name} — {settings.PROJECT_NAME}"
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        site_url = cls._get_site_url()
+        context = {
+            'competition': competition,
+            'allocations': allocations,
+            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+        }
+        return cls._send_html_email(subject, 'admin/competitions/admin_competition_prize_allocations.html', context, [admin_email])

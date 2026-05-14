@@ -38,6 +38,14 @@ class Gamer(Account):
     points = models.PositiveIntegerField(default=0,
                                          help_text="User's total points earned from gaming activities")
     
+    current_level = models.ForeignKey(
+        'activities.Level',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="The gamer's current progression level."
+    )
+    
     class Meta:
         verbose_name = 'Gamer'
         verbose_name_plural = 'Gamers'

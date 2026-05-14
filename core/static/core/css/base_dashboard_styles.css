@@ -51,7 +51,8 @@
 
 .search-bar {
     position: relative;
-    width: 300px;
+    width: clamp(180px, 26vw, 300px);
+    min-width: 0;
 }
 
 .search-bar i {
@@ -84,6 +85,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    min-width: 0;
 }
 
 .nav-icon {
@@ -202,7 +204,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 120px;
+    max-width: clamp(90px, 14vw, 160px);
     display: block;
     color: inherit;
 }
@@ -273,6 +275,33 @@
     padding: var(--spacing-lg);
     transition: var(--transition);
     min-height: calc(100vh - var(--header-height));
+}
+
+/* Prevent accidental horizontal overflow on narrow devices */
+.dashboard-content,
+.profile-card,
+.card-admin,
+.competition-item,
+.activity-item {
+    min-width: 0;
+}
+
+.dashboard-content * {
+    max-width: 100%;
+}
+
+.dashboard-content img,
+.dashboard-content video,
+.dashboard-content canvas,
+.dashboard-content iframe,
+.dashboard-content table {
+    max-width: 100%;
+}
+
+.dashboard-content table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .dashboard-content.sidebar-collapsed {
@@ -497,4 +526,58 @@
     .dashboard-content { padding: var(--spacing-sm); }
     .nav-link-btn span, .back-to-home-btn span { display: none; }
     .profile-btn .username { display: none; }
+    .nav-dropdown-content {
+        width: min(92vw, 320px);
+        right: 0;
+        left: auto;
+    }
+    .profile-dropdown-content {
+        width: min(92vw, 280px);
+    }
+    .profile-header {
+        align-items: flex-start;
+    }
+    .profile-info h4,
+    .profile-info small {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+}
+
+@media (max-width: 576px) {
+    .top-nav {
+        height: auto;
+        min-height: var(--header-height);
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .nav-left,
+    .nav-right {
+        gap: 0.4rem;
+    }
+
+    .profile-btn {
+        padding: 6px 8px;
+    }
+
+    .nav-dropdown-content {
+        width: min(94vw, 300px);
+    }
+}
+
+@media (max-width: 400px) {
+    .dashboard-content {
+        padding: 0.65rem;
+    }
+
+    .nav-icon {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+
+    .profile-avatar {
+        width: 32px;
+        height: 32px;
+    }
 }

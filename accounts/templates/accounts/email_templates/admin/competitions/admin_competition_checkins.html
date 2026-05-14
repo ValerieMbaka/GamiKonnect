@@ -1,0 +1,28 @@
+{% extends "accounts/email_templates/base_email.html" %}
+{% comment %}admin_competition_resubmitted.html{% endcomment %}
+{% block title %}Competition Resubmitted — {{ project_name }}{% endblock %}
+{% block header_bg %}background: linear-gradient(135deg, #6610f2 0%, #4B0082 100%);{% endblock %}
+{% block header_title %}🔄 COMPETITION RESUBMITTED{% endblock %}
+{% block header_subtitle %}Updated submission awaiting re-review{% endblock %}
+
+{% block content %}
+    <p class="text-primary" style="font-weight: 600; font-size: 18px;">Competition Updated & Resubmitted</p>
+    <p class="text-secondary"><strong>{{ submitted_by }}</strong> has updated and resubmitted their competition <strong>"{{ competition.name }}"</strong> after your previous rejection. Please review the changes.</p>
+
+    <div class="info-box">
+        <p class="text-primary" style="margin: 5px 0; font-weight: 600;">📋 Resubmission Details:</p>
+        <ul class="text-secondary" style="margin: 8px 0 0 0; padding-left: 20px;">
+            <li><strong>Competition:</strong> {{ competition.name }}</li>
+            <li><strong>Submitted By:</strong> {{ submitted_by }}</li>
+            <li><strong>Game:</strong> {{ competition.game.name }}</li>
+            <li><strong>Platform:</strong> {{ competition.platform.name }}</li>
+            <li><strong>Shop:</strong> {{ competition.shop.name }}</li>
+            <li><strong>Scheduled:</strong> {{ competition.scheduled_time|date:"N j, Y · g:i A" }}</li>
+            <li><strong>Max Participants:</strong> {{ competition.max_participants }}</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 25px;">
+        <a href="{{ admin_review_link }}" class="btn" style="background-color: #6610f2;">Review Updated Competition</a>
+    </div>
+{% endblock %}

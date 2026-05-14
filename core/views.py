@@ -16,6 +16,8 @@ from .models import (
     Footer,
     SectionHeading,
 )
+from competitions.models import Competition
+from accounts.models import Gamer
 
 
 def base_site_context():
@@ -60,6 +62,14 @@ def index(request):
     event_heading = headings.get('events')
     events = Event.objects.filter(is_active=True)
     
+    # Fetch upcoming competitions
+    upcoming_competitions = Competition.objects.filter(
+        status__in=['approved', 'registration_open', 'registration_closed']
+    ).order_by('scheduled_time')[:3]
+    
+    # Fetch top players this week (ranked by points)
+    top_players = Gamer.objects.order_by('-points')[:5]
+    
     context = {
         **base_context,
         'navigation_links': navigation_links,
@@ -72,6 +82,8 @@ def index(request):
         'platforms': platforms,
         'event_heading': event_heading,
         'events': events,
+        'upcoming_competitions': upcoming_competitions,
+        'top_players': top_players,
         'all_headings': headings,  # Pass all headings
     }
     

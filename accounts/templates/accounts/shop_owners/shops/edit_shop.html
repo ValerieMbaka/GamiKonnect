@@ -49,7 +49,7 @@
                             <label class="small text-muted fw-bold text-uppercase mb-1">Brand Logo</label>
                             <div class="d-flex align-items-center gap-3 mt-1">
                                 {% if shop.logo and shop.logo.url != '/media/shop_logos/placeholder.png' %}
-                                    <img src="{{ shop.logo.url }}" alt="Logo" class="rounded-3 border border-light" style="width: 48px; height: 48px; object-fit: cover; filter: grayscale(50%);">
+                                    <img src="{{ shop.logo.url }}" alt="Logo" class="rounded-3 border border-light locked-logo-preview">
                                 {% endif %}
                                 <span class="badge bg-light text-muted border px-2 py-1"><i class="fas fa-lock me-1"></i> Locked</span>
                             </div>
@@ -98,10 +98,10 @@
                             <div class="col-md-6">
                                 <div class="p-3 bg-light rounded-3 border border-light d-flex align-items-center justify-content-between transition-all hover-lift-subtle">
                                     <label class="d-flex align-items-center gap-3 cursor-pointer m-0">
-                                        <input type="checkbox" name="console_types" value="{{ platform.slug }}" class="form-check-input console-checkbox mt-0" style="width: 1.2rem; height: 1.2rem;" {% if platform.slug in existing_console_slugs %}checked{% endif %}>
+                                        <input type="checkbox" name="console_types" value="{{ platform.slug }}" class="form-check-input console-checkbox mt-0" {% if platform.slug in existing_console_slugs %}checked{% endif %}>
                                         <span class="fw-bold text-dark">{{ platform.name }}</span>
                                     </label>
-                                    <div style="width: 80px;">
+                                    <div class="console-quantity-wrap">
                                         <input type="number" name="console_quantity_{{ platform.slug }}" class="form-control form-control-sm text-center quantity-input" min="1"
                                         {% if platform.slug in existing_console_slugs %}
                                             {% for key, val in existing_quantities.items %}
@@ -124,7 +124,7 @@
                             <label class="form-label fw-bold small text-dark">Add Games to Inventory</label>
                             <div class="position-relative">
                                 <input type="text" id="gameSearchInput" placeholder="Type a game title (e.g., FIFA 24)..." class="form-control bg-light border-light py-2" autocomplete="off">
-                                <div id="gameSearchSuggestions" class="position-absolute w-100 bg-white border border-light shadow-sm rounded-3 mt-1 d-none" style="z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
+                                <div id="gameSearchSuggestions" class="position-absolute w-100 bg-white border border-light shadow-sm rounded-3 mt-1 d-none game-search-suggestions"></div>
                             </div>
                             <div class="selected-games-wrapper mt-3">
                                 <div class="d-flex flex-wrap gap-2" id="selectedGamesTags"></div>
@@ -151,7 +151,7 @@
                 </div>
             </div>
 
-            <div class="position-sticky bottom-0 bg-white border-top border-light p-3 mt-4 d-flex justify-content-end gap-3 shadow-lg rounded-top-4" style="z-index: 100;">
+            <div class="position-sticky bottom-0 bg-white border-top border-light p-3 mt-4 d-flex justify-content-end gap-3 shadow-lg rounded-top-4 edit-shop-actions">
                 <a href="{% url 'accounts:shop_owner_shop_detail' shop.pk %}" class="btn btn-light border rounded-pill px-4 fw-semibold text-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" id="btnSubmit">
                     <i class="fas fa-save me-2"></i> Save Configurations
@@ -161,11 +161,8 @@
     </div>
 
     {{ games_json|json_script:"games-data" }}
-
-    <script>
-        window.existingGamesData = {{ existing_games|safe }};
-        window.existingPricingData = {{ existing_pricing|safe }};
-    </script>
+    {{ existing_games|json_script:"existing-games-data" }}
+    {{ existing_pricing|json_script:"existing-pricing-data" }}
 {% endblock %}
 
 {% block extra_scripts %}

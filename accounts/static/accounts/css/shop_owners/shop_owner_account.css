@@ -21,6 +21,8 @@
 .account-tabs {
     display: flex;
     overflow-x: auto;
+    gap: 0.75rem;
+    scrollbar-width: thin;
 }
 
 .tab-btn {
@@ -98,8 +100,36 @@
 
 .modal-content {
     width: 90%;
+    max-width: min(92vw, 760px);
+    max-height: 90vh;
+    overflow-y: auto;
     margin: auto;
     animation: slideInUp 0.3s ease-out;
+}
+
+.account-owner-avatar {
+    width: 90px;
+    height: 90px;
+}
+
+.danger-zone-card {
+    border-left-width: 6px;
+}
+
+.profile-edit-modal-content {
+    max-width: 600px;
+    border-left: none;
+}
+
+.profile-edit-avatar {
+    width: 100px;
+    height: 100px;
+}
+
+.profile-edit-avatar-trigger {
+    width: 32px;
+    height: 32px;
+    padding: 0;
 }
 
 .btn-close {
@@ -187,4 +217,39 @@ body[data-dashboard-theme="dark"] .dropdown-item:hover {
 body[data-dashboard-theme="dark"] .switch {
     background-color: #334155 !important;
     border-color: #475569 !important;
+}
+
+@media (max-width: 576px) {
+    .account-owner-avatar {
+        width: 72px;
+        height: 72px;
+    }
+
+    .profile-edit-avatar {
+        width: 84px;
+        height: 84px;
+    }
+
+    .account-tabs {
+        gap: 1rem !important;
+    }
+
+    .tab-btn {
+        font-size: 0.92rem;
+    }
+
+    .modal-content {
+        width: calc(100% - 1rem);
+        max-width: calc(100% - 1rem);
+    }
+}
+
+@media (max-width: 400px) {
+    .account-tabs {
+        gap: 0.5rem !important;
+    }
+
+    .tab-btn {
+        font-size: 0.86rem;
+    }
 }

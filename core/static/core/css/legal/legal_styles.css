@@ -169,3 +169,39 @@
         font-size: 0.9rem;
     }
 }
+
+@media (max-width: 576px) {
+    .legal-container, .support-container {
+        padding: 1.25rem 0;
+    }
+
+    .legal-header, .support-header {
+        margin-bottom: 2rem;
+    }
+
+    .legal-header .lead, .support-header .lead {
+        font-size: 1rem;
+    }
+
+    .legal-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 400px) {
+    .legal-card .card-body, .support-card .card-body {
+        padding: 1rem;
+    }
+
+    .legal-header h1, .support-header h1 {
+        font-size: 1.55rem;
+    }
+
+    .icon-wrapper-sm {
+        width: 34px;
+        height: 34px;
+    }
+}

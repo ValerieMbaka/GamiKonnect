@@ -113,3 +113,42 @@
     border-radius: var(--border-radius-sm); font-size: var(--text-base); font-weight: var(--font-medium); cursor: pointer; transition: var(--transition);
 }
 .save-btn:hover { background: var(--primary-dark); }
+
+@media (max-width: 768px) {
+    .profile-completion-container {
+        padding: var(--spacing-sm);
+    }
+
+    .profile-form {
+        padding: var(--spacing-md);
+    }
+}
+
+@media (max-width: 576px) {
+    .username-input-group,
+    .date-input-group,
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .generate-btn,
+    .save-btn {
+        width: 100%;
+    }
+
+    .avatar-preview-holder {
+        width: 96px;
+        height: 96px;
+    }
+}
+
+@media (max-width: 400px) {
+    .profile-form {
+        padding: 0.75rem;
+    }
+
+    .chip {
+        max-width: 100%;
+    }
+}

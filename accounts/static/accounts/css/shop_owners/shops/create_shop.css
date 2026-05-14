@@ -187,6 +187,10 @@
     transition: var(--transition);
 }
 
+.wizard-btn-hidden {
+    display: none;
+}
+
 .btn-outline-secondary {
     background: transparent;
     border: 2px solid var(--border-medium);
@@ -373,5 +377,54 @@
     
     .other-consoles-selector {
         flex-direction: column;
+    }
+
+    .wizard-actions {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .wizard-actions .ms-auto {
+        width: 100%;
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .wizard-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .create-shop-deploy-wrapper {
+        padding: 1rem;
+    }
+
+    .wizard-inner-content h3 {
+        font-size: 1.05rem;
+    }
+
+    .step-introduction h2 {
+        font-size: 1.4rem;
+    }
+
+    .console-checkbox-item {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .wizard-actions .ms-auto {
+        flex-direction: column;
+    }
+
+    .wizard-actions .btn {
+        padding: 0.72rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .console-quantity-input {
+        width: 88px;
     }
 }

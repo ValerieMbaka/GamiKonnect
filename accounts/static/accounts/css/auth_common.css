@@ -33,6 +33,7 @@
     padding: var(--spacing-xl);
     width: 100%;
     max-width: 500px;
+    min-width: 0;
     position: relative;
     z-index: 1;
     animation: slideUp 0.5s ease-out;
@@ -222,5 +223,19 @@
     .form-group input {
         font-size: var(--text-sm);
         padding: 10px 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    .auth-form-container {
+        padding: 0.65rem;
+    }
+
+    .auth-form-wrapper {
+        padding: 0.85rem;
+    }
+
+    .auth-form-header h1 {
+        overflow-wrap: anywhere;
     }
 }

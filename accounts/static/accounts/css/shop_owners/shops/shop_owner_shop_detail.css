@@ -89,6 +89,18 @@
     line-height: 1.2;
 }
 
+.details-label {
+    letter-spacing: 0.05em;
+}
+
+.console-title-sm {
+    font-size: 0.9rem;
+}
+
+.console-quantity-sm {
+    font-size: 0.75rem;
+}
+
 /* --- Game Library Matrix --- */
 .matrix-search-container {
     width: 100%;
@@ -139,4 +151,35 @@
     background-color: #ffffff !important;
     box-shadow: 0 0 0 3px rgba(53, 168, 240, 0.1);
     outline: none;
+}
+
+@media (max-width: 576px) {
+    .shop-detail-logo {
+        width: 80px;
+        height: 80px;
+    }
+
+    .hero-watermark-icon {
+        font-size: 10rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .text-nowrap {
+        white-space: normal !important;
+    }
+
+    .matrix-search-container {
+        max-width: 100%;
+    }
+
+    .hardware-icon-box {
+        width: 32px;
+        height: 32px;
+    }
+
+    .game-icon-box {
+        width: 34px;
+        height: 34px;
+    }
 }

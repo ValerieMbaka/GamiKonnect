@@ -86,7 +86,7 @@
             </div>
         </section>
 
-        <section class="operations-section row g-4 mb-4 anim-fade-in-up" style="animation-delay: 0.1s;">
+        <section class="operations-section row g-4 mb-4 anim-fade-in-up anim-delay-100">
             <div class="col-lg-7">
                 <div class="card-admin h-100 p-4">
                     <header class="d-flex justify-content-between align-items-center mb-4 pb-2">
@@ -98,16 +98,20 @@
                     </header>
 
                     <div class="timeline-hollow mt-2">
-                        {% if recent_activity %}
-                            {% for activity in recent_activity %}
+                        {% if recent_activity_feed %}
+                            {% for activity in recent_activity_feed %}
                             <div class="timeline-item d-flex gap-3 mb-4">
                                 <div class="timeline-indicator mt-1">
-                                    <div class="indicator-dot {% if activity.is_active %}border-green{% elif forloop.counter == 2 %}border-blue{% elif forloop.counter == 3 %}border-yellow{% else %}border-red{% endif %}"></div>
+                                    <div class="indicator-dot {% if activity.is_self %}border-green{% else %}border-blue{% endif %}"></div>
                                     <div class="indicator-line"></div>
                                 </div>
                                 <div class="timeline-content w-100 pb-1">
                                     <h4 class="timeline-title">{{ activity.title }}</h4>
-                                    <p class="timeline-meta">{{ activity.timestamp }} · {{ activity.meta }}</p>
+                                    <p class="timeline-meta">{{ activity.timestamp|timesince }} ago{% if activity.actor_name %} · {{ activity.actor_name }}{% endif %}</p>
+                                    <p class="timeline-meta text-muted mb-0">{{ activity.description }}</p>
+                                    {% if activity.meta %}
+                                        <small class="text-muted">{{ activity.meta }}</small>
+                                    {% endif %}
                                 </div>
                             </div>
                             {% endfor %}
@@ -163,7 +167,7 @@
             </div>
         </section>
 
-        <section class="analytics-section row g-4 anim-fade-in-up" style="animation-delay: 0.2s;">
+        <section class="analytics-section row g-4 anim-fade-in-up anim-delay-200">
             <div class="col-lg-7">
                 <div class="card-admin p-4 h-100">
                     <header class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-light">
@@ -175,7 +179,7 @@
                             <option>This Month</option>
                         </select>
                     </header>
-                    <div class="chart-container w-100" style="height: 300px;">
+                    <div class="chart-container chart-container-lg w-100">
                         <canvas id="earningsChart"></canvas>
                     </div>
                 </div>
@@ -188,8 +192,8 @@
                             <h2 class="section-title">Consoles</h2>
                         </div>
                     </header>
-                    <div class="chart-container w-100 d-flex justify-content-center" style="height: 300px;">
-                        <canvas id="hardwareChart" style="max-height: 280px;"></canvas>
+                    <div class="chart-container chart-container-lg w-100 d-flex justify-content-center">
+                        <canvas id="hardwareChart" class="hardware-chart-canvas"></canvas>
                     </div>
                 </div>
             </div>

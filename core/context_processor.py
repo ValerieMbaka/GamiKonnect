@@ -18,10 +18,19 @@ def global_site_context(request):
     project_detail = ProjectDetail.objects.filter(is_active=True).first()
     
     # Dynamically determine site_url from the current request
-    # This ensures that whether on localhost or production, links in templates are correct
     site_url = request.build_absolute_uri('/').rstrip('/')
     
     return {
         'project_detail': project_detail,
         'site_url': site_url,
     }
+
+def admin_competition_context(request):
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        from competitions.models import Competition
+        return {
+            'pending_competitions_count': Competition.objects.filter(
+                status='pending_review'
+            ).count()
+        }
+    return {}

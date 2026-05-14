@@ -133,6 +133,153 @@
             margin: 20px 0;
         }
 
+        .text-center {
+            text-align: center;
+        }
+
+        .text-link {
+            color: #35A8F0;
+            text-decoration: none;
+        }
+
+        .text-link-danger {
+            color: #F0354B;
+            text-decoration: none;
+        }
+
+        .heading-md {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .heading-sm {
+            margin: 5px 0;
+            font-weight: 600;
+        }
+
+        .list-compact {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+        }
+
+        .list-compact-sm {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+            font-size: 13px;
+        }
+
+        .m-0 {
+            margin: 0;
+        }
+
+        .mt-25 {
+            margin-top: 25px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .mt-12 {
+            margin-top: 12px;
+        }
+
+        .mt-15 {
+            margin-top: 15px;
+        }
+
+        .m-y-8 {
+            margin: 8px 0;
+        }
+
+        .m-y-10 {
+            margin: 10px 0;
+        }
+
+        .m-y-5 {
+            margin: 5px 0;
+        }
+
+        .small-note {
+            font-size: 12px;
+        }
+
+        .small-note-11 {
+            font-size: 11px;
+        }
+
+        .small-note-13 {
+            font-size: 13px;
+        }
+
+        .code-label {
+            margin: 5px 0;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .code-value {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+
+        .code-value-primary {
+            color: #35A8F0;
+        }
+
+        .code-value-purple {
+            color: #6610f2;
+        }
+
+        .inline-code-link {
+            word-break: break-all;
+            font-size: 12px;
+        }
+
+        .text-14 {
+            font-size: 14px;
+        }
+
+        .text-18 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .text-36 {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        .btn-inline {
+            margin: 5px;
+        }
+
+        .btn-purple {
+            background-color: #6610f2;
+        }
+
+        .btn-green {
+            background-color: #10B981;
+        }
+
+        .btn-red {
+            background-color: #F0354B;
+        }
+
+        .btn-orange {
+            background-color: #fd7e14;
+        }
+
         {% block extra_css %}{% endblock %}
 
         @media (prefers-color-scheme: dark) {
@@ -208,7 +355,7 @@
 
             <div class="footer">
                 <p class="footer-text">Happy Gaming<br>The {{ project_name }} Team</p>
-                <p class="footer-text" style="margin-top: 10px; font-size: 11px;">Need help? Contact us at {{ support_email }}</p>
+                <p class="footer-text mt-20 small-note-11">Need help? Contact us at {{ support_email }}</p>
             </div>
         </div>
     </div>

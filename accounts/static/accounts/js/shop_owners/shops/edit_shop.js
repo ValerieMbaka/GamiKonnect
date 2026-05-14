@@ -28,19 +28,32 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedGames = [];
     let pricingDataArray = [];
 
-    // Initialize from DOM and Global Window vars
+    // Initialize from DOM JSON script payloads
     function init() {
         try {
             const dataEl = document.getElementById('games-data');
             if (dataEl) defaultGames = JSON.parse(dataEl.textContent);
         } catch (e) { console.error(e); }
 
-        if (window.existingGamesData) {
-            window.existingGamesData.forEach(name => addGame(name, false));
+        let existingGamesData = [];
+        let existingPricingData = [];
+
+        try {
+            const existingGamesEl = document.getElementById('existing-games-data');
+            if (existingGamesEl) existingGamesData = JSON.parse(existingGamesEl.textContent);
+        } catch (e) { console.error(e); }
+
+        try {
+            const existingPricingEl = document.getElementById('existing-pricing-data');
+            if (existingPricingEl) existingPricingData = JSON.parse(existingPricingEl.textContent);
+        } catch (e) { console.error(e); }
+
+        if (Array.isArray(existingGamesData)) {
+            existingGamesData.forEach(name => addGame(name, false));
         }
 
-        if (window.existingPricingData) {
-            window.existingPricingData.forEach(data => addPricingRow(data));
+        if (Array.isArray(existingPricingData)) {
+            existingPricingData.forEach(data => addPricingRow(data));
         }
         
         updateHiddenFields();
@@ -104,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="col-md-1 d-flex align-items-end h-100 pb-1 justify-content-end">
-                <button type="button" class="btn btn-light text-danger rounded-circle remove-pricing border" style="width: 35px; height: 35px;">
+                <button type="button" class="btn btn-light text-danger rounded-circle remove-pricing border remove-pricing-btn">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>

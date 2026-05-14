@@ -40,10 +40,10 @@ class AdminDashboardController {
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                labels: DASHBOARD_CHART_DATA.activity_labels,
                 datasets: [{
                     label: 'Active Users',
-                    data: [1520, 1840, 1620, 2100, 2450, 3100, 2800],
+                    data: DASHBOARD_CHART_DATA.activity_data,
                     borderColor: this.colors.primary,
                     backgroundColor: gradientFill,
                     borderWidth: 3,
@@ -115,7 +115,7 @@ class AdminDashboardController {
                 labels: ['Shop Fees', 'Tournaments', 'Subscriptions', 'Ads'],
                 datasets: [{
                     label: 'Revenue ($)',
-                    data: [5400, 3200, 2850, 1000],
+                    data: DASHBOARD_CHART_DATA.revenue_data,
                     backgroundColor: this.colors.primary,
                     borderRadius: 6,
                     barPercentage: 0.5

@@ -63,15 +63,15 @@
 
                     <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
                         <li class="d-flex flex-column border-bottom border-light pb-3">
-                            <span class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.05em;">Standard Rate</span>
+                            <span class="text-muted fw-bold small text-uppercase mb-1 details-label">Standard Rate</span>
                             <span class="fw-bold fs-4 text-dark text-nowrap">Ksh {{ shop.base_price_per_hour|floatformat:2 }}<span class="text-muted fs-6 fw-normal">/hr</span></span>
                         </li>
                         <li class="d-flex flex-column border-bottom border-light pb-3">
-                            <span class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.05em;">Opening Time</span>
+                            <span class="text-muted fw-bold small text-uppercase mb-1 details-label">Opening Time</span>
                             <span class="fw-bold fs-5 text-dark">{{ shop.opening_hours }}</span>
                         </li>
                         <li class="d-flex flex-column">
-                            <span class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.05em;">Closing Time</span>
+                            <span class="text-muted fw-bold small text-uppercase mb-1 details-label">Closing Time</span>
                             <span class="fw-bold fs-5 text-dark">{{ shop.closing_hours }}</span>
                         </li>
                     </ul>
@@ -94,8 +94,8 @@
                                         <i class="fas fa-gamepad small"></i>
                                     </div>
                                     <div class="overflow-hidden">
-                                        <span class="fw-bold text-dark d-block console-title text-truncate" style="font-size: 0.9rem;">{{ console.console_type.name }}</span>
-                                        <span class="text-muted small fw-semibold" style="font-size: 0.75rem;">{{ console.quantity }} Unit{{ console.quantity|pluralize }}</span>
+                                        <span class="fw-bold text-dark d-block console-title text-truncate console-title-sm">{{ console.console_type.name }}</span>
+                                        <span class="text-muted small fw-semibold console-quantity-sm">{{ console.quantity }} Unit{{ console.quantity|pluralize }}</span>
                                     </div>
                                 </div>
                             </div>

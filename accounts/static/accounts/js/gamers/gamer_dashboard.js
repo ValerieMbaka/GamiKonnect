@@ -197,10 +197,68 @@ class CompetitionManager {
     }
 }
 
+class GameStatsManager {
+    constructor(gameStatsJson) {
+        this.gameStats = {};
+        try {
+            if (gameStatsJson && typeof gameStatsJson === 'string') {
+                this.gameStats = JSON.parse(gameStatsJson);
+            } else if (gameStatsJson && typeof gameStatsJson === 'object') {
+                this.gameStats = gameStatsJson;
+            }
+        } catch (e) {
+            console.error('Error parsing game stats:', e);
+        }
+        this.init();
+    }
+
+    init() {
+        this.populateGameStats();
+    }
+
+    populateGameStats() {
+        const gameCards = document.querySelectorAll('.game-card[data-game-id]');
+        gameCards.forEach(card => {
+            const gameId = card.getAttribute('data-game-id');
+            if (this.gameStats[gameId]) {
+                const stats = this.gameStats[gameId];
+                card.querySelector('.play-time-stat').textContent = stats.play_time + 'h';
+                card.querySelector('.win-rate-stat').textContent = stats.win_rate + '%';
+                
+                if (stats.last_played) {
+                    const lastPlayedDate = new Date(stats.last_played);
+                    const now = new Date();
+                    const diffMs = now - lastPlayedDate;
+                    const diffMins = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMins / 60);
+                    const diffDays = Math.floor(diffHours / 24);
+                    
+                    let displayText = 'Never';
+                    if (diffMins < 60) {
+                        displayText = diffMins + 'm ago';
+                    } else if (diffHours < 24) {
+                        displayText = diffHours + 'h ago';
+                    } else if (diffDays < 7) {
+                        displayText = diffDays + 'd ago';
+                    } else {
+                        const diffWeeks = Math.floor(diffDays / 7);
+                        displayText = diffWeeks + 'w ago';
+                    }
+                    card.querySelector('.last-played-stat').textContent = displayText;
+                }
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    const dashboardState = document.getElementById('dashboardState');
+    const gameStatsJson = dashboardState ? dashboardState.getAttribute('data-game-stats') : '{}';
+    
     window.gamerDashboard = {
         profile: new GamerProfileManager(),
         tabs: new DashboardTabManager(),
-        competitions: new CompetitionManager()
+        competitions: new CompetitionManager(),
+        gameStats: new GameStatsManager(gameStatsJson)
     };
 });

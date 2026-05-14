@@ -60,3 +60,19 @@
 .cookie-preference-btn:hover {
     transform: translateY(-1px);
 }
+
+@media (max-width: 576px) {
+    .cookie-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 400px) {
+    .cookie-type-badge {
+        font-size: 0.68rem;
+        padding: 0.2rem 0.55rem;
+    }
+}

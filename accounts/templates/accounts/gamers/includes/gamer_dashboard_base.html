@@ -85,9 +85,6 @@
                 </div>
             </div>
 
-            <a class="nav-link-btn" href="{% url 'accounts:create_shop' %}" title="Create Shop">
-                <i class="fas fa-plus-circle"></i> <span>Create Shop</span>
-            </a>
             {% if has_owner_access %}
             <a class="nav-link-btn owner-btn" href="{% url 'accounts:shop_owner_dashboard' %}" title="Owner Dashboard">
                 <i class="fas fa-gauge"></i> <span>Owner Dashboard</span>
@@ -129,7 +126,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="" class="nav-link profile-restricted" data-tooltip="Competitions" data-restricted="true">
+                            <a href="{% url 'competitions:gamer_competitions' %}" class="nav-link profile-restricted" data-tooltip="Competitions" data-restricted="true">
                                 <i class="fas fa-trophy"></i>
                                 <span>Competitions</span>
                                 <span class="badge">2</span>

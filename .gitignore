@@ -95,3 +95,5 @@ accounts/static/accounts/css/shop_owners/competitions.css
 /accounts/templates/accounts/gamers/gamer_public_profile.html
 /accounts/templates/accounts/gamers/gamer_settings.html
 /competitions/
+/progression/
+/feeds/

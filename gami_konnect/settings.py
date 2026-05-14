@@ -59,11 +59,14 @@ INSTALLED_APPS = [
     'shops',
     'admin_panel',
     'activities',
-    
+    'competitions',
+    'progression',
+    'payments',
+    'feeds',
 ]
 
-# APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
-# APSCHEDULER_RUN_NOW_TIMEOUT = 25
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 25
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -99,6 +102,7 @@ TEMPLATES = [
                 'core.context_processor.site_style',
                 'core.context_processor.firebase_config',
                 'core.context_processor.global_site_context',
+                'core.context_processor.admin_competition_context',
             ],
         },
     },
@@ -248,3 +252,10 @@ FIREBASE_CLIENT_CONFIG = {
     'app_id': env('FIREBASE_APP_ID', default=''),
     'measurement_id': env('FIREBASE_MEASUREMENT_ID', default=''),
 }
+
+# M-PESA DARAJA API CONFIGURATION
+MPESA_ENVIRONMENT = os.getenv('MPESA_ENVIRONMENT', 'sandbox')
+MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
+MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
+MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE')
+MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')

@@ -51,7 +51,7 @@
                 <button type="submit" class="btn btn-primary btn-shimmer w-100" id="loginSubmitBtn">Sign In</button>
             </form>
 
-            <div id="resendVerificationSection" class="resend-verification-section" {% if request.session.show_resend %}style="display:block"{% else %}style="display:none"{% endif %}>
+            <div id="resendVerificationSection" class="resend-verification-section{% if request.session.show_resend %} is-visible{% endif %}">
                 <p class="resend-message">Did not receive verification email. Click the button below to resend the verification email</p>
                 <form id="resendForm" method="post" action="{% url 'accounts:resend_verification' %}">
                     {% csrf_token %}

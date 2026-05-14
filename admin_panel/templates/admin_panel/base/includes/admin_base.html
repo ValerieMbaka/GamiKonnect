@@ -135,12 +135,17 @@
 	                            <span class="nav-badge">2</span>
                             </a>
                         </li>
-                        <li>
-                            <a href="#" class="nav-link" data-tooltip="Communities">
-                                <i class="fas fa-network-wired"></i>
-                                <span>Communities</span>
-                            </a>
-                        </li>
+	                    <li>
+     <a href="{% url 'admin_panel:competition_list' %}"
+        class="nav-link {% if 'competitions' in request.path %}active{% endif %}">
+         <i class="fas fa-trophy"></i>
+         <span>Competitions</span>
+         {% if pending_competitions_count > 0 %}
+             <span class="badge">{{ pending_competitions_count }}</span>
+         {% endif %}
+     </a>
+ </li>
+
                     </ul>
                 </div>
 

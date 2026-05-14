@@ -36,6 +36,20 @@
     padding: 16px; 
 }
 
+.profile-card,
+.card-header,
+.card-body,
+.view-all-link {
+    min-width: 0;
+}
+
+.card-header h2,
+.card-body,
+.view-all-link {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
 /* Links and Buttons */
 .view-all-link {
     margin-left: auto; 
@@ -95,12 +109,13 @@
 
 /* Dashboard Content Spacing */
 .dashboard-content {
-    padding: 30px !important;
+    padding: clamp(12px, 2.2vw, 30px) !important;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
     min-height: 100vh !important;
     position: relative !important;
+    overflow-x: clip;
 }
 
 /* Dark Mode Overrides for Common Elements */
@@ -123,4 +138,17 @@
     .nav-link-btn span { 
         display: none; 
     } 
+    .dashboard-content {
+        gap: var(--spacing-md);
+    }
+}
+
+@media (max-width: 400px) {
+    .card-header {
+        padding: 10px 12px;
+    }
+
+    .card-body {
+        padding: 12px;
+    }
 }

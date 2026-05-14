@@ -50,6 +50,34 @@ class SmoothScroller {
     }
 }
 
+class SiteStyleManager {
+    constructor() {
+        this.body = document.body;
+        if (this.body) this.applySiteStyles();
+    }
+
+    applySiteStyles() {
+        const mappings = [
+            ['siteFont', '--site-font', (value) => `${value}, sans-serif`],
+            ['siteColor', '--site-color'],
+            ['siteFontSize', '--site-font-size'],
+            ['siteBg', '--site-bg'],
+            ['siteLink', '--site-link'],
+            ['siteBtnBg', '--site-btn-bg'],
+            ['siteBtnText', '--site-btn-text'],
+            ['sitePrimary', '--site-primary'],
+            ['siteSecondary', '--site-secondary']
+        ];
+
+        mappings.forEach(([datasetKey, cssVar, formatter]) => {
+            const value = this.body.dataset[datasetKey];
+            if (!value) return;
+            const finalValue = formatter ? formatter(value) : value;
+            this.body.style.setProperty(cssVar, finalValue);
+        });
+    }
+}
+
 class ThemeManager {
     constructor() {
         this.themeToggle = document.getElementById('themeToggle');
@@ -80,8 +108,8 @@ class ThemeManager {
     updateIcons(theme) {
         if (!this.lightIcon || !this.darkIcon) return;
         const isDark = theme === 'dark';
-        this.lightIcon.style.display = isDark ? 'none' : 'inline';
-        this.darkIcon.style.display = isDark ? 'inline' : 'none';
+        this.lightIcon.classList.toggle('d-none', isDark);
+        this.darkIcon.classList.toggle('d-none', !isDark);
     }
 }
 
@@ -118,6 +146,7 @@ class TooltipManager {
 
 document.addEventListener('DOMContentLoaded', () => {
     window.appComponents = {
+        siteStyleManager: new SiteStyleManager(),
         scrollToTop: new ScrollToTop(),
         smoothScroller: new SmoothScroller(),
         themeManager: new ThemeManager(),

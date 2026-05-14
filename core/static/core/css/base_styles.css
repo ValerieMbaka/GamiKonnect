@@ -12,6 +12,48 @@ html, body {
     transition: all 0.3s ease;
 }
 
+html {
+    min-width: 320px;
+}
+
+/* Global responsive safety guards */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg,
+iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+table {
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+pre,
+code,
+.text-break,
+.card,
+.modal-content {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+input,
+select,
+textarea,
+button {
+    max-width: 100%;
+}
+
 a, .link {
     color: var(--site-link, var(--primary));
 }
@@ -290,6 +332,14 @@ footer .small {
     font-size: 0.875rem;
 }
 
+.footer-copy-text {
+    color: rgba(2, 1, 2, 0.81);
+}
+
+.footer-ownership-text {
+    font-size: 10px;
+}
+
 /* Back to Top Button */
 .back-to-top {
     position: fixed;
@@ -530,5 +580,37 @@ footer a {
     .game-card,
     .platform-card {
         margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section h1 {
+        font-size: clamp(1.6rem, 7.2vw, 2.1rem);
+    }
+
+    .container,
+    .container-fluid {
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+    }
+
+    .back-to-top {
+        right: 14px;
+        bottom: 14px;
+        width: 42px;
+        height: 42px;
+    }
+}
+
+@media (max-width: 400px) {
+    .container,
+    .container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .icon-wrapper {
+        width: 56px;
+        height: 56px;
     }
 }

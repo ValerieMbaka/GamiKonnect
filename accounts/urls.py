@@ -36,12 +36,6 @@ urlpatterns = [
     path('edit-shop/<int:pk>/', views.edit_shop, name='edit_shop'),
     path('create-shop/', views.create_shop, name='create_shop'),
     
-    # Shop Owner Competitions
-    path('shop-owner-competitions/', views.shop_owner_dashboard, name='shop_owner_competitions'),
-    path('shop-owner-competition-detail/<int:pk>/', views.shop_owner_dashboard, name='shop_owner_competition_detail'),
-    path('submit-competition-result/<int:pk>/', views.shop_owner_dashboard, name='submit_competition_result'),
-    path('submit-competition-result/', views.shop_owner_dashboard, name='submit_competition_result_no_pk'),
-    
     # Toggle between gamer and shop owner dashboard roles
     path('toggle-gamer-mode/', views.toggle_gamer_mode, name='toggle_gamer_mode'),
     

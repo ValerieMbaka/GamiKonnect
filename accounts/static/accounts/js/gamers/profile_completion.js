@@ -55,7 +55,7 @@ class ProfileCompletionManager {
             // Added .catch() to explicitly handle the ignored promise warning
             this.fetchFormData().catch(err => console.error('Initialization fetch error:', err));
         }
-        if (this.ui.dobDay && this.ui.dobMonth && this.ui.dobYear) {
+        if (this.ui.dobYear && this.ui.dobMonth && this.ui.dobDay) {
             this.populateYearDropdown();
         }
     }

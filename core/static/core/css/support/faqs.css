@@ -94,3 +94,33 @@
 .popular-faq-badge {
     font-size: 0.7rem;
 }
+
+@media (max-width: 768px) {
+    .faq-search-container {
+        margin-bottom: 2rem;
+    }
+
+    .faq-category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .faq-accordion .accordion-button,
+    .faq-accordion .accordion-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .faq-search-input {
+        font-size: 0.95rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .faq-category-card {
+        padding: 1.25rem 0.8rem;
+    }
+
+    .faq-accordion .accordion-button {
+        font-size: 0.95rem;
+    }
+}

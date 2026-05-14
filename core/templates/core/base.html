@@ -26,19 +26,19 @@
 
 	{% block extra_css %} {% endblock %}
 </head>
-<body style="
+<body
     {% if site_style %}
-    --site-font: {{ site_style.font_family|default:'Roboto' }}, sans-serif;
-    --site-color: {{ site_style.font_color|default:'#222222' }};
-    --site-font-size: {{ site_style.font_size|default:'16px' }};
-    --site-bg: {{ site_style.background_color|default:'#ffffff' }};
-    --site-link: {{ site_style.link_color|default:'#007bff' }};
-    --site-btn-bg: {{ site_style.button_color|default:'#28a745' }};
-    --site-btn-text: {{ site_style.button_text_color|default:'#ffffff' }};
-    --site-primary: {{ site_style.primary_color|default:'#007bff' }};
-    --site-secondary: {{ site_style.secondary_color|default:'#6c757d' }};
+    data-site-font="{{ site_style.font_family|default:'Roboto' }}"
+    data-site-color="{{ site_style.font_color|default:'#222222' }}"
+    data-site-font-size="{{ site_style.font_size|default:'16px' }}"
+    data-site-bg="{{ site_style.background_color|default:'#ffffff' }}"
+    data-site-link="{{ site_style.link_color|default:'#007bff' }}"
+    data-site-btn-bg="{{ site_style.button_color|default:'#28a745' }}"
+    data-site-btn-text="{{ site_style.button_text_color|default:'#ffffff' }}"
+    data-site-primary="{{ site_style.primary_color|default:'#007bff' }}"
+    data-site-secondary="{{ site_style.secondary_color|default:'#6c757d' }}"
     {% endif %}
-">
+>
     {% include 'core/includes/toast_container.html' %}
 
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
@@ -105,7 +105,7 @@
                     <li class="nav-item ms-2">
                         <button class="btn btn-outline-primary btn-sm" id="themeToggle" title="Toggle theme">
                             <i class="fas fa-sun" id="lightIcon"></i>
-                            <i class="fas fa-moon" id="darkIcon" style="display: none;"></i>
+                            <i class="fas fa-moon d-none" id="darkIcon"></i>
                         </button>
                     </li>
                 </ul>
@@ -160,10 +160,10 @@
 
             <div class="row">
                 <div class="col-10 text-center">
-                    <p class="mt-2 small" style="color: rgba(2,1,2,0.81)">{{ footer.copy_right_text|default:'© 2025 GamiKonnect. All rights reserved.' }}</p>
+                    <p class="mt-2 small footer-copy-text">{{ footer.copy_right_text|default:'© 2025 GamiKonnect. All rights reserved.' }}</p>
                 </div>
                 <div class="col-2 text-right">
-                    <p class="mt-2 text-muted small" style="font-size: 10px;">{{ footer.ownership_text|default:'A product by JM | In partnership with Biztimam Ventures' }} </p>
+                    <p class="mt-2 text-muted small footer-ownership-text">{{ footer.ownership_text|default:'A product by JM | In partnership with Biztimam Ventures' }} </p>
                 </div>
             </div>
         </div>

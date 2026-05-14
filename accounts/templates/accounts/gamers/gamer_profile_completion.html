@@ -58,6 +58,9 @@
                     <label>Date of Birth <span class="required">*</span></label>
                     <div class="date-picker-container">
                         <div class="date-input-group">
+                            <select id="dobYear" class="date-select">
+                                <option value="">Year</option>
+                            </select>
                             <select id="dobMonth" class="date-select">
                                 <option value="">Month</option>
                                 <option value="1">January</option>
@@ -74,10 +77,7 @@
                                 <option value="12">December</option>
                             </select>
                             <select id="dobDay" class="date-select">
-                                <option value="">Day</option>
-                            </select>
-                            <select id="dobYear" class="date-select">
-                                <option value="">Year</option>
+                                <option value="">Date</option>
                             </select>
                         </div>
                         <input type="hidden" name="date_of_birth" id="id_date_of_birth" value="">

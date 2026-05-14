@@ -59,3 +59,25 @@
 #rights {
     background: var(--lavender-white);
 }
+
+@media (max-width: 768px) {
+    .privacy-data-flow {
+        padding: 1rem;
+    }
+
+    .privacy-rights-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 400px) {
+    .privacy-icon-container {
+        width: 50px;
+        height: 50px;
+    }
+
+    .privacy-right-item,
+    .data-flow-item {
+        padding: 0.8rem;
+    }
+}

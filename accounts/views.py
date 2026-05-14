@@ -10,6 +10,12 @@ import json
 import logging
 import re
 
+from activities.signals import security_event_triggered
+from activities.models import ActivityLog, Activity
+from activities.services import ActivityFeedService
+from progression.models import GamerLevel
+from progression.services import get_global_leaderboard, get_gamer_global_rank
+
 # Import site-context
 from core.views import base_site_context
 
@@ -21,9 +27,22 @@ from firebase_admin import auth as firebase_auth
 from .models import Account, Gamer, ShopOwner, PendingRegistration
 from games.models import Game, Platform
 from shops.models import Shop, Console, GamePricing
+from competitions.models import CompetitionRegistration, CompetitionResult
 
 # Core Email Manager
 from core.email_service import EmailManager
+
+# View utilities for DRY access control
+from .view_utils import (
+    get_current_gamer,
+    get_current_shop_owner,
+    get_current_user,
+    require_gamer_role,
+    require_shop_owner_role,
+    require_authenticated,
+    is_gamer,
+    is_shop_owner,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -170,10 +189,24 @@ def register_submit(request):
                 pending.role = role
                 pending.save()
             else:
-                PendingRegistration.objects.create(
+                pending = PendingRegistration.objects.create(
                     uid=uid, email=email, first_name=first_name,
                     last_name=last_name, phone=phone, role=role,
                 )
+
+            try:
+                ActivityLog.objects.create(
+                    action_type=ActivityLog.ActionTypes.CREATE,
+                    target=pending,
+                    description=f"New gamer registration submitted: {email}",
+                    meta_data={
+                        'email': email,
+                        'uid': uid,
+                        'role': role,
+                    }
+                )
+            except Exception:
+                logger.exception('Failed to log registration activity')
             
             username = f"{first_name} {last_name}".strip()
             email_sent = EmailManager.send_verification(email, uid, role, username=username)
@@ -280,6 +313,15 @@ def session_login(request):
                 pass
             
             request.session.set_expiry(86400)
+            
+            # Log login activity
+            if isinstance(account, Gamer):
+                Activity.objects.create(
+                    gamer=account,
+                    activity_type=Activity.ActivityTypes.LOGIN,
+                    description=f"{account.first_name} logged in",
+                    metadata={'ip': request.META.get('REMOTE_ADDR', 'unknown')}
+                )
             
             if not user_obj.last_login:
                 EmailManager.send_welcome(account.email, role, account.first_name)
@@ -394,6 +436,22 @@ def resend_verification(request):
 
 
 def logout_view(request):
+    # Log logout activity
+    try:
+        user_id = request.session.get('user_id')
+        role = request.session.get('role')
+        
+        if role == 'gamer' and user_id:
+            gamer = Gamer.objects.get(id=user_id)
+            Activity.objects.create(
+                gamer=gamer,
+                activity_type=Activity.ActivityTypes.LOGOUT,
+                description=f"{gamer.first_name} logged out",
+                metadata={'ip': request.META.get('REMOTE_ADDR', 'unknown')}
+            )
+    except Exception as e:
+        logger.error(f"Error logging logout activity: {e}")
+    
     request.session.flush()
     messages.success(request, 'Logged out successfully.')
     return redirect('core:home')
@@ -419,7 +477,22 @@ def change_password(request):
             except Gamer.DoesNotExist:
                 account = ShopOwner.objects.get(uid=firebase_uid)
             
+            # Log password change activity
+            if isinstance(account, Gamer):
+                Activity.objects.create(
+                    gamer=account,
+                    activity_type=Activity.ActivityTypes.SYSTEM,
+                    description="Changed account password",
+                    metadata={'action': 'password_change'}
+                )
+            
             EmailManager.send_password_change(account.email, account.first_name)
+            security_event_triggered.send(
+                sender=account.__class__,
+                actor=account,
+                description="Successfully updated account password.",
+                meta_data={"action": "password_reset"}
+            )
             return JsonResponse({'success': True, 'message': 'Password changed successfully'})
         
         except Exception as e:
@@ -460,6 +533,31 @@ def delete_account(request):
                 except Exception as e:
                     logger.error(f"Error deleting Firebase user: {e}")
             
+            # Log deletion event before account is deleted
+            if isinstance(account, Gamer):
+                Activity.objects.create(
+                    gamer=account,
+                    activity_type=Activity.ActivityTypes.SYSTEM,
+                    description="Account has been permanently deleted",
+                    metadata={'reason': 'user_request', 'email': user_email}
+                )
+
+            try:
+                ActivityLog.objects.create(
+                    actor=account,
+                    gamer=account if isinstance(account, Gamer) else None,
+                    action_type=ActivityLog.ActionTypes.DELETE,
+                    target=account,
+                    description=f"Account deleted: {user_email}",
+                    meta_data={
+                        'email': user_email,
+                        'role': role,
+                        'request_source': 'user_request',
+                    }
+                )
+            except Exception:
+                logger.exception('Failed to log account deletion activity')
+            
             account.delete()
             request.session.flush()
             
@@ -481,27 +579,136 @@ def delete_account(request):
 
 
 # Gamer Views
+# -----------------------------------------------------------------------
+# Update the gamer_dashboard view in accounts/views.py
+# Add these imports at the top of the file if not already present:
+# -----------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------
+# Replace the existing gamer_dashboard view with this updated version:
+# -----------------------------------------------------------------------
+
+@require_gamer_role
 def gamer_dashboard(request):
-    if request.session.get('role') != 'gamer':
-        messages.error(request, 'Access denied.')
-        return redirect('core:home')
-    
     try:
-        gamer = Gamer.objects.get(id=request.session['user_id'])
-        
+        gamer = get_current_gamer(request)
+
         # Check if they have been approved as a shop owner behind the scenes
         shop_owner = ShopOwner.objects.filter(uid=gamer.uid).first()
         if shop_owner and not request.session.get('gamer_mode'):
             request.session['role'] = 'shop_owner'
             request.session['user_id'] = shop_owner.id
             return redirect('accounts:shop_owner_dashboard')
-        
+
         profile_complete = gamer.profile_completed
         if not profile_complete:
             messages.info(request, 'Please complete your profile to access full dashboard features')
-        
+
         has_pending_or_approved_shops = Shop.objects.filter(submitted_by_uid=gamer.uid).exists()
-        
+
+        # ---------------------------------------------------------------
+        # Competition Tab Data — max 3 preview registrations
+        # ---------------------------------------------------------------
+        now = timezone.now()
+
+        all_registrations = CompetitionRegistration.objects.filter(
+            gamer=gamer,
+            is_cancelled=False
+        ).select_related(
+            'competition__game',
+            'competition__platform',
+            'competition__shop',
+        ).prefetch_related(
+            'competition__results__gamer'
+        ).order_by('-competition__scheduled_time')
+
+        # Preview: 3 most recent (mix of upcoming + past)
+        dashboard_comp_registrations = all_registrations[:3]
+
+        # Stats
+        total_comps = all_registrations.count()
+
+        completed_results = CompetitionResult.objects.filter(
+            gamer=gamer,
+            verified=True,
+            is_no_show=False
+        )
+        total_participated = completed_results.count()
+        wins = completed_results.filter(rank__lte=3).count()
+        win_rate = round((wins / total_participated * 100), 1) if total_participated > 0 else 0
+
+        dashboard_comp_stats = {
+            'total': total_comps,
+            'wins': wins,
+            'win_rate': win_rate,
+        }
+
+        # ---------------------------------------------------------------
+        # Performance Stats - Play time and XP
+        # ---------------------------------------------------------------
+        total_play_time = 0
+        for reg in all_registrations:
+            hours = reg.participation_hours()
+            if hours:
+                total_play_time += hours
+        total_play_time = round(total_play_time, 1)
+
+        # ---------------------------------------------------------------
+        # Game Statistics - per game stats for dashboard
+        # ---------------------------------------------------------------
+        game_stats = {}
+        for game in gamer.games.all():
+            game_registrations = all_registrations.filter(competition__game=game)
+            game_results = completed_results.filter(competition__game=game)
+            
+            game_play_time = 0
+            for reg in game_registrations:
+                hours = reg.participation_hours()
+                if hours:
+                    game_play_time += hours
+            game_play_time = round(game_play_time, 1)
+            
+            game_total = game_results.count()
+            game_wins = game_results.filter(rank__lte=3).count()
+            game_win_rate = round((game_wins / game_total * 100), 1) if game_total > 0 else 0
+            
+            last_played = None
+            last_competition = game_registrations.first()
+            if last_competition:
+                last_played = last_competition.competition.scheduled_time
+            
+            game_stats[game.id] = {
+                'play_time': game_play_time,
+                'win_rate': game_win_rate,
+                'total_competitions': game_total,
+                'last_played': last_played,
+            }
+
+        # ---------------------------------------------------------------
+        # Recent Activities
+        # ---------------------------------------------------------------
+        try:
+            recent_activity_feed = ActivityFeedService.get_gamer_feed(gamer, limit=5)
+        except:
+            recent_activity_feed = []
+
+        # Progression Context
+        try:
+            gamer_level = GamerLevel.objects.select_related('level').get(gamer=gamer)
+        except GamerLevel.DoesNotExist:
+            gamer_level = None
+
+        # Convert game_stats dates to ISO format for JSON serialization
+        game_stats_serializable = {}
+        for game_id, stats in game_stats.items():
+            game_stats_serializable[str(game_id)] = {
+                'play_time': stats['play_time'],
+                'win_rate': stats['win_rate'],
+                'total_competitions': stats['total_competitions'],
+                'last_played': stats['last_played'].isoformat() if stats['last_played'] else None,
+            }
+
         context = {
             **base_site_context(),
             'gamer': gamer,
@@ -511,9 +718,23 @@ def gamer_dashboard(request):
                 'games_count': gamer.games.count(),
             },
             'has_owner_access': has_pending_or_approved_shops,
+            # Competition tab
+            'dashboard_comp_registrations': dashboard_comp_registrations,
+            'dashboard_comp_stats': dashboard_comp_stats,
+            'now': now,
+            'gamer_level': gamer_level,
+            'global_rank': get_gamer_global_rank(gamer),
+            # Performance stats
+            'total_play_time': total_play_time,
+            'total_xp': gamer.points,
+            # Game stats
+            'game_stats': game_stats,
+            'game_stats_json': json.dumps(game_stats_serializable),
+            # Recent activities
+            'recent_activity_feed': recent_activity_feed,
         }
         return render(request, 'accounts/gamers/gamer_dashboard.html', context)
-    
+
     except Gamer.DoesNotExist:
         messages.error(request, 'Gamer profile not found.')
         return redirect('core:home')
@@ -585,6 +806,17 @@ def gamer_profile_completion(request):
                 gamer.profile_completed = True
                 gamer.save()
                 
+                # Log activity
+                Activity.objects.create(
+                    gamer=gamer,
+                    activity_type=Activity.ActivityTypes.PROFILE_COMPLETED,
+                    description="Completed profile setup",
+                    metadata={
+                        'games_count': len(attached_games),
+                        'platforms': platforms_list
+                    }
+                )
+                
                 EmailManager.send_profile_completion(gamer.email, gamer.custom_username)
                 
                 return JsonResponse({
@@ -609,29 +841,97 @@ def check_username(request):
     return JsonResponse({'available': not exists, 'reason': 'taken' if exists else 'ok'})
 
 
+@require_gamer_role
 def gamer_profile_edit(request):
-    if request.session.get('role') != 'gamer':
-        messages.error(request, 'Access denied.')
-        return redirect('core:home')
-    
-    gamer = get_object_or_404(Gamer, id=request.session['user_id'])
+    gamer = get_current_gamer(request)
     
     if request.method == 'POST':
         try:
             with transaction.atomic():
+                changes = {}
+                
                 if 'profile_picture' in request.FILES:
                     gamer.profile_picture = request.FILES['profile_picture']
+                    changes['avatar'] = 'updated'
                 
                 username = request.POST.get('custom_username', '').strip()
                 if username and re.match(r'^[A-Za-z0-9_]{3,15}$', username):
                     if not Gamer.objects.filter(custom_username__iexact=username).exclude(pk=gamer.pk).exists():
+                        old_username = gamer.custom_username
                         gamer.custom_username = username
+                        changes['username'] = f"{old_username} → {username}"
                 
-                gamer.bio = request.POST.get('bio', '').strip()
-                gamer.about = request.POST.get('about', '').strip()
-                gamer.location = request.POST.get('location', '').strip()
+                bio = request.POST.get('bio', '').strip()
+                if bio and bio != gamer.bio:
+                    gamer.bio = bio
+                    changes['bio'] = 'updated'
+                
+                about = request.POST.get('about', '').strip()
+                if about and about != gamer.about:
+                    gamer.about = about
+                    changes['about'] = 'updated'
+                
+                location = request.POST.get('location', '').strip()
+                if location and location != gamer.location:
+                    gamer.location = location
+                    changes['location'] = f"→ {location}"
+                
+                # Handle games updates
+                try:
+                    games_json = request.POST.get('games', '[]')
+                    games_list = json.loads(games_json) if games_json else []
+                    
+                    if games_list:
+                        old_games = set(gamer.games.values_list('name', flat=True))
+                        new_games = set(games_list)
+                        
+                        attached_games = []
+                        for game_name in games_list:
+                            name = game_name.strip() if isinstance(game_name, str) else str(game_name).strip()
+                            if name:
+                                existing = Game.objects.filter(name__iexact=name).first()
+                                if existing:
+                                    attached_games.append(existing)
+                        
+                        gamer.games.set(attached_games)
+                        
+                        added = new_games - old_games
+                        removed = old_games - new_games
+                        
+                        if added or removed:
+                            if added:
+                                for game in added:
+                                    Activity.objects.create(
+                                        gamer=gamer,
+                                        activity_type=Activity.ActivityTypes.GAME_ADDED,
+                                        description=f"Added {game} to library",
+                                        metadata={'game_name': game}
+                                    )
+                                changes['games_added'] = ', '.join(added)
+                            
+                            if removed:
+                                for game in removed:
+                                    Activity.objects.create(
+                                        gamer=gamer,
+                                        activity_type=Activity.ActivityTypes.GAME_REMOVED,
+                                        description=f"Removed {game} from library",
+                                        metadata={'game_name': game}
+                                    )
+                                changes['games_removed'] = ', '.join(removed)
+                except (json.JSONDecodeError, TypeError):
+                    pass
                 
                 gamer.save()
+                
+                # Log activity if there were changes
+                if changes:
+                    Activity.objects.create(
+                        gamer=gamer,
+                        activity_type=Activity.ActivityTypes.PROFILE_UPDATED,
+                        description="Updated profile information",
+                        metadata=changes
+                    )
+                
                 messages.success(request, 'Profile updated successfully!')
                 return redirect('accounts:gamer_settings')
         
@@ -643,14 +943,15 @@ def gamer_profile_edit(request):
     return render(request, 'accounts/gamers/gamer_profile_edit.html', context)
 
 
+@require_gamer_role
 def gamer_settings(request):
-    if request.session.get('role') != 'gamer':
-        return redirect('core:home')
+    gamer = get_current_gamer(request)
     
-    gamer = get_object_or_404(Gamer, id=request.session['user_id'])
-    
+    # Security state placeholder (adjust based on your actual models if needed)
     security_state = {
+        'multi_factor': False,
         'last_password_change': 'recently',
+        'active_sessions': 1
     }
     
     context = {
@@ -661,20 +962,26 @@ def gamer_settings(request):
     return render(request, 'accounts/gamers/gamer_settings.html', context)
 
 
+@require_gamer_role
 def gamer_public_profile(request, username=None):
-    if request.session.get('role') != 'gamer':
-        return redirect('core:home')
-    gamer = get_object_or_404(Gamer, custom_username=username) if username else get_object_or_404(Gamer,
-                                                                                                  id=request.session[
-                                                                                                      'user_id'])
-    return render(request, 'accounts/gamers/gamer_public_profile.html', {**base_site_context(), 'gamer': gamer})
+    gamer = get_object_or_404(Gamer, custom_username=username) if username else get_current_gamer(request)
+
+    from progression.models import GamerAchievement
+    earned_achievements = GamerAchievement.objects.filter(
+        gamer=gamer
+    ).select_related('achievement').order_by('-earned_at')[:6]
+
+    context = {
+        **base_site_context(),
+        'gamer': gamer,
+        'earned_achievements': earned_achievements
+    }
+    return render(request, 'accounts/gamers/gamer_public_profile.html', context)
 
 
+@require_gamer_role
 def gamer_games(request):
-    if request.session.get('role') != 'gamer':
-        return redirect('core:home')
-    
-    gamer = get_object_or_404(Gamer, id=request.session['user_id'])
+    gamer = get_current_gamer(request)
     context = {
         **base_site_context(),
         'gamer': gamer,
@@ -773,7 +1080,17 @@ def create_shop(request):
                                 )
                     except Exception as e:
                         logger.error(f"Error parsing pricing: {e}")
-                
+                        
+                ActivityLog.objects.create(
+                    actor=account_obj,
+                    action_type=ActivityLog.ActionTypes.CREATE,
+                    target=shop,
+                    description=f"Deployed new venue: {shop.name}",
+                    meta_data={
+                        "screens": shop.screen_number,
+                        "base_price": shop.base_price_per_hour
+                    }
+                )
                 EmailManager.send_admin_new_shop(shop)
                 messages.success(request, 'Venue deployment in progress! Awaiting admin verification.')
                 
@@ -840,7 +1157,7 @@ def shop_owner_dashboard(request):
     # Shop owner mode
     if role == 'shop_owner':
         try:
-            shop_owner = ShopOwner.objects.get(id=request.session['user_id'])
+            shop_owner = get_current_shop_owner(request)
             request.session['role'] = 'shop_owner'
             request.session['user_id'] = shop_owner.id
             request.session.modified = True
@@ -864,15 +1181,7 @@ def shop_owner_dashboard(request):
                 'pending_shops': pending_shops.count(),
             }
             
-            recent_activity = []
-            for shop in shops[:4]:
-                recent_activity.append({
-                    'title': f"{shop.name} registration",
-                    'status': 'Live' if shop.is_active else 'Awaiting approval',
-                    'timestamp': shop.created_at.strftime('%b %d, %Y'),
-                    'meta': f"{shop.games_available.count()} games · {shop.total_consoles()} screens",
-                    'is_active': shop.is_active,
-                })
+            recent_activity_feed = ActivityFeedService.get_shop_owner_feed(shop_owner, limit=5)
             
             verification_percent = 0
             if shops.count() > 0:
@@ -890,7 +1199,7 @@ def shop_owner_dashboard(request):
                 'verified_shop_count': verified_shops.count(),
                 'pending_shop_count': pending_total,
                 'shop_stats': shop_stats,
-                'recent_activity': recent_activity,
+                'recent_activity_feed': recent_activity_feed,
                 'verification_percent': verification_percent,
                 'inactive_mode': False,
             }
@@ -930,15 +1239,7 @@ def shop_owner_dashboard(request):
                 'pending_shops': shops.count(),
             }
             
-            recent_activity = []
-            for shop in shops[:4]:
-                recent_activity.append({
-                    'title': f"{shop.name} status update",
-                    'status': 'Awaiting approval',
-                    'timestamp': shop.updated_at.strftime('%b %d, %Y'),
-                    'meta': f"{shop.games_available.count()} games · {shop.total_consoles()} consoles",
-                    'is_active': False,
-                })
+            recent_activity_feed = ActivityFeedService.get_shop_owner_feed(gamer, limit=5)
             
             verification_percent = 0
             context = {
@@ -952,7 +1253,7 @@ def shop_owner_dashboard(request):
                 'verified_shop_count': verified_shops.count(),
                 'pending_shop_count': shops.count(),
                 'shop_stats': shop_stats,
-                'recent_activity': recent_activity,
+                'recent_activity_feed': recent_activity_feed,
                 'verification_percent': verification_percent,
                 'inactive_mode': True,
             }
@@ -965,12 +1266,9 @@ def shop_owner_dashboard(request):
     return redirect('core:home')
 
 
+@require_shop_owner_role
 def shop_owner_profile(request):
-    if request.session.get('role') != 'shop_owner':
-        messages.error(request, 'Access denied.')
-        return redirect('core:home')
-    
-    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shop_owner = get_current_shop_owner(request)
     
     # Fetch shops for the overview tab
     shops = Shop.objects.filter(owners=shop_owner).order_by('-created_at')
@@ -1005,12 +1303,9 @@ def shop_owner_profile(request):
     return render(request, 'accounts/shop_owners/shop_owner_account.html', context)
 
 
+@require_shop_owner_role
 def shop_owner_profile_edit(request):
-    if request.session.get('role') != 'shop_owner':
-        messages.error(request, 'Access denied.')
-        return redirect('core:home')
-    
-    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shop_owner = get_current_shop_owner(request)
     
     if request.method == 'POST':
         try:
@@ -1032,6 +1327,22 @@ def shop_owner_profile_edit(request):
                     shop_owner.phone = phone
                 
                 shop_owner.save()
+
+                try:
+                    ActivityLog.objects.create(
+                        actor=shop_owner,
+                        action_type=ActivityLog.ActionTypes.UPDATE,
+                        target=shop_owner,
+                        description="Updated shop owner profile",
+                        meta_data={
+                            'first_name_changed': bool(first_name),
+                            'last_name_changed': bool(last_name),
+                            'phone_changed': bool(phone),
+                            'avatar_changed': 'profile_picture' in request.FILES,
+                        }
+                    )
+                except Exception:
+                    logger.exception('Failed to log shop owner profile edit activity')
                 
                 # Update session variables to reflect the new name instantly
                 request.session['first_name'] = shop_owner.first_name
@@ -1048,12 +1359,9 @@ def shop_owner_profile_edit(request):
     return redirect('accounts:shop_owner_profile')
 
 
+@require_shop_owner_role
 def shop_owner_venues(request):
-    if request.session.get('role') != 'shop_owner':
-        messages.error(request, 'Access denied.')
-        return redirect('core:home')
-    
-    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shop_owner = get_current_shop_owner(request)
     
     # Fetch all shops with their related data optimized
     shops = (
@@ -1073,12 +1381,9 @@ def shop_owner_venues(request):
     return render(request, 'accounts/shop_owners/shops/shop_owner_venues.html', context)
 
 
+@require_shop_owner_role
 def shop_owner_shop_detail(request, pk):
-    if request.session.get('role') != 'shop_owner':
-        messages.error(request, 'Access denied.')
-        return redirect('core:home')
-    
-    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shop_owner = get_current_shop_owner(request)
     
     # Fetch the specific shop, securely ensuring this owner actually owns it
     shop = get_object_or_404(
@@ -1107,12 +1412,9 @@ def shop_owner_shop_detail(request, pk):
     return render(request, 'accounts/shop_owners/shops/shop_owner_shop_detail.html', context)
 
 
+@require_shop_owner_role
 def edit_shop(request, pk):
-    if request.session.get('role') != 'shop_owner':
-        messages.error(request, 'Access denied.')
-        return redirect('core:home')
-    
-    shop_owner = get_object_or_404(ShopOwner, id=request.session['user_id'])
+    shop_owner = get_current_shop_owner(request)
     # Securely fetch the shop ensuring it belongs to this owner
     shop = get_object_or_404(
         Shop.objects.prefetch_related('games_available', 'consoles', 'game_prices__game'),
@@ -1157,6 +1459,23 @@ def edit_shop(request, pk):
                             )
                             games_to_add.append(game)
                 shop.games_available.set(games_to_add)
+
+                try:
+                    ActivityLog.objects.create(
+                        actor=shop_owner,
+                        action_type=ActivityLog.ActionTypes.UPDATE,
+                        target=shop,
+                        description=f"Updated venue settings for {shop.name}",
+                        meta_data={
+                            'description_changed': shop.description != request.POST.get('description', shop.description),
+                            'opening_hours': shop.opening_hours,
+                            'closing_hours': shop.closing_hours,
+                            'screen_number': shop.screen_number,
+                            'games_count': len(games_to_add),
+                        }
+                    )
+                except Exception:
+                    logger.exception('Failed to log shop update activity')
                 
                 # Update Custom Pricing
                 GamePricing.objects.filter(shop=shop).delete()

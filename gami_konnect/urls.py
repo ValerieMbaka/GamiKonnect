@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.gis import feeds
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -31,5 +32,7 @@ urlpatterns = [
     path('games/', include('games.urls')),
     path('accounts/', include('accounts.urls')),
     path('shops/', include('shops.urls')),
-    # path('competitions/', include('competitions.urls')),
+    path('competitions/', include('competitions.urls')),
+    path('progression/', include('progression.urls')),
+    path('feeds/', include('feeds.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

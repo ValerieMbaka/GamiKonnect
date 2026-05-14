@@ -10,3 +10,15 @@
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
+
+.modal-content-compact {
+    max-width: 500px;
+    border-left: none;
+}
+
+@media (max-width: 576px) {
+    .modal-content-compact {
+        width: calc(100% - 1rem);
+        max-width: calc(100% - 1rem);
+    }
+}

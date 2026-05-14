@@ -155,3 +155,30 @@
         min-height: 100px;
     }
 }
+
+@media (max-width: 576px) {
+    .contact-method:hover,
+    .contact-method.active {
+        margin: 0;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .quick-solution-item:hover {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .icon-wrapper-lg {
+        width: 52px;
+        height: 52px;
+    }
+
+    .contact-form .form-control,
+    .contact-form .form-select {
+        padding: 0.5rem 0.65rem;
+        font-size: 0.92rem;
+    }
+}

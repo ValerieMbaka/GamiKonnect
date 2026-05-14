@@ -255,3 +255,29 @@
         font-size: 0.8rem;
     }
 }
+
+@media (max-width: 400px) {
+    #toast-container {
+        top: 10px;
+        right: 8px;
+        left: 8px;
+    }
+
+    .toast {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .toast-title {
+        font-size: 0.95rem;
+    }
+
+    .toast-message {
+        font-size: 0.85rem;
+    }
+
+    .btn-toast-close {
+        width: 28px;
+        height: 28px;
+    }
+}

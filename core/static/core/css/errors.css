@@ -304,3 +304,25 @@
         padding: 1rem;
     }
 }
+
+@media (max-width: 400px) {
+    .error-search {
+        padding: 1rem;
+    }
+
+    .search-form {
+        flex-direction: column;
+        max-width: 100%;
+        gap: 0.55rem;
+    }
+
+    .search-input,
+    .search-btn {
+        border-radius: 20px;
+        width: 100%;
+    }
+
+    .error-actions .btn {
+        max-width: 100%;
+    }
+}

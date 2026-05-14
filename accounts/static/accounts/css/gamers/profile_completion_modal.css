@@ -93,3 +93,16 @@
     .modal-header { padding: 15px 15px 10px 15px; }
     .modal-body { padding: 10px 15px 15px 15px; height: calc(100vh - 80px); overflow-y: auto; }
 }
+
+@media (max-width: 400px) {
+    .modal-close {
+        right: 12px;
+        top: 10px;
+        font-size: 1.25rem;
+    }
+
+    .modal-header h3 {
+        font-size: 1.1rem;
+        padding-right: 1.6rem;
+    }
+}

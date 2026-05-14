@@ -32,6 +32,7 @@
 }
 
 .resend-verification-section {
+    display: none;
     margin-top: var(--spacing-lg);
     padding: var(--spacing-md);
     background: rgba(240, 53, 75, 0.1);
@@ -39,6 +40,10 @@
     border-radius: var(--border-radius-sm);
     text-align: center;
     animation: slideDown 0.3s ease-out;
+}
+
+.resend-verification-section.is-visible {
+    display: block;
 }
 
 .resend-message {

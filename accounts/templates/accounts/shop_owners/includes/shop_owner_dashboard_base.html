@@ -130,7 +130,7 @@
                     <ul class="nav-list">
 
                         <li>
-                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if '/accounts/shop-owner-competition' in current_path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_competitions' %}" class="nav-link {% if '/accounts/shop-owner-competition' in current_path %}active{% endif %}" data-tooltip="Competitions"{% endif %}>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if '/accounts/shop-owner-competition' in current_path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'competitions:shop_owner_competitions' %}" class="nav-link {% if '/accounts/shop-owner-competition' in current_path %}active{% endif %}" data-tooltip="Competitions"{% endif %}>
                                 <i class="fas fa-trophy"></i>
                                 <span>Competitions</span>
                             </a>

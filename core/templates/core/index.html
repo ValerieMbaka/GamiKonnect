@@ -382,48 +382,43 @@
                             </h3>
                         </div>
                         <div class="card-body">
-                            <div class="d-flex mb-4">
-                                <div class="flex-shrink-0 me-3">
-                                    <img src="{% static 'core/images/codwarzone.jpeg' %}"
-                                         alt="COD Tournament" width="80" class="rounded">
-                                </div>
-                                <div>
-                                    <h5 class="mb-1">Call of Duty: Warzone</h5>
-                                    <div class="d-flex small text-muted mb-2">
-                                        <span class="me-3"><i class="fas fa-calendar-alt me-1"></i>
-	                                        July 26, 2025
-                                        </span>
-                                        <span><i class="fas fa-users me-1"></i> 120/200 Registered</span>
+                            {% for competition in upcoming_competitions %}
+                                <div class="d-flex mb-4">
+                                    <div class="flex-shrink-0 me-3">
+                                        {% if competition.game.image %}
+                                            <img src="{{ competition.game.image.url }}"
+                                                 alt="{{ competition.name }}" width="80" class="rounded">
+                                        {% else %}
+                                            <img src="{% static 'core/images/codwarzone.jpeg' %}"
+                                                 alt="{{ competition.name }}" width="80" class="rounded">
+                                        {% endif %}
                                     </div>
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-warning text-dark me-2">Kshs 5000 Prize</span>
-                                        <a href="#" class="btn btn-sm btn-outline-primary ms-auto">Join</a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex mb-4">
-                                <div class="flex-shrink-0 me-3">
-                                    <img src="{% static 'core/images/fortnite.jpeg' %}"
-                                         alt="Fortnite Tournament" width="80" class="rounded">
-                                </div>
-                                <div>
-                                    <h5 class="mb-1">Fortnite Solo Showdown</h5>
-                                    <div class="d-flex small text-muted mb-2">
-                                        <span class="me-3"><i class="fas fa-calendar-alt me-1"></i>
-	                                        August 1, 2025
-                                        </span>
-                                        <span><i class="fas fa-users me-1"></i> 85/100 Registered</span>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-warning text-dark me-2">Kshs 4000 Prize</span>
-                                        <a href="#" class="btn btn-sm btn-outline-primary ms-auto">Join</a>
+                                    <div>
+                                        <h5 class="mb-1">{{ competition.name }}</h5>
+                                        <div class="d-flex small text-muted mb-2">
+                                            <span class="me-3"><i class="fas fa-calendar-alt me-1"></i>
+                                                {{ competition.scheduled_time|date:"F d, Y" }}
+                                            </span>
+                                            <span><i class="fas fa-users me-1"></i> {{ competition.registered_count }}/{{ competition.max_participants }} Registered</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            {% if competition.prize_type == 'money' %}
+                                                <span class="badge bg-warning text-dark me-2">Kshs {{ competition.prize_money_total }} Prize</span>
+                                            {% elif competition.prize_type == 'points' %}
+                                                <span class="badge bg-info text-dark me-2">{{ competition.points_1st }} Points Prize</span>
+                                            {% elif competition.prize_type == 'gift' %}
+                                                <span class="badge bg-primary text-white me-2">Gift Prize</span>
+                                            {% endif %}
+                                            <a href="{% url 'competitions:detail' competition.integer_id %}" class="btn btn-sm btn-outline-primary ms-auto">Join</a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            {% empty %}
+                                <p class="text-center text-muted">No upcoming competitions at the moment.</p>
+                            {% endfor %}
 
                             <div class="text-center mt-3">
-                                <a href="#" class="btn btn-outline-primary">View All Competitions</a>
+                                <a href="{% url 'competitions:list' %}" class="btn btn-outline-primary">View All Competitions</a>
                             </div>
                         </div>
                     </div>
@@ -438,57 +433,27 @@
                             </h3>
                         </div>
                         <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="position-relative me-3">
-                                    <img src="{% static 'core/images/player.jpeg' %}"
-                                         alt="ProGamer123" width="50" class="rounded-circle">
-                                    <span class="position-absolute top-0 start-100 translate-middle
-                                    badge bg-primary rounded-pill">1</span>
+                            {% for player in top_players %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="position-relative me-3">
+                                        {% if player.profile_picture %}
+                                            <img src="{{ player.profile_picture.url }}"
+                                                 alt="{{ player.custom_username|default:player.first_name }}" width="50" class="rounded-circle">
+                                        {% else %}
+                                            <img src="{% static 'core/images/player.jpeg' %}"
+                                                 alt="{{ player.custom_username|default:player.first_name }}" width="50" class="rounded-circle">
+                                        {% endif %}
+                                        <span class="position-absolute top-0 start-100 translate-middle
+                                        badge {% if forloop.counter == 1 %}bg-primary{% elif forloop.counter == 2 %}bg-secondary{% elif forloop.counter == 3 %}bg-warning text-dark{% else %}bg-light text-dark{% endif %} rounded-pill">{{ forloop.counter }}</span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0">{{ player.custom_username|default:player.first_name }}</h6>
+                                        <small class="text-muted">{{ player.points }} Points</small>
+                                    </div>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">ProGamer123</h6>
-                                    <small class="text-muted">42 Wins</small>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="position-relative me-3">
-                                    <img src="{% static 'core/images/player1.jpeg' %}"
-                                         alt="MobileKing" width="50" class="rounded-circle">
-                                    <span class="position-absolute top-0 start-100 translate-middle
-                                    badge bg-secondary rounded-pill">2</span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">MobileKing</h6>
-                                    <small class="text-muted">38 Wins</small>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="position-relative me-3">
-                                    <img src="{% static 'core/images/player2.jpeg' %}"
-                                         alt="ConsoleQueen" width="50" class="rounded-circle">
-                                    <span class="position-absolute top-0 start-100 translate-middle badge
-                                    bg-warning text-dark rounded-pill">3</span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">ConsoleQueen</h6>
-                                    <small class="text-muted">35 Wins</small>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="position-relative me-3">
-                                    <img src="{% static 'core/images/player3.jpeg' %}"
-                                         alt="FIFAPro" width="50" class="rounded-circle">
-                                    <span class="position-absolute top-0 start-100 translate-middle
-                                    badge bg-light text-dark rounded-pill">4</span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">FIFAPro</h6>
-                                    <small class="text-muted">32 Wins</small>
-                                </div>
-                            </div>
+                            {% empty %}
+                                <p class="text-center text-muted">No top players to show yet.</p>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>

@@ -121,3 +121,14 @@ body.shop-owner-dashboard-body {
 @media (max-width: 768px) {
     .search-bar { display: none; }
 }
+
+@media (max-width: 400px) {
+    .back-to-home-btn {
+        padding: 0.45rem 0.65rem;
+        font-size: 0.82rem;
+    }
+
+    .back-to-home-btn span {
+        display: none;
+    }
+}

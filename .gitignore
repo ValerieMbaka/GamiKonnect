@@ -62,7 +62,3 @@ venv/
 # Keys and credentials
 /django-4c5e9-firebase-adminsdk.json
 /debug_accounts.py
-
-
-# Custom Admin
-/feeds/

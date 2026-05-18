@@ -32,6 +32,9 @@ from competitions.models import CompetitionRegistration, CompetitionResult
 # Core Email Manager
 from core.email_service import EmailManager
 
+# Notifications
+from notifications.models import NotificationRecipient
+
 # View utilities for DRY access control
 from .view_utils import (
     get_current_gamer,
@@ -717,6 +720,14 @@ def gamer_dashboard(request):
                 'last_played': stats['last_played'].isoformat() if stats['last_played'] else None,
             }
 
+        # ---------------------------------------------------------------
+        # Notifications
+        # ---------------------------------------------------------------
+        unread_count = NotificationRecipient.objects.filter(user=gamer, is_read=False).count()
+        recent_notifications = NotificationRecipient.objects.filter(
+            user=gamer
+        ).select_related('notification').order_by('-created_at')[:5]
+
         context = {
             **base_site_context(),
             'gamer': gamer,
@@ -740,6 +751,9 @@ def gamer_dashboard(request):
             'game_stats_json': json.dumps(game_stats_serializable),
             # Recent activities
             'recent_activity_feed': recent_activity_feed,
+            # Notifications
+            'gamer_unread_notifications_count': unread_count,
+            'gamer_recent_notifications': recent_notifications,
         }
         return render(request, 'accounts/gamers/gamer_dashboard.html', context)
 

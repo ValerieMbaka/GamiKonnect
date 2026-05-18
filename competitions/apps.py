@@ -13,6 +13,9 @@ class CompetitionsConfig(AppConfig):
         migrations, or Django's auto-reloader child process — to avoid
         duplicate scheduler instances.
         """
+        # Import signals first
+        import competitions.signals  # noqa
+        
         import os
         import sys
 

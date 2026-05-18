@@ -6,6 +6,8 @@ Signal handlers that trigger progression checks when:
 2. A Gamer's points field is updated
 
 Both handlers call process_progression(gamer) from services.py.
+
+Also sends notifications for achievement unlocks and level ups.
 """
 
 import logging
@@ -81,3 +83,84 @@ def on_gamer_points_updated(sender, instance, created, **kwargs):
             f"[Progression Signal] Error processing points update "
             f"for gamer {instance.id}: {e}"
         )
+
+
+@receiver(post_save, sender='progression.GamerAchievement')
+def on_achievement_unlocked(sender, instance, created, **kwargs):
+    """
+    Send notification when a gamer unlocks an achievement.
+    """
+    if not created:
+        return
+    
+    try:
+        from notifications.models import Notification
+        from notifications.services import send_notification_to_users
+        
+        gamer = instance.gamer
+        achievement = instance.achievement
+        
+        notification_text = (
+            f"🎖️ Achievement Unlocked: {achievement.name}! "
+            f"{achievement.description}"
+        )
+        
+        notification, _ = Notification.objects.get_or_create(
+            title=f"Achievement: {achievement.name}",
+            category="achievement",
+            importance="high",
+            is_system=True,
+            defaults={'message': notification_text}
+        )
+        
+        notification.set_expiry()
+        notification.save()
+        
+        # Create recipient for this user
+        send_notification_to_users(notification, [gamer], send_email=True)
+        
+        logger.info(f"{gamer.custom_username} unlocked achievement: {achievement.name}")
+    except Exception as e:
+        logger.error(f"Error sending achievement notification: {e}")
+
+
+@receiver(post_save, sender='progression.GamerLevel')
+def on_level_up(sender, instance, created, update_fields, **kwargs):
+    """
+    Send notification when a gamer levels up.
+    """
+    if created:
+        return  # Initial level assignment, not a level up
+    
+    if update_fields and 'level' not in update_fields:
+        return
+    
+    try:
+        from notifications.models import Notification
+        from notifications.services import send_notification_to_users
+        
+        gamer = instance.gamer
+        level = instance.level
+        
+        notification_text = (
+            f"⬆️ Level Up! You're now {level.get_display_name()}! "
+            f"Congratulations on reaching {level.min_xp} XP!"
+        )
+        
+        notification, _ = Notification.objects.get_or_create(
+            title=f"Level Up: {level.get_display_name()}",
+            category="level_up",
+            importance="high",
+            is_system=True,
+            defaults={'message': notification_text}
+        )
+        
+        notification.set_expiry()
+        notification.save()
+        
+        # Create recipient for this user
+        send_notification_to_users(notification, [gamer], send_email=True)
+        
+        logger.info(f"{gamer.custom_username} leveled up to {level.get_display_name()}")
+    except Exception as e:
+        logger.error(f"Error sending level up notification: {e}")

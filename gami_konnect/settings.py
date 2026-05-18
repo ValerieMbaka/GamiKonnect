@@ -39,6 +39,8 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '.o
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # Django Channels ASGI server (must be first)
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,6 +53,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'django_apscheduler',
+    'channels',
     
     # Local apps
     'core',
@@ -63,6 +66,7 @@ INSTALLED_APPS = [
     'progression',
     'payments',
     'feeds',
+    'notifications',
 ]
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
@@ -108,7 +112,15 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'gami_konnect.asgi.application'
 WSGI_APPLICATION = 'gami_konnect.wsgi.application'
+
+# Django Channels Configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 
 # Database
@@ -259,3 +271,8 @@ MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
 MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE')
 MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
+
+# Notifications settings
+NOTIFICATION_EMAIL_BATCH_SIZE = 100  # Process emails in batches
+NOTIFICATION_RETENTION_DAYS = 30  # General notification retention
+NOTIFICATION_CLEANUP_HOUR = 2  # Run cleanup at 2 AM

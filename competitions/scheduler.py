@@ -21,6 +21,8 @@ Setup:
 
 import logging
 from django.utils import timezone
+from django.db.models import Q
+from django.conf import settings
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -47,7 +49,7 @@ def start_scheduler():
     """
     Starts the background scheduler.
     Called once from CompetitionsConfig.ready() in apps.py.
-    Registers the periodic safety-net job on startup.
+    Registers the periodic safety-net job and notification cleanup job on startup.
     """
     sched = get_scheduler()
 
@@ -66,11 +68,23 @@ def start_scheduler():
         misfire_grace_time=60 * 10,  # 10 minute grace period
     )
 
+    # Notification cleanup job
+    # Runs daily at 2 AM to clean up expired notifications
+    cleanup_hour = getattr(settings, 'NOTIFICATION_CLEANUP_HOUR', 2)
+    sched.add_job(
+        cleanup_expired_notifications,
+        trigger=IntervalTrigger(hours=24, start_date=timezone.now().replace(hour=cleanup_hour, minute=0, second=0)),
+        id='notifications_cleanup',
+        name='Notification Cleanup — remove expired notifications',
+        replace_existing=True,
+        misfire_grace_time=60 * 30,  # 30 minute grace period
+    )
+
     try:
         sched.start()
-        logger.info('Competition scheduler started successfully.')
+        logger.info('Background scheduler started successfully.')
     except Exception as e:
-        logger.error(f'Failed to start competition scheduler: {e}')
+        logger.error(f'Failed to start scheduler: {e}')
 
 
 # Per-Competition Job Scheduling
@@ -501,3 +515,27 @@ def delete_old_job_executions(max_age_seconds=604_800):
     """
     DjangoJobExecution.objects.delete_old_job_executions(max_age_seconds)
     logger.info("Cleaned up old job execution records.")
+
+
+# Notification Cleanup
+def cleanup_expired_notifications():
+    """
+    Deletes expired notifications and their recipients.
+    Called daily by the scheduler.
+    
+    Returns:
+        Dict with statistics: {'deleted_notifications': int, 'deleted_recipients': int}
+    """
+    from notifications.services import cleanup_expired_notifications as service_cleanup
+    
+    try:
+        stats = service_cleanup()
+        logger.info(
+            f"Notification cleanup completed. "
+            f"Deleted {stats['deleted_notifications']} notification(s) and "
+            f"{stats['deleted_recipients']} recipient record(s)."
+        )
+        return stats
+    except Exception as e:
+        logger.error(f"Notification cleanup failed: {e}")
+        return {'deleted_notifications': 0, 'deleted_recipients': 0}

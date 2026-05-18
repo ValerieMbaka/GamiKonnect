@@ -1,0 +1,183 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Notification Center - {{ project_detail.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>📢 Notifications</h1>
+                {% if total_unread > 0 %}
+                    <button class="btn btn-sm btn-outline-primary" id="mark-all-read-btn">
+                        Mark all as read
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Filter Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="category-filter" class="form-label">Category</label>
+                            <select class="form-select" id="category-filter" name="category">
+                                <option value="">All Categories</option>
+                                <option value="general" {% if current_category == 'general' %}selected{% endif %}>General</option>
+                                <option value="system" {% if current_category == 'system' %}selected{% endif %}>System</option>
+                                <option value="competition" {% if current_category == 'competition' %}selected{% endif %}>Competition</option>
+                                <option value="payment" {% if current_category == 'payment' %}selected{% endif %}>Payment</option>
+                                <option value="achievement" {% if current_category == 'achievement' %}selected{% endif %}>Achievement</option>
+                                <option value="level_up" {% if current_category == 'level_up' %}selected{% endif %}>Level Up</option>
+                                <option value="account" {% if current_category == 'account' %}selected{% endif %}>Account</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="read-filter" class="form-label">Status</label>
+                            <select class="form-select" id="read-filter" name="is_read">
+                                <option value="">All</option>
+                                <option value="unread" {% if current_is_read == 'unread' %}selected{% endif %}>Unread</option>
+                                <option value="read" {% if current_is_read == 'read' %}selected{% endif %}>Read</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Notifications List -->
+            {% if page_obj %}
+                <div class="notification-list">
+                    {% for recipient in page_obj %}
+                        <div class="card mb-3 notification-item {% if not recipient.is_read %}border-left border-primary{% endif %}" data-notification-id="{{ recipient.id }}">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title">
+                                            {% if not recipient.is_read %}
+                                                <span class="badge bg-primary">NEW</span>
+                                            {% endif %}
+                                            {{ recipient.notification.title }}
+                                        </h5>
+                                        <p class="card-text text-muted">
+                                            <small>
+                                                <span class="badge bg-light text-dark">{{ recipient.notification.get_category_display }}</span>
+                                                <span class="text-muted ms-2">{{ recipient.created_at|date:"M d, Y H:i" }}</span>
+                                            </small>
+                                        </p>
+                                        <p class="card-text">{{ recipient.notification.message }}</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        {% if not recipient.is_read %}
+                                            <button class="btn btn-sm btn-outline-primary mark-read-btn" data-notification-id="{{ recipient.id }}">
+                                                Mark as read
+                                            </button>
+                                        {% else %}
+                                            <span class="text-success small">✓ Read</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if current_category %}&category={{ current_category }}{% endif %}{% if current_is_read %}&is_read={{ current_is_read }}{% endif %}">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_is_read %}&is_read={{ current_is_read }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_is_read %}&is_read={{ current_is_read }}{% endif %}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_is_read %}&is_read={{ current_is_read }}{% endif %}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <p>No notifications found</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Mark individual notification as read
+document.querySelectorAll('.mark-read-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const notificationId = this.getAttribute('data-notification-id');
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch(`{% url 'notifications:api_mark_read' 0 %}`.replace('0', notificationId), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            }
+        });
+    });
+});
+
+// Mark all as read
+const markAllBtn = document.getElementById('mark-all-read-btn');
+if (markAllBtn) {
+    markAllBtn.addEventListener('click', function() {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('{% url 'notifications:api_mark_all_read' %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            }
+        });
+    });
+}
+</script>
+
+<style>
+.notification-item {
+    transition: all 0.3s ease;
+}
+.notification-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.notification-item.border-left {
+    border-left-width: 4px !important;
+}
+</style>
+{% endblock %}

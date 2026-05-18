@@ -36,6 +36,7 @@ urlpatterns = [
     path('competitions/', include('competitions.urls')),
     path('progression/', include('progression.urls')),
     path('feeds/', include('feeds.urls')),
+    path('notifications/', include('notifications.urls', namespace='notifications')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

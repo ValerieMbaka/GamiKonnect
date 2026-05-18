@@ -4,7 +4,7 @@
  * Replaces: modals/change_password.css, modals/delete_account.css
  */
 
-@import "/static/core/css/variables.css";
+@import "../../../core/css/variables.css";
 
 /* ============================================================================
    Modal Overlay & Container

@@ -156,12 +156,18 @@ def competition_detail(request, slug):
         messages.warning(request, "You must be registered for this competition to view its details.")
         return redirect('competitions:list')
 
+    # Get all registered gamers (participants) for all users to see
+    participants = competition.registrations.filter(
+        is_cancelled=False
+    ).select_related('gamer').order_by('registered_at')
+    
     registrations = None
     if is_shop_owner_of_competition:
         registrations = competition.registrations.filter(
             is_cancelled=False
         ).select_related('gamer').order_by('registered_at')
     
+    # Get verified results for display (available when competition is completed)
     results = None
     if competition.status == 'completed':
         results = competition.results.filter(
@@ -176,6 +182,7 @@ def competition_detail(request, slug):
         'shop_owner': shop_owner,
         'is_shop_owner_of_competition': is_shop_owner_of_competition,
         'registration': registration,
+        'participants': participants,
         'registrations': registrations,
         'results': results,
         'registered_count': competition.registered_count(),

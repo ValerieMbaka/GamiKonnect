@@ -8,39 +8,39 @@
 {% endblock %}
 
 {% block content %}
-<div class="competitions-dashboard-wrapper anim-fade-in">
+<div class="competitions-dashboard-wrapper anim-fade-in-up">
 
     {# --- Page Header --- #}
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <h1 class="fw-bold text-dark mb-1 h3">
-                <i class="fas fa-trophy text-primary me-2"></i> Competitions
+            <h1 class="fw-bold mb-1 h3" style="color: var(--text-primary);">
+                <i class="fas fa-trophy me-2" style="color: var(--primary);"></i> Competitions
             </h1>
-            <p class="text-muted mb-0">Manage and track tournaments across your arenas.</p>
+            <p class="mb-0" style="color: var(--text-muted);">Manage and track tournaments across your arenas.</p>
         </div>
-        <a href="{% url 'competitions:shop_owner_create' %}" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm">
+        <a href="{% url 'competitions:shop_owner_create' %}" class="btn px-4 py-2 fw-semibold" style="background: var(--gradient-primary); color: var(--text-light); border-radius: var(--border-radius-sm); box-shadow: var(--shadow-sm); transition: var(--transition);">
             <i class="fas fa-plus me-2"></i> Deploy Competition
         </a>
     </div>
 
     {% if ongoing_competitions %}
-    <section class="ongoing-competitions-section mb-4 anim-fade-in-up">
-        <div class="card-admin p-4 border-primary border-start border-4">
+    <section class="ongoing-competitions-section mb-4 anim-slide-in-right">
+        <div class="card-admin p-4" style="border-left: 4px solid var(--primary);">
             <header class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="fas fa-play-circle text-primary fs-5 pulse-icon"></i>
-                    <h2 class="section-title mb-0 h5 fw-bold">Live Competitions (Action Required)</h2>
+                    <i class="fas fa-play-circle fs-5 anim-pulse-glow" style="color: var(--primary); border-radius: 50%;"></i>
+                    <h2 class="section-title mb-0 h5 fw-bold" style="color: var(--text-primary);">Live Competitions (Action Required)</h2>
                 </div>
             </header>
             <div class="row g-3">
                 {% for comp in ongoing_competitions %}
                 <div class="col-md-6 col-xl-4">
-                    <div class="ongoing-comp-card p-3 rounded border bg-light d-flex justify-content-between align-items-center">
+                    <div class="ongoing-comp-card p-3 d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="fw-bold mb-1 fs-6">{{ comp.name }}</h4>
-                            <p class="text-muted small mb-0">{{ comp.game.name }} · {{ comp.shop.name }}</p>
+                            <h4 class="fw-bold mb-1 fs-6" style="color: var(--text-primary);">{{ comp.name }}</h4>
+                            <p class="small mb-0" style="color: var(--text-muted);">{{ comp.game.name }} · {{ comp.shop.name }}</p>
                         </div>
-                        <a href="{% url 'competitions:shop_owner_detail' comp.slug %}" class="btn btn-primary btn-sm rounded-pill px-3">
+                        <a href="{% url 'competitions:shop_owner_detail' comp.slug %}" class="btn btn-sm rounded-pill px-3" style="background: var(--primary-light); color: var(--primary-dark); font-weight: var(--font-semibold);">
                             <i class="fas fa-user-check me-1"></i> Check-in
                         </a>
                     </div>
@@ -53,56 +53,55 @@
 
     {# --- KPI Cards --- #}
     <div class="kpi-grid mb-4">
-        <div class="card-admin p-3 d-flex align-items-center gap-3">
-            <div class="kpi-icon bg-primary-light text-primary">
+        <div class="card-admin p-3 d-flex align-items-center gap-3 kpi-total">
+            <div class="kpi-icon">
                 <i class="fas fa-list-ol fs-4"></i>
             </div>
             <div>
-                <p class="text-muted mb-0 fw-semibold text-uppercase small">Total</p>
-                <h3 class="fw-bold mb-0 text-dark">{{ total }}</h3>
+                <p class="mb-0 fw-semibold text-uppercase small" style="color: var(--text-muted);">Total</p>
+                <h3 class="fw-bold mb-0" style="color: var(--text-primary);">{{ total }}</h3>
             </div>
         </div>
-        <div class="card-admin p-3 d-flex align-items-center gap-3">
-            <div class="kpi-icon bg-warning-light text-warning">
+        <div class="card-admin p-3 d-flex align-items-center gap-3 kpi-pending">
+            <div class="kpi-icon">
                 <i class="fas fa-hourglass-half fs-4"></i>
             </div>
             <div>
-                <p class="text-muted mb-0 fw-semibold text-uppercase small">Pending Review</p>
-                <h3 class="fw-bold mb-0 text-dark">{{ pending }}</h3>
+                <p class="mb-0 fw-semibold text-uppercase small" style="color: var(--text-muted);">Pending Review</p>
+                <h3 class="fw-bold mb-0" style="color: var(--text-primary);">{{ pending }}</h3>
             </div>
         </div>
-        <div class="card-admin p-3 d-flex align-items-center gap-3">
-            <div class="kpi-icon bg-success-light text-success">
+        <div class="card-admin p-3 d-flex align-items-center gap-3 kpi-live">
+            <div class="kpi-icon">
                 <i class="fas fa-broadcast-tower fs-4"></i>
             </div>
             <div>
-                <p class="text-muted mb-0 fw-semibold text-uppercase small">Live / Open</p>
-                <h3 class="fw-bold mb-0 text-dark">{{ live }}</h3>
+                <p class="mb-0 fw-semibold text-uppercase small" style="color: var(--text-muted);">Live / Open</p>
+                <h3 class="fw-bold mb-0" style="color: var(--text-primary);">{{ live }}</h3>
             </div>
         </div>
-        <div class="card-admin p-3 d-flex align-items-center gap-3">
-            <div class="kpi-icon bg-secondary-light text-secondary">
+        <div class="card-admin p-3 d-flex align-items-center gap-3 kpi-completed">
+            <div class="kpi-icon">
                 <i class="fas fa-flag-checkered fs-4"></i>
             </div>
             <div>
-                <p class="text-muted mb-0 fw-semibold text-uppercase small">Completed</p>
-                <h3 class="fw-bold mb-0 text-dark">{{ completed }}</h3>
+                <p class="mb-0 fw-semibold text-uppercase small" style="color: var(--text-muted);">Completed</p>
+                <h3 class="fw-bold mb-0" style="color: var(--text-primary);">{{ completed }}</h3>
             </div>
         </div>
     </div>
 
     {# --- Main Table Card --- #}
     <div class="card-admin p-0 overflow-hidden">
-
-        <div class="p-3 border-bottom bg-light d-flex flex-wrap gap-3 justify-content-between align-items-center">
+        <div class="p-3 border-bottom d-flex flex-wrap gap-3 justify-content-between align-items-center" style="background: var(--bg-secondary); border-color: var(--border-light) !important;">
             <div class="search-wrapper flex-grow-1" style="max-width: 400px;">
                 <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                    <input type="text" id="compSearchInput" class="form-control border-start-0 ps-0" placeholder="Search competitions...">
+                    <span class="input-group-text border-end-0" style="background: var(--bg-card); color: var(--text-muted); border-color: var(--border-medium);"><i class="fas fa-search"></i></span>
+                    <input type="text" id="compSearchInput" class="form-control border-start-0 ps-0" placeholder="Search competitions..." style="background: var(--bg-card); color: var(--text-primary); border-color: var(--border-medium);">
                 </div>
             </div>
             <div class="filter-wrapper">
-                <select id="compStatusFilter" class="form-select fw-semibold text-muted">
+                <select id="compStatusFilter" class="form-select fw-semibold" style="background-color: var(--bg-card); color: var(--text-secondary); border-color: var(--border-medium);">
                     <option value="">All Statuses</option>
                     <option value="draft">Draft</option>
                     <option value="pending">Pending Review</option>
@@ -121,7 +120,7 @@
 
         <div class="table-responsive">
             <table class="table modern-table mb-0 align-middle">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th class="ps-4">Competition</th>
                         <th>Venue</th>
@@ -136,41 +135,41 @@
                     <tr class="comp-row" data-name="{{ comp.name|lower }}" data-status="{{ comp.status }}">
                         <td class="ps-4">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="game-icon bg-light rounded p-2 text-primary border">
+                                <div class="game-icon rounded p-2" style="background: var(--bg-primary); color: var(--primary); border: 1px solid var(--border-light);">
                                     <i class="fas fa-gamepad"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0 fw-bold text-dark">{{ comp.name }}</h6>
-                                    <span class="text-muted small">{{ comp.game.name }} • {{ comp.platform.name }}</span>
+                                    <h6 class="mb-0 fw-bold" style="color: var(--text-primary);">{{ comp.name }}</h6>
+                                    <span class="small" style="color: var(--text-muted);">{{ comp.game.name }} • {{ comp.platform.name }}</span>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <span class="fw-semibold text-dark">{{ comp.shop.name }}</span>
+                            <span class="fw-semibold" style="color: var(--text-primary);">{{ comp.shop.name }}</span>
                         </td>
                         <td>
-                            <div class="text-dark fw-medium">{{ comp.scheduled_time|date:"M d, Y" }}</div>
-                            <div class="text-muted small">{{ comp.scheduled_time|time:"g:i A" }}</div>
+                            <div class="fw-medium" style="color: var(--text-primary);">{{ comp.scheduled_time|date:"M d, Y" }}</div>
+                            <div class="small" style="color: var(--text-muted);">{{ comp.scheduled_time|time:"g:i A" }}</div>
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <i class="fas fa-users text-muted"></i>
-                                <span class="fw-bold">{{ comp.registered_count }}</span>
-                                <span class="text-muted small">/ {{ comp.max_participants }}</span>
+                                <i class="fas fa-users" style="color: var(--text-muted);"></i>
+                                <span class="fw-bold" style="color: var(--text-primary);">{{ comp.registered_count }}</span>
+                                <span class="small" style="color: var(--text-muted);">/ {{ comp.max_participants }}</span>
                             </div>
                         </td>
                         <td>
-                            <span class="badge rounded-pill status-badge status-{{ comp.status }}">
+                            <span class="badge status-badge status-{{ comp.status }}">
                                 {{ comp.get_status_display }}
                             </span>
                         </td>
                         <td class="text-end pe-4">
                             {% if comp.status == 'rejected' %}
-                                <button class="btn btn-sm btn-outline-danger fw-bold btn-edit-comp" data-id="{{ comp.integer_id }}">
+                                <button class="btn btn-sm fw-bold btn-edit-comp" data-id="{{ comp.integer_id }}" style="border: 1px solid var(--danger); color: var(--danger); background: transparent;">
                                     <i class="fas fa-exclamation-circle me-1"></i> Fix & Resubmit
                                 </button>
                             {% else %}
-                                <a href="{% url 'competitions:shop_owner_detail' comp.slug %}" class="btn btn-sm btn-light border text-primary fw-bold hover-bg-primary">
+                                <a href="{% url 'competitions:shop_owner_detail' comp.slug %}" class="btn btn-sm fw-bold hover-bg-primary" style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--primary);">
                                     Manage <i class="fas fa-arrow-right ms-1"></i>
                                 </a>
                             {% endif %}
@@ -178,11 +177,11 @@
                     </tr>
                     {% if comp.status == 'rejected' and comp.rejection_reason %}
                     <tr class="rejection-row border-bottom" data-parent-status="{{ comp.status }}" data-parent-name="{{ comp.name|lower }}">
-                        <td colspan="6" class="bg-danger-subtle px-4 py-2">
-                            <div class="d-flex gap-2 text-danger align-items-start">
-                                <i class="fas fa-exclamation-triangle mt-1"></i>
-                                <div>
-                                    <strong>Admin Rejection Note:</strong> {{ comp.rejection_reason }}
+                        <td colspan="6" class="px-4 pb-3">
+                            <div class="rejection-notice-box d-flex gap-2 align-items-start">
+                                <i class="fas fa-exclamation-triangle mt-1" style="color: var(--danger);"></i>
+                                <div style="color: var(--text-secondary);">
+                                    <strong style="color: var(--text-primary);">Admin Rejection Note:</strong> {{ comp.rejection_reason }}
                                 </div>
                             </div>
                         </td>
@@ -190,10 +189,10 @@
                     {% endif %}
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <div class="mb-3"><i class="fas fa-trophy fs-1 text-light"></i></div>
-                            <h5>No competitions found.</h5>
-                            <p>Deploy your first tournament to get started!</p>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="mb-3"><i class="fas fa-trophy fs-1" style="color: var(--border-dark);"></i></div>
+                            <h5 style="color: var(--text-primary);">No competitions found.</h5>
+                            <p style="color: var(--text-muted);">Deploy your first tournament to get started!</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -203,37 +202,37 @@
     </div>
 </div>
 
-{# --- Edit/Resubmit Modal (Only for Rejected Competitions) --- #}
+{# --- Edit/Resubmit Modal --- #}
 <div id="editCompModal" class="custom-modal-overlay">
-    <div class="custom-modal-content card-modern">
-        <div class="modal-header border-bottom p-4">
-            <h4 class="fw-bold mb-0 text-dark"><i class="fas fa-edit text-primary me-2"></i> Fix & Resubmit Competition</h4>
+    <div class="custom-modal-content">
+        <div class="modal-header p-4" style="border-bottom: 1px solid var(--border-light);">
+            <h4 class="fw-bold mb-0" style="color: var(--text-primary);"><i class="fas fa-edit me-2" style="color: var(--primary);"></i> Fix & Resubmit</h4>
             <button class="btn-close-modal" id="closeEditModalBtn"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
             <div id="editCompLoading" class="text-center py-5">
-                <i class="fas fa-spinner fa-spin fs-2 text-primary mb-3"></i>
-                <p class="text-muted">Loading competition data...</p>
+                <i class="fas fa-spinner fa-spin fs-2 mb-3" style="color: var(--primary);"></i>
+                <p style="color: var(--text-muted);">Loading competition data...</p>
             </div>
 
             <form id="editCompForm" class="d-none">
-                <div class="alert alert-danger mb-4 d-none" id="editRejectionNotice"></div>
+                <div class="mb-4 d-none rejection-notice-box" id="editRejectionNotice" style="color: var(--text-secondary);"></div>
 
                 <div class="row">
                     <div class="col-md-12 mb-3">
-                        <label class="form-label fw-semibold">Competition Name</label>
-                        <input type="text" name="name" id="editName" class="form-control" required>
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Competition Name</label>
+                        <input type="text" name="name" id="editName" class="form-control" required style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--text-primary);">
                     </div>
                     <div class="col-md-12 mb-3">
-                        <label class="form-label fw-semibold">Description</label>
-                        <textarea name="description" id="editDescription" class="form-control" rows="2" required></textarea>
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Description</label>
+                        <textarea name="description" id="editDescription" class="form-control" rows="2" required style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--text-primary);"></textarea>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Game</label>
-                        <select name="game" id="editGame" class="form-select" required>
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Game</label>
+                        <select name="game" id="editGame" class="form-select" required style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--text-primary);">
                             <option value="">Select Game</option>
                             {% for game in all_games %}
                                 <option value="{{ game.id }}">{{ game.name }}</option>
@@ -241,8 +240,8 @@
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Platform</label>
-                        <select name="platform" id="editPlatform" class="form-select" required>
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Platform</label>
+                        <select name="platform" id="editPlatform" class="form-select" required style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--text-primary);">
                             <option value="">Select Platform</option>
                         </select>
                     </div>
@@ -250,45 +249,30 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Start Time</label>
-                        <input type="datetime-local" name="scheduled_time" id="editStart" class="form-control" required>
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Start Time</label>
+                        <input type="datetime-local" name="scheduled_time" id="editStart" class="form-control" required style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--text-primary);">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">End Time</label>
-                        <input type="datetime-local" name="competition_end_time" id="editEnd" class="form-control" required>
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">End Time</label>
+                        <input type="datetime-local" name="competition_end_time" id="editEnd" class="form-control" required style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--text-primary);">
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Capacity</label>
-                        <input type="number" name="max_participants" id="editMax" class="form-control" required>
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Capacity</label>
+                        <input type="number" name="max_participants" id="editMax" class="form-control" required style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--text-primary);">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Entry Fee (KES)</label>
-                        <input type="number" name="entry_fee" id="editFee" class="form-control" step="0.01">
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Age Restriction</label>
-                    <div class="form-check form-switch mt-1">
-                        <input class="form-check-input" type="checkbox" role="switch" name="age_restricted" id="editAge">
-                        <label class="form-check-label ms-1" for="editAge">18+ Required</label>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label fw-semibold">Rules</label>
-                        <textarea name="rules" id="editRules" class="form-control" rows="2"></textarea>
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Entry Fee (KES)</label>
+                        <input type="number" name="entry_fee" id="editFee" class="form-control" step="0.01" style="background: var(--bg-primary); border: 1px solid var(--border-medium); color: var(--text-primary);">
                     </div>
                 </div>
             </form>
         </div>
-        <div class="modal-footer border-top p-4 d-flex justify-content-end gap-2 bg-light">
-            <button type="button" class="btn btn-outline-secondary px-4" id="cancelEditModalBtn">Cancel</button>
-            <button type="button" class="btn btn-primary px-4 fw-bold" id="submitEditBtn">
+        <div class="modal-footer p-4 d-flex justify-content-end gap-2" style="border-top: 1px solid var(--border-light); background: var(--bg-secondary); border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);">
+            <button type="button" class="btn px-4" id="cancelEditModalBtn" style="border: 1px solid var(--border-dark); color: var(--text-secondary); background: transparent;">Cancel</button>
+            <button type="button" class="btn px-4 fw-bold" id="submitEditBtn" style="background: var(--gradient-primary); color: var(--text-light); border: none; box-shadow: var(--shadow-sm);">
                 <i class="fas fa-paper-plane me-2"></i> Resubmit
             </button>
         </div>

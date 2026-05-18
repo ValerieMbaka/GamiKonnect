@@ -462,6 +462,47 @@
 .btn-primary:hover { opacity: 0.88; }
 
 /* ------------------------------------------------------------------
+   Timeline Display
+   ------------------------------------------------------------------ */
+.timeline-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.timeline-item {
+    padding: 10px 12px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #35A8F0;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.timeline-time {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.timeline-event {
+    font-size: 13px;
+    font-weight: 500;
+    color: #212529;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timeline-event i {
+    color: #35A8F0;
+    min-width: 16px;
+}
+
+/* ------------------------------------------------------------------
    Responsive
    ------------------------------------------------------------------ */
 @media (max-width: 960px) {

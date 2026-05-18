@@ -41,6 +41,39 @@ class CompetitionDetail {
         document.querySelectorAll('.detail-register-btn').forEach(btn => {
             btn.addEventListener('click', () => this.register());
         });
+
+        // Bind tab switching
+        document.querySelectorAll('.comp-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.target;
+                if (target) this.switchTab(target);
+            });
+        });
+    }
+
+    // Tab Switching
+    switchTab(target) {
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.comp-tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Remove active class from all tab panes
+        document.querySelectorAll('.comp-tab-pane').forEach(pane => {
+            pane.classList.remove('active');
+        });
+
+        // Add active class to clicked button
+        const activeBtn = document.querySelector(`.comp-tab-btn[data-target="${target}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+
+        // Add active class to corresponding pane
+        const activePane = document.getElementById(`tab-${target}`);
+        if (activePane) {
+            activePane.classList.add('active');
+        }
     }
 
     // Gamer — Registration

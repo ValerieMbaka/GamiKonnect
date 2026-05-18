@@ -1,4 +1,4 @@
-@import "/static/core/css/variables.css";
+@import "../../../core/css/variables.css";
 
 .card-admin {
     background: #ffffff;

@@ -356,7 +356,6 @@ class Competition(models.Model):
         return self.name
 
     @property
-    @property
     def generated_timeline(self):
         """
         Automatically generates a competition timeline based on the scheduled start time.

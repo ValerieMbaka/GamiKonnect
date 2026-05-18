@@ -101,7 +101,7 @@ class ActivityLog(models.Model):
         null=True,
         blank=True
     )
-    target_object_id = models.PositiveIntegerField(null=True, blank=True)
+    target_object_id = models.CharField(max_length=255, null=True, blank=True, help_text="Can store integer or UUID values")
     target = GenericForeignKey('target_content_type', 'target_object_id')
     
     description = models.TextField(

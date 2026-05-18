@@ -409,7 +409,7 @@
                                             {% elif competition.prize_type == 'gift' %}
                                                 <span class="badge bg-primary text-white me-2">Gift Prize</span>
                                             {% endif %}
-                                            <a href="{% url 'competitions:detail' competition.integer_id %}" class="btn btn-sm btn-outline-primary ms-auto">Join</a>
+                                            <a href="{% url 'competitions:detail' competition.slug %}" class="btn btn-sm btn-outline-primary ms-auto">Join</a>
                                         </div>
                                     </div>
                                 </div>

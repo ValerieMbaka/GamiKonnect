@@ -242,7 +242,7 @@ class EmailManager:
             'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip(),
             'competition': competition,
             'is_resubmission': is_resubmission,
-            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.slug}/",
         }
         return cls._send_html_email(
             subject,
@@ -260,7 +260,7 @@ class EmailManager:
         context = {
             'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
             'competition': competition,
-            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.slug}/",
         }
         recipients = [owner.email for owner in competition.shop.owners.all()]
         return cls._send_html_email(
@@ -280,7 +280,7 @@ class EmailManager:
             'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
             'competition': competition,
             'rejection_reason': competition.rejection_reason,
-            'edit_link': f"{site_url}/competitions/manage/{competition.integer_id}/edit/",
+            'edit_link': f"{site_url}/competitions/manage/{competition.slug}/edit/",
         }
         recipients = [owner.email for owner in competition.shop.owners.all()]
         return cls._send_html_email(
@@ -299,7 +299,7 @@ class EmailManager:
         context = {
             'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
             'competition': competition,
-            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.slug}/",
         }
         recipients = [owner.email for owner in competition.shop.owners.all()]
         return cls._send_html_email(
@@ -319,7 +319,7 @@ class EmailManager:
             'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
             'competition': competition,
             'participant_count': participant_count,
-            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.slug}/",
         }
         recipients = [owner.email for owner in competition.shop.owners.all()]
         return cls._send_html_email(
@@ -338,7 +338,7 @@ class EmailManager:
         context = {
             'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
             'competition': competition,
-            'results_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+            'results_link': f"{site_url}/competitions/manage/{competition.slug}/",
         }
         recipients = [owner.email for owner in competition.shop.owners.all()]
         return cls._send_html_email(
@@ -357,7 +357,7 @@ class EmailManager:
         context = {
             'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
             'competition': competition,
-            'dashboard_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+            'dashboard_link': f"{site_url}/competitions/manage/{competition.slug}/",
         }
         recipients = [owner.email for owner in competition.shop.owners.all()]
         return cls._send_html_email(
@@ -376,7 +376,7 @@ class EmailManager:
         context = {
             'shop_owner_name': f"{shop_owner.first_name} {shop_owner.last_name}".strip() if shop_owner else 'Shop Owner',
             'competition': competition,
-            'checkin_link': f"{site_url}/competitions/manage/{competition.integer_id}/",
+            'checkin_link': f"{site_url}/competitions/manage/{competition.slug}/",
         }
         recipients = [owner.email for owner in competition.shop.owners.all()]
         return cls._send_html_email(
@@ -400,7 +400,7 @@ class EmailManager:
             'competition': competition,
             'registration': registration,
             'unique_code': str(registration.unique_code),
-            'competition_link': f"{site_url}/competitions/{competition.integer_id}/",
+            'competition_link': f"{site_url}/competitions/{competition.slug}/",
             'dashboard_link': f"{site_url}/competitions/my-competitions/",
         }
         return cls._send_html_email(
@@ -420,7 +420,7 @@ class EmailManager:
             'competition': competition,
             'registration': registration,
             'unique_code': str(registration.unique_code),
-            'competition_link': f"{site_url}/competitions/{competition.integer_id}/",
+            'competition_link': f"{site_url}/competitions/{competition.slug}/",
         }
         return cls._send_html_email(
             subject,
@@ -439,7 +439,7 @@ class EmailManager:
             'competition': competition,
             'result': result,
             'is_win': result.is_win(),
-            'result_link': f"{site_url}/competitions/{competition.integer_id}/my-result/",
+            'result_link': f"{site_url}/competitions/{competition.slug}/my-result/",
             'dashboard_link': f"{site_url}/competitions/my-competitions/",
         }
         return cls._send_html_email(
@@ -462,7 +462,7 @@ class EmailManager:
         context = {
             'competition': competition,
             'submitted_by': f"{competition.created_by.first_name} {competition.created_by.last_name}".strip(),
-            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+            'admin_review_link': f"{site_url}/management/competitions/{competition.slug}/",
         }
         return cls._send_html_email(
             subject,
@@ -480,7 +480,7 @@ class EmailManager:
         context = {
             'competition': competition,
             'submitted_by': f"{competition.created_by.first_name} {competition.created_by.last_name}".strip(),
-            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+            'admin_review_link': f"{site_url}/management/competitions/{competition.slug}/",
         }
         return cls._send_html_email(
             subject,
@@ -500,7 +500,7 @@ class EmailManager:
             'checked_in_count': checked_in_count,
             'registered_count': registered_count,
             'no_show_count': registered_count - checked_in_count,
-            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+            'admin_review_link': f"{site_url}/management/competitions/{competition.slug}/",
         }
         return cls._send_html_email(
             subject,
@@ -517,7 +517,7 @@ class EmailManager:
         site_url = cls._get_site_url()
         context = {
             'competition': competition,
-            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+            'admin_review_link': f"{site_url}/management/competitions/{competition.slug}/",
         }
         return cls._send_html_email(
             subject,
@@ -534,7 +534,7 @@ class EmailManager:
         site_url = cls._get_site_url()
         context = {
             'competition': competition,
-            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+            'admin_review_link': f"{site_url}/management/competitions/{competition.slug}/",
         }
         return cls._send_html_email(
             subject,
@@ -555,6 +555,6 @@ class EmailManager:
         context = {
             'competition': competition,
             'allocations': allocations,
-            'admin_review_link': f"{site_url}/management/competitions/{competition.integer_id}/",
+            'admin_review_link': f"{site_url}/management/competitions/{competition.slug}/",
         }
         return cls._send_html_email(subject, 'admin/competitions/admin_competition_prize_allocations.html', context, [admin_email])

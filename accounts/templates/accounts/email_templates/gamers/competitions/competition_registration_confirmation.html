@@ -10,14 +10,14 @@
     <p class="text-secondary">You're officially registered for <strong>"{{ competition.name }}"</strong>. Save your unique code below — you'll need it to check in on competition day.</p>
 
     <div class="info-box text-center">
-        <p class="comp-code-label">YOUR UNIQUE REGISTRATION CODE</p>
-        <p class="comp-code-value">{{ unique_code }}</p>
-        <p class="comp-code-hint">Present this code to the shop owner on competition day along with a valid ID{% if competition.age_restricted %} (age 18+ required){% endif %}.</p>
+        <p class="code-label">YOUR UNIQUE REGISTRATION CODE</p>
+        <p class="code-value code-value-primary">{{ unique_code }}</p>
+        <p class="small-note text-secondary">Present this code to the shop owner on competition day along with a valid ID{% if competition.age_restricted %} (age 18+ required){% endif %}.</p>
     </div>
 
     <div class="info-box">
         <h3 class="text-primary">📋 Competition Details</h3>
-        <ul class="comp-details-list text-secondary">
+        <ul class="list-compact text-secondary" style="font-size: 14px;">
             <li><strong>Competition:</strong> {{ competition.name }}</li>
             <li><strong>Game:</strong> {{ competition.game.name }}</li>
             <li><strong>Platform:</strong> {{ competition.platform.name }}</li>

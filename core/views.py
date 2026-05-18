@@ -133,6 +133,26 @@ def help_platform_navigation(request):
 def help_first_tournament(request):
     context = base_site_context()
     return render(request, 'core/support/guides/first_tournament.html', context)
+    
+    
+def error_400(request, exception=None):
+    context = base_site_context()
+    return render(request, 'core/errors/400.html', context, status=400)
+
+
+def error_403(request, exception=None):
+    context = base_site_context()
+    return render(request, 'core/errors/403.html', context, status=403)
+
+
+def error_404(request, exception):
+    context = base_site_context()
+    return render(request, 'core/errors/404.html', context, status=404)
+
+
+def error_500(request):
+    context = base_site_context()
+    return render(request, 'core/errors/500.html', context, status=500)
 
 
 @require_POST

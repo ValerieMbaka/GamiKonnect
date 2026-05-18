@@ -76,6 +76,7 @@ def provision_account_from_pending(pending):
                     first_name=pending.first_name,
                     last_name=pending.last_name,
                     phone=pending.phone,
+                    gender=pending.gender,
                     custom_username=f"user{pending.uid[:8]}",
                     bio="Bio",
                     about="About",
@@ -88,13 +89,18 @@ def provision_account_from_pending(pending):
                 account = Account.objects.filter(uid=pending.uid).first()
                 if account:
                     shop_owner = promote_account_to_shop_owner(account)
+                    # Update gender if provided
+                    if pending.gender:
+                        account.gender = pending.gender
+                        account.save()
                 else:
                     shop_owner = ShopOwner.objects.create(
                         uid=pending.uid,
                         email=pending.email,
                         first_name=pending.first_name,
                         last_name=pending.last_name,
-                        phone=pending.phone
+                        phone=pending.phone,
+                        gender=pending.gender
                     )
                 account = shop_owner
                 logger.info(f"Successfully created ShopOwner account: {account.email}")
@@ -166,6 +172,7 @@ def register_submit(request):
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
             phone = request.POST.get('phone_number')
+            gender = request.POST.get('gender')
             role = 'gamer'
             
             if Account.objects.filter(email=email).exists():
@@ -186,12 +193,13 @@ def register_submit(request):
                 pending.first_name = first_name
                 pending.last_name = last_name
                 pending.phone = phone
+                pending.gender = gender
                 pending.role = role
                 pending.save()
             else:
                 pending = PendingRegistration.objects.create(
                     uid=uid, email=email, first_name=first_name,
-                    last_name=last_name, phone=phone, role=role,
+                    last_name=last_name, phone=phone, gender=gender, role=role,
                 )
 
             try:

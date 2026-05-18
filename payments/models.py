@@ -20,8 +20,28 @@ class MpesaTransaction(models.Model):
     receipt_number = models.CharField(max_length=50, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     
+    # Link to competition registration (for tracking which registration this payment is for)
+    competition_registration = models.OneToOneField(
+        'competitions.CompetitionRegistration',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='payment',
+        help_text="The competition registration this payment is for."
+    )
+    
+    # Payment simulation flag (for testing without real M-Pesa)
+    is_simulated = models.BooleanField(
+        default=False,
+        help_text="If True, this is a simulated payment for testing purposes."
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'M-Pesa Transaction'
+        verbose_name_plural = 'M-Pesa Transactions'
+        ordering = ['-created_at']
     
     def __str__(self):
         return f"{self.receipt_number or 'Pending'} - {self.phone_number} - {self.amount}"

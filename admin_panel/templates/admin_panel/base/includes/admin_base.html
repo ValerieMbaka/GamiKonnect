@@ -123,29 +123,59 @@
                     </div>
                     <ul class="nav-list">
                         <li>
-                            <a href="#" class="nav-link" data-tooltip="User Management">
+                            <a href="{% url 'admin_panel:user_list' %}" class="nav-link {% if 'users' in request.path %}active{% endif %}" data-tooltip="User Management">
                                 <i class="fas fa-users-cog"></i>
                                 <span>Users & Staff</span>
                             </a>
                         </li>
                         <li>
-                            <a href="{% url 'admin_panel:games' %}" class="nav-link" data-tooltip="Game Database">
-                                <i class="fas fa-gamepad"></i>
-                                <span>Games</span>
-	                            <span class="nav-badge">2</span>
+                            <a href="{% url 'admin_panel:shop_list' %}" class="nav-link {% if 'shops' in request.path %}active{% endif %}" data-tooltip="Shop Management">
+                                <i class="fas fa-store"></i>
+                                <span>Shops</span>
                             </a>
                         </li>
-	                    <li>
-     <a href="{% url 'admin_panel:competition_list' %}"
-        class="nav-link {% if 'competitions' in request.path %}active{% endif %}">
-         <i class="fas fa-trophy"></i>
-         <span>Competitions</span>
-         {% if pending_competitions_count > 0 %}
-             <span class="badge">{{ pending_competitions_count }}</span>
-         {% endif %}
-     </a>
- </li>
+                        <li>
+                            <a href="{% url 'admin_panel:games' %}" class="nav-link {% if 'games' in request.path %}active{% endif %}" data-tooltip="Game Database">
+                                <i class="fas fa-gamepad"></i>
+                                <span>Games</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:competition_list' %}" class="nav-link {% if 'competitions' in request.path %}active{% endif %}" data-tooltip="Competition Management">
+                                <i class="fas fa-trophy"></i>
+                                <span>Competitions</span>
+                                {% if pending_competitions_count > 0 %}
+                                    <span class="badge">{{ pending_competitions_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:payment_list' %}" class="nav-link {% if 'payments' in request.path %}active{% endif %}" data-tooltip="Payments">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>Payments</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
+                <div class="nav-section">
+                    <div class="section-header">
+                        <i class="fas fa-star"></i>
+                        <span>Progression</span>
+                    </div>
+                    <ul class="nav-list">
+                        <li>
+                            <a href="{% url 'admin_panel:level_list' %}" class="nav-link {% if 'levels' in request.path %}active{% endif %}">
+                                <i class="fas fa-layer-group"></i>
+                                <span>Levels</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:achievement_list' %}" class="nav-link {% if 'achievements' in request.path %}active{% endif %}">
+                                <i class="fas fa-medal"></i>
+                                <span>Achievements</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
@@ -156,15 +186,21 @@
                     </div>
                     <ul class="nav-list">
                         <li>
-                            <a href="{% url 'admin_panel:site_settings' %}" class="nav-link" data-tooltip="Site Settings">
+                            <a href="{% url 'admin_panel:site_settings' %}" class="nav-link {% if 'settings' in request.path %}active{% endif %}" data-tooltip="Site Settings">
                                 <i class="fas fa-sliders-h"></i>
                                 <span>Site Settings</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="nav-link" data-tooltip="Platform Logs">
+                            <a href="{% url 'admin_panel:activity_logs' %}" class="nav-link {% if 'activities' in request.path and 'gamer' not in request.path %}active{% endif %}" data-tooltip="Platform Logs">
                                 <i class="fas fa-clipboard-list"></i>
-                                <span>Activity Logs</span>
+                                <span>Admin Logs</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:gamer_activities' %}" class="nav-link {% if 'gamer' in request.path %}active{% endif %}" data-tooltip="Gamer Activities">
+                                <i class="fas fa-user-clock"></i>
+                                <span>Gamer Activities</span>
                             </a>
                         </li>
                     </ul>

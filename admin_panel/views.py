@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -14,13 +15,13 @@ from django.db import transaction
 from core.email_service import EmailManager
 
 # Model imports
-from core.models import ProjectDetail, SiteStyle
+from core.models import ProjectDetail, SiteStyle, Section, Slider, FeatureCard
 from games.models import Game, Genre, Platform, PlatformCategory
 from accounts.models import Gamer, ShopOwner, Account
-from activities.models import ActivityLog
-from competitions.models import Competition, CompetitionAuditLog
+from activities.models import ActivityLog, Activity, Level, Achievement
 from shops.models import Shop
-from competitions.models import Competition, CompetitionRegistration, CompetitionResult
+from payments.models import MpesaTransaction
+from competitions.models import Competition, CompetitionAuditLog, CompetitionRegistration, CompetitionResult
 from competitions.forms import CompetitionApprovalForm, CompetitionRejectionForm, CompetitionAdminCreateForm
 from competitions.scheduler import schedule_competition_jobs
 from competitions.services import CompetitionService
@@ -28,7 +29,10 @@ from activities.services import ActivityFeedService
 
 # Imports for custom logic
 from .decorators import admin_required
-from .forms import AdminUserUpdateForm, AdminProfileUpdateForm, ProjectDetailForm, SiteStyleForm, GameForm
+from .forms import (
+    AdminUserUpdateForm, AdminProfileUpdateForm, ProjectDetailForm, SiteStyleForm, 
+    GameForm, LevelForm, AchievementForm, ShopForm, SectionForm, SliderForm, FeatureCardForm
+)
 
 
 logger = logging.getLogger(__name__)
@@ -73,12 +77,11 @@ def admin_dashboard(request):
     total_gamers = Gamer.objects.count()
     total_competitions = Competition.objects.count()
     
-    # Revenue/Earnings (Placeholder logic as actual transaction model is not verified)
-    # For now, let's assume earnings might be tied to something, but we'll use a placeholder or 0
-    total_earnings = 0 # Placeholder for now
+    # Revenue/Earnings
+    total_earnings = MpesaTransaction.objects.filter(status='SUCCESS').aggregate(Sum('amount'))['amount__sum'] or 0
     
     # Recent Activity (Last 5 logs)
-    recent_activity_feed = ActivityFeedService.get_admin_feed(limit=5)
+    recent_activity_feed = ActivityLog.objects.all().order_by('-timestamp')[:5]
     
     # Upcoming Events (Competitions starting soon)
     upcoming_events = Competition.objects.filter(
@@ -99,8 +102,17 @@ def admin_dashboard(request):
         activity_labels.append(day.strftime('%a'))
         activity_data.append(count)
         
-    # Revenue Chart Data (Placeholder)
-    revenue_data = [5400, 3200, 2850, 1000] # Mock data until revenue model is confirmed
+    # Revenue Chart Data
+    revenue_data = []
+    for i in range(3, -1, -1):
+        # Last 4 months revenue
+        month_ago = timezone.now() - timedelta(days=i*30)
+        monthly_revenue = MpesaTransaction.objects.filter(
+            status='SUCCESS', 
+            created_at__year=month_ago.year, 
+            created_at__month=month_ago.month
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        revenue_data.append(float(monthly_revenue))
     
     # APScheduler Jobs Monitoring
     from competitions.scheduler import get_scheduler
@@ -434,11 +446,15 @@ def admin_competition_list(request):
 
 
 @admin_required
-def admin_competition_detail(request, competition_id):
-    competition = get_object_or_404(
-        Competition.objects.select_related('game', 'platform', 'shop', 'created_by'),
-        integer_id=competition_id
-    )
+def admin_competition_detail(request, slug):
+    # Try slug first, then ID for backward compatibility
+    try:
+        competition = Competition.objects.select_related('game', 'platform', 'shop', 'created_by').get(slug=slug)
+    except Competition.DoesNotExist:
+        try:
+            competition = Competition.objects.select_related('game', 'platform', 'shop', 'created_by').get(integer_id=int(slug))
+        except (Competition.DoesNotExist, ValueError):
+            raise Http404("Competition not found.")
     
     registrations = competition.registrations.filter(
         is_cancelled=False
@@ -461,8 +477,15 @@ def admin_competition_detail(request, competition_id):
 
 
 @admin_required
-def admin_competition_approve(request, competition_id):
-    competition = get_object_or_404(Competition, integer_id=competition_id, status='pending_review')
+def admin_competition_approve(request, slug):
+    # Try slug first, then ID for backward compatibility
+    try:
+        competition = Competition.objects.get(slug=slug, status='pending_review')
+    except Competition.DoesNotExist:
+        try:
+            competition = Competition.objects.get(integer_id=int(slug), status='pending_review')
+        except (Competition.DoesNotExist, ValueError):
+            return JsonResponse({'success': False, 'message': 'Competition not found or not in pending review.'}, status=404)
     
     if request.method == 'POST':
         # Support JSON from inline AJAX (quick-approve) as well as normal form posts
@@ -493,8 +516,15 @@ def admin_competition_approve(request, competition_id):
 
 
 @admin_required
-def admin_competition_reject(request, competition_id):
-    competition = get_object_or_404(Competition, integer_id=competition_id, status='pending_review')
+def admin_competition_reject(request, slug):
+    # Try slug first, then ID for backward compatibility
+    try:
+        competition = Competition.objects.get(slug=slug, status='pending_review')
+    except Competition.DoesNotExist:
+        try:
+            competition = Competition.objects.get(integer_id=int(slug), status='pending_review')
+        except (Competition.DoesNotExist, ValueError):
+            return JsonResponse({'success': False, 'message': 'Competition not found or not in pending review.'}, status=404)
     
     if request.method == 'POST':
         # Support JSON from inline AJAX (quick-reject) and normal form posts
@@ -529,8 +559,15 @@ def admin_competition_reject(request, competition_id):
 
 
 @admin_required
-def admin_confirm_checkins(request, competition_id):
-    competition = get_object_or_404(Competition, integer_id=competition_id, status='checkin_submitted')
+def admin_confirm_checkins(request, slug):
+    # Try slug first, then ID for backward compatibility
+    try:
+        competition = Competition.objects.get(slug=slug, status='checkin_submitted')
+    except Competition.DoesNotExist:
+        try:
+            competition = Competition.objects.get(integer_id=int(slug), status='checkin_submitted')
+        except (Competition.DoesNotExist, ValueError):
+            return JsonResponse({'success': False, 'message': 'Competition not found or check-ins not submitted.'}, status=404)
     
     if request.method == 'POST':
         try:
@@ -550,25 +587,211 @@ def admin_confirm_checkins(request, competition_id):
 
 
 @admin_required
-def admin_verify_results(request, competition_id):
-    competition = get_object_or_404(
-        Competition,
-        integer_id=competition_id,
-        status__in=['pending_prize_verification', 'completed']
-    )
+def admin_verify_results(request, slug):
+    competition = get_object_or_404(Competition, slug=slug)
     
     if request.method == 'POST':
         try:
             CompetitionService.verify_results(
                 competition,
+                performed_by=request.user,
                 performed_by_label=request.user.get_username(),
             )
             return JsonResponse({
                 'success': True,
-                'message': f"Results verified and published for '{competition.name}'.",
+                'message': 'Results verified and winners notified.',
             })
         except Exception as e:
             logger.error(f"Verify results error: {e}")
-            return JsonResponse({'success': False, 'message': 'Verification failed. Please try again.'})
+            return JsonResponse({'success': False, 'message': f'Failed: {str(e)}'})
     
     return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=405)
+
+
+@admin_required
+def admin_user_list(request):
+    query = request.GET.get('q', '')
+    user_type = request.GET.get('type', '')
+    
+    users = Account.objects.all().order_by('-created_at')
+    
+    if query:
+        users = users.filter(
+            Q(email__icontains=query) | 
+            Q(first_name__icontains=query) | 
+            Q(last_name__icontains=query)
+        )
+    
+    # Since Account doesn't have a role field, we can't filter by it directly.
+    # We might need to check for child existence or use a different approach.
+    # For now, we'll avoid filtering by non-existent fields to prevent crashes.
+    
+    # if user_type == 'staff':
+    #    users = users.filter(is_staff=True)
+    # elif user_type == 'gamer':
+    #    users = users.filter(role='GAMER')
+    # elif user_type == 'shop_owner':
+    #    users = users.filter(role='SHOP_OWNER')
+
+    paginator = Paginator(users, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'users': page_obj,
+        'query': query,
+        'user_type': user_type,
+    }
+    return render(request, 'admin_panel/users/admin_user_list.html', context)
+
+@admin_required
+def admin_user_detail(request, user_id):
+    user_obj = get_object_or_404(Account, id=user_id)
+    
+    # Get associated profile if any
+    profile = None
+    try:
+        profile = user_obj.gamer
+    except Exception:
+        try:
+            profile = user_obj.shopowner
+        except Exception:
+            pass
+
+    # Get recent activity
+    activities = ActivityLog.objects.filter(actor=user_obj).order_by('-timestamp')[:10]
+    
+    context = {
+        'user_obj': user_obj,
+        'profile': profile,
+        'activities': activities,
+    }
+    return render(request, 'admin_panel/users/admin_user_detail.html', context)
+
+@admin_required
+def admin_user_toggle_status(request, user_id):
+    # Account doesn't have is_active field
+    # user_obj.is_active = not user_obj.is_active
+    # user_obj.save()
+    
+    # status = "activated" if user_obj.is_active else "deactivated"
+    # messages.success(request, f"User {user_obj.email} has been {status}.")
+    messages.warning(request, "Status toggle is currently disabled due to model constraints.")
+    return redirect('admin_panel:user_detail', user_id=user_id)
+
+@admin_required
+def admin_shop_list(request):
+    query = request.GET.get('q', '')
+    shops = Shop.objects.all().order_by('-created_at')
+    
+    if query:
+        shops = shops.filter(Q(name__icontains=query) | Q(city__icontains=query))
+
+    paginator = Paginator(shops, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'admin_panel/shops/admin_shop_list.html', {'shops': page_obj, 'query': query})
+
+@admin_required
+def admin_shop_detail(request, shop_id):
+    shop = get_object_or_404(Shop, id=shop_id)
+    if request.method == 'POST':
+        form = ShopForm(request.POST, instance=shop)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Shop details updated.")
+            return redirect('admin_panel:shop_detail', shop_id=shop_id)
+    else:
+        form = ShopForm(instance=shop)
+        
+    return render(request, 'admin_panel/shops/admin_shop_detail.html', {'shop': shop, 'form': form})
+
+@admin_required
+def admin_shop_approve(request, shop_id):
+    shop = get_object_or_404(Shop, id=shop_id)
+    shop.is_approved = True
+    shop.approved_at = timezone.now()
+    shop.save()
+    messages.success(request, f"Shop '{shop.name}' has been approved.")
+    return redirect('admin_panel:shop_detail', shop_id=shop_id)
+
+@admin_required
+def admin_shop_reject(request, shop_id):
+    shop = get_object_or_404(Shop, id=shop_id)
+    # Logic for rejection (maybe delete or mark as rejected)
+    shop.is_approved = False
+    shop.save()
+    messages.warning(request, f"Shop '{shop.name}' has been rejected.")
+    return redirect('admin_panel:shop_detail', shop_id=shop_id)
+
+@admin_required
+def admin_payment_list(request):
+    transactions = MpesaTransaction.objects.all().order_by('-created_at')
+    paginator = Paginator(transactions, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'admin_panel/payments/admin_payment_list.html', {'transactions': page_obj})
+
+@admin_required
+def admin_payment_detail(request, transaction_id):
+    transaction_obj = get_object_or_404(MpesaTransaction, id=transaction_id)
+    return render(request, 'admin_panel/payments/admin_payment_detail.html', {'transaction': transaction_obj})
+
+@admin_required
+def admin_level_list(request):
+    levels = Level.objects.all().order_by('order')
+    return render(request, 'admin_panel/progression/admin_level_list.html', {'levels': levels})
+
+@admin_required
+def admin_level_save(request):
+    level_id = request.POST.get('level_id')
+    if level_id:
+        level = get_object_or_404(Level, id=level_id)
+        form = LevelForm(request.POST, request.FILES, instance=level)
+    else:
+        form = LevelForm(request.POST, request.FILES)
+        
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Level saved successfully.")
+    else:
+        messages.error(request, "Error saving level.")
+    return redirect('admin_panel:level_list')
+
+@admin_required
+def admin_achievement_list(request):
+    achievements = Achievement.objects.all()
+    return render(request, 'admin_panel/progression/admin_achievement_list.html', {'achievements': achievements})
+
+@admin_required
+def admin_achievement_save(request):
+    achievement_id = request.POST.get('achievement_id')
+    if achievement_id:
+        achievement = get_object_or_404(Achievement, id=achievement_id)
+        form = AchievementForm(request.POST, request.FILES, instance=achievement)
+    else:
+        form = AchievementForm(request.POST, request.FILES)
+        
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Achievement saved successfully.")
+    else:
+        messages.error(request, "Error saving achievement.")
+    return redirect('admin_panel:achievement_list')
+
+@admin_required
+def admin_activity_logs(request):
+    logs = ActivityLog.objects.all().order_by('-timestamp')
+    paginator = Paginator(logs, 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'admin_panel/activities/admin_activity_logs.html', {'logs': page_obj})
+
+@admin_required
+def admin_gamer_activities(request):
+    activities = Activity.objects.all().order_by('-timestamp')
+    paginator = Paginator(activities, 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'admin_panel/activities/admin_gamer_activities.html', {'activities': page_obj})

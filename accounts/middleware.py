@@ -55,6 +55,8 @@ class RoleAccessMiddleware:
         # Users who are not logged in can always access these views
         allowed_anonymous = {
             'core:home',
+            'competitions:list',
+            'competitions:detail',
             
             # Core legal pages
             'core:cookie_policy',
@@ -92,6 +94,12 @@ class RoleAccessMiddleware:
             'accounts:gamer_public_profile',
             'accounts:gamer_public_profile_username',
             'games:get_profile_form_data',
+            'competitions:list',
+            'competitions:detail',
+            'competitions:register',
+            'competitions:check_registration',
+            'competitions:gamer_competitions',
+            'competitions:gamer_result',
         }
         
         shop_owner_allowed_names = {
@@ -101,8 +109,14 @@ class RoleAccessMiddleware:
             'accounts:shop_owner_settings',
             'accounts:shop_owner_shop_detail',
             'accounts:edit_shop',
-            'accounts:shop_owner_competitions',
-            'accounts:shop_owner_competition_detail',
+            'accounts:shop_owner_venues',
+            'competitions:shop_owner_competitions',
+            'competitions:shop_owner_detail',
+            'competitions:shop_owner_create',
+            'competitions:shop_owner_edit',
+            'competitions:shop_owner_verify_gamer',
+            'competitions:shop_owner_submit_checkins',
+            'competitions:shop_owner_submit_results',
             'accounts:submit_competition_result',
             'accounts:submit_competition_result_no_pk',
         }

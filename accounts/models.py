@@ -4,12 +4,20 @@ from django.utils import timezone
 
 
 class Account(models.Model):
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+        ('prefer_not_to_say', 'Prefer not to say'),
+    ]
+
     # Personal Information
     uid = models.CharField(max_length=255, unique=True, verbose_name="Firebase UID")
     first_name = models.CharField(max_length=255, blank=False, null=False)
     last_name = models.CharField(max_length=255, blank=False, null=False)
     email = models.EmailField(max_length=150, unique=True, verbose_name="Email Address", blank=False, null=False)
     phone = models.CharField(max_length=15, blank=False, null=False, unique=True, verbose_name="Phone Number")
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -78,6 +86,7 @@ class PendingRegistration(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=15, unique=True)
+    gender = models.CharField(max_length=20, choices=Account.GENDER_CHOICES, blank=True, null=True)
     role = models.CharField(max_length=20, choices=(('gamer', 'Gamer'), ('shop_owner', 'Shop Owner')))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

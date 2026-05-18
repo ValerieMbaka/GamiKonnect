@@ -542,12 +542,12 @@
 
                     <div class="competition-card-footer">
                         {% if reg.competition.status == 'completed' %}
-                        <a href="{% url 'competitions:gamer_result' reg.competition.integer_id %}"
+                        <a href="{% url 'competitions:gamer_result' reg.competition.slug %}"
                            class="competition-btn completed">
                             <i class="fas fa-trophy"></i> View Results
                         </a>
                         {% else %}
-                        <a href="{% url 'competitions:detail' reg.competition.integer_id %}"
+                        <a href="{% url 'competitions:detail' reg.competition.slug %}"
                            class="competition-btn primary">
                             <i class="fas fa-eye"></i> View Details
                         </a>

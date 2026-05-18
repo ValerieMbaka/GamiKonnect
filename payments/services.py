@@ -3,6 +3,8 @@ import base64
 from datetime import datetime
 from django.conf import settings
 from requests.auth import HTTPBasicAuth
+import uuid
+
 
 class MpesaService:
     def __init__(self):
@@ -64,3 +66,52 @@ class MpesaService:
         except requests.exceptions.RequestException as e:
             print(f"STK Push Failed: {e}")
             return {"error": str(e)}
+
+
+class PaymentSimulationService:
+    """
+    Service for simulating M-Pesa payments in development/testing.
+    Allows testing the full registration flow without a real Paybill/Till.
+    """
+    
+    @staticmethod
+    def create_simulated_payment(phone_number, amount, reference, description):
+        """
+        Creates a simulated M-Pesa transaction that can be confirmed via API.
+        Returns a mock checkout request ID that can be used for testing.
+        """
+        # Generate a realistic-looking checkout request ID
+        checkout_request_id = f"sim_{uuid.uuid4().hex[:20].upper()}"
+        
+        return {
+            "CheckoutRequestID": checkout_request_id,
+            "ResponseCode": "0",
+            "ResponseDescription": "Success. Request accepted for processing.",
+            "MerchantRequestID": f"merge_{uuid.uuid4().hex[:15].upper()}",
+            "is_simulated": True
+        }
+    
+    @staticmethod
+    def confirm_simulated_payment(checkout_request_id):
+        """
+        Confirms a simulated payment by simulating the M-Pesa callback response.
+        Used for testing - simulates what Safaricom would send back.
+        """
+        return {
+            "Body": {
+                "stkCallback": {
+                    "MerchantRequestID": f"merge_{uuid.uuid4().hex[:15].upper()}",
+                    "CheckoutRequestID": checkout_request_id,
+                    "ResultCode": 0,  # 0 = success
+                    "ResultDesc": "The service request has been processed successfully.",
+                    "CallbackMetadata": {
+                        "Item": [
+                            {"Name": "Amount", "Value": 100},
+                            {"Name": "MpesaReceiptNumber", "Value": f"SIM{uuid.uuid4().hex[:8].upper()}"},
+                            {"Name": "TransactionDate", "Value": int(datetime.now().strftime('%Y%m%d%H%M%S'))},
+                            {"Name": "PhoneNumber", "Value": "2547XXXXXXXX"},
+                        ]
+                    }
+                }
+            }
+        }

@@ -1,9 +1,11 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import AdminProfile
-from core.models import ProjectDetail, SiteStyle
+from core.models import ProjectDetail, SiteStyle, Section, Slider, FeatureCard
 from django import forms
 from games.models import Game, Genre, Platform
+from activities.models import Level, Achievement
+from shops.models import Shop
 
 class AdminUserUpdateForm(forms.ModelForm):
     # Handles updates to the core Django User table
@@ -61,3 +63,33 @@ class GameForm(forms.ModelForm):
             'genres': forms.SelectMultiple(attrs={'class': 'form-select-multiple'}),
             'supported_platforms': forms.SelectMultiple(attrs={'class': 'form-select-multiple'}),
         }
+
+class LevelForm(forms.ModelForm):
+    class Meta:
+        model = Level
+        fields = ['name', 'required_points', 'badge_image', 'order']
+
+class AchievementForm(forms.ModelForm):
+    class Meta:
+        model = Achievement
+        fields = ['name', 'description', 'badge_image', 'xp', 'condition_key']
+
+class ShopForm(forms.ModelForm):
+    class Meta:
+        model = Shop
+        fields = ['is_approved', 'is_active']
+
+class SectionForm(forms.ModelForm):
+    class Meta:
+        model = Section
+        fields = '__all__'
+
+class SliderForm(forms.ModelForm):
+    class Meta:
+        model = Slider
+        fields = '__all__'
+
+class FeatureCardForm(forms.ModelForm):
+    class Meta:
+        model = FeatureCard
+        fields = '__all__'

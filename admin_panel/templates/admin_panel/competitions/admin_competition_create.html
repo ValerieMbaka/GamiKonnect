@@ -1,0 +1,405 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Competition · Competition Management · {{ project_detail.title|default:"GamiKonnect" }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'admin_panel/css/competitions/admin_competitions.css' %}">
+    <style>
+        .form-section {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-section h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            border-bottom: 2px solid #35a8f0;
+            padding-bottom: 12px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #35a8f0;
+            box-shadow: 0 0 0 3px rgba(53, 168, 240, 0.1);
+        }
+
+        .errorlist {
+            list-style: none;
+            margin: 6px 0 0 0;
+            padding: 0;
+        }
+
+        .errorlist li {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .form-group.has-error input,
+        .form-group.has-error select,
+        .form-group.has-error textarea {
+            border-color: #dc3545;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #35a8f0;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2793cc;
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d0d0d0;
+        }
+
+        .field-help {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .nonfield-errors {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            color: #721c24;
+        }
+
+        .nonfield-errors li {
+            list-style: none;
+            margin: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper-fluid">
+
+    {# Page Header #}
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <div class="breadcrumb-row">
+                <a href="{% url 'admin_panel:competition_list' %}" class="breadcrumb-link">
+                    <i class="fas fa-arrow-left"></i> Competitions
+                </a>
+                <span class="breadcrumb-sep">/</span>
+                <span class="breadcrumb-current">Create New</span>
+            </div>
+            <h1 class="page-title m-0 mt-1">Create Competition</h1>
+            <p class="page-subtitle text-muted mt-1">
+                Create a new competition that will be immediately approved and scheduled.
+            </p>
+        </div>
+    </div>
+
+    {# Main Form #}
+    <div style="max-width: 1000px;">
+        {% if form.non_field_errors %}
+            <div class="nonfield-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <form method="post" class="competition-create-form">
+            {% csrf_token %}
+
+            {# Section 1: Basic Information #}
+            <div class="form-section">
+                <h3>📋 Basic Information</h3>
+                <div class="form-row full">
+                    <div class="form-group {% if form.name.errors %}has-error{% endif %}">
+                        {{ form.name.label_tag }}
+                        {{ form.name }}
+                        {{ form.name.errors }}
+                        <div class="field-help">The competition title visible to gamers and shop owners.</div>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group {% if form.description.errors %}has-error{% endif %}">
+                        {{ form.description.label_tag }}
+                        {{ form.description }}
+                        {{ form.description.errors }}
+                        <div class="field-help">A detailed description of the competition.</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group {% if form.game.errors %}has-error{% endif %}">
+                        {{ form.game.label_tag }}
+                        {{ form.game }}
+                        {{ form.game.errors }}
+                    </div>
+                    <div class="form-group {% if form.platform.errors %}has-error{% endif %}">
+                        {{ form.platform.label_tag }}
+                        {{ form.platform }}
+                        {{ form.platform.errors }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group {% if form.shop.errors %}has-error{% endif %}">
+                        {{ form.shop.label_tag }}
+                        {{ form.shop }}
+                        {{ form.shop.errors }}
+                        <div class="field-help">The shop hosting this competition. Must be approved.</div>
+                    </div>
+                    <div class="form-group {% if form.max_participants.errors %}has-error{% endif %}">
+                        {{ form.max_participants.label_tag }}
+                        {{ form.max_participants }}
+                        {{ form.max_participants.errors }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group {% if form.entry_fee.errors %}has-error{% endif %}">
+                        {{ form.entry_fee.label_tag }}
+                        {{ form.entry_fee }}
+                        {{ form.entry_fee.errors }}
+                        <div class="field-help">Leave blank for free competition.</div>
+                    </div>
+                    <div class="form-group {% if form.age_restricted.errors %}has-error{% endif %}">
+                        <label>{{ form.age_restricted }} {{ form.age_restricted.label }}</label>
+                        {{ form.age_restricted.errors }}
+                        <div class="field-help">Restrict to gamers aged 18+.</div>
+                    </div>
+                </div>
+            </div>
+
+            {# Section 2: Schedule & Timeline #}
+            <div class="form-section">
+                <h3>⏱️ Schedule & Timeline</h3>
+                <div class="form-row">
+                    <div class="form-group {% if form.scheduled_time.errors %}has-error{% endif %}">
+                        {{ form.scheduled_time.label_tag }}
+                        {{ form.scheduled_time }}
+                        {{ form.scheduled_time.errors }}
+                        <div class="field-help">When the competition starts.</div>
+                    </div>
+                    <div class="form-group {% if form.competition_end_time.errors %}has-error{% endif %}">
+                        {{ form.competition_end_time.label_tag }}
+                        {{ form.competition_end_time }}
+                        {{ form.competition_end_time.errors }}
+                        <div class="field-help">When the competition ends (optional).</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group {% if form.registration_opens_at.errors %}has-error{% endif %}">
+                        {{ form.registration_opens_at.label_tag }}
+                        {{ form.registration_opens_at }}
+                        {{ form.registration_opens_at.errors }}
+                        <div class="field-help">When gamers can start registering.</div>
+                    </div>
+                    <div class="form-group {% if form.registration_closes_at.errors %}has-error{% endif %}">
+                        {{ form.registration_closes_at.label_tag }}
+                        {{ form.registration_closes_at }}
+                        {{ form.registration_closes_at.errors }}
+                        <div class="field-help">Deadline for registration. Must be before competition start.</div>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group {% if form.rules.errors %}has-error{% endif %}">
+                        {{ form.rules.label_tag }}
+                        {{ form.rules }}
+                        {{ form.rules.errors }}
+                    </div>
+                </div>
+            </div>
+
+            {# Section 3: Prize Configuration #}
+            <div class="form-section">
+                <h3>🏆 Prize Configuration</h3>
+                <div class="form-row">
+                    <div class="form-group {% if form.prize_type.errors %}has-error{% endif %}">
+                        {{ form.prize_type.label_tag }}
+                        {{ form.prize_type }}
+                        {{ form.prize_type.errors }}
+                        <div class="field-help">Choose how prizes are awarded.</div>
+                    </div>
+                </div>
+
+                <div id="prize-points" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group {% if form.points_1st.errors %}has-error{% endif %}">
+                            {{ form.points_1st.label_tag }}
+                            {{ form.points_1st }}
+                            {{ form.points_1st.errors }}
+                        </div>
+                        <div class="form-group {% if form.points_2nd.errors %}has-error{% endif %}">
+                            {{ form.points_2nd.label_tag }}
+                            {{ form.points_2nd }}
+                            {{ form.points_2nd.errors }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group {% if form.points_3rd.errors %}has-error{% endif %}">
+                            {{ form.points_3rd.label_tag }}
+                            {{ form.points_3rd }}
+                            {{ form.points_3rd.errors }}
+                        </div>
+                        <div class="form-group {% if form.points_4_to_10.errors %}has-error{% endif %}">
+                            {{ form.points_4_to_10.label_tag }}
+                            {{ form.points_4_to_10 }}
+                            {{ form.points_4_to_10.errors }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group {% if form.points_beyond_10.errors %}has-error{% endif %}">
+                            {{ form.points_beyond_10.label_tag }}
+                            {{ form.points_beyond_10 }}
+                            {{ form.points_beyond_10.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="prize-money" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group {% if form.prize_money_total.errors %}has-error{% endif %}">
+                            {{ form.prize_money_total.label_tag }}
+                            {{ form.prize_money_total }}
+                            {{ form.prize_money_total.errors }}
+                            <div class="field-help">Total prize pool in KES.</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group {% if form.prize_money_1st_pct.errors %}has-error{% endif %}">
+                            {{ form.prize_money_1st_pct.label_tag }}
+                            {{ form.prize_money_1st_pct }}
+                            {{ form.prize_money_1st_pct.errors }}
+                        </div>
+                        <div class="form-group {% if form.prize_money_2nd_pct.errors %}has-error{% endif %}">
+                            {{ form.prize_money_2nd_pct.label_tag }}
+                            {{ form.prize_money_2nd_pct }}
+                            {{ form.prize_money_2nd_pct.errors }}
+                        </div>
+                        <div class="form-group {% if form.prize_money_3rd_pct.errors %}has-error{% endif %}">
+                            {{ form.prize_money_3rd_pct.label_tag }}
+                            {{ form.prize_money_3rd_pct }}
+                            {{ form.prize_money_3rd_pct.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="prize-gift" style="display: none;">
+                    <div class="form-row full">
+                        <div class="form-group {% if form.prize_gift_description.errors %}has-error{% endif %}">
+                            {{ form.prize_gift_description.label_tag }}
+                            {{ form.prize_gift_description }}
+                            {{ form.prize_gift_description.errors }}
+                            <div class="field-help">Describe what the gift is and how it will be distributed.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Form Actions #}
+            <div class="form-actions">
+                <a href="{% url 'admin_panel:competition_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Competition
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Show/hide prize fields based on selection
+    const prizeTypeSelect = document.querySelector('[name="prize_type"]');
+    const prizePointsDiv = document.getElementById('prize-points');
+    const prizeMoneyDiv = document.getElementById('prize-money');
+    const prizeGiftDiv = document.getElementById('prize-gift');
+
+    function updatePrizeFields() {
+        const value = prizeTypeSelect.value;
+        prizePointsDiv.style.display = value === 'points' ? 'block' : 'none';
+        prizeMoneyDiv.style.display = value === 'money' ? 'block' : 'none';
+        prizeGiftDiv.style.display = value === 'gift' ? 'block' : 'none';
+    }
+
+    prizeTypeSelect.addEventListener('change', updatePrizeFields);
+    updatePrizeFields(); // Initial call
+</script>
+{% endblock %}

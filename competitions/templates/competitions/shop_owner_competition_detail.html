@@ -1,0 +1,499 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}{{ competition.name }} · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'competitions/css/competition_common.css' %}">
+    <link rel="stylesheet" href="{% static 'competitions/css/competition_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div id="compDetailState"
+     data-competition-id="{{ competition.integer_id }}"
+     data-status="{{ competition.status }}"
+     data-is-shop-owner="true"
+     data-is-registered="false"
+     data-csrf="{{ csrf_token }}"
+     style="display:none;">
+</div>
+
+<div class="comp-detail-wrapper anim-fade-in">
+
+    <div class="comp-detail-nav">
+        <a href="{% url 'competitions:shop_owner_competitions' %}" class="comp-back-btn">
+            <i class="fas fa-arrow-left"></i> Back to My Competitions
+        </a>
+        <span class="comp-status-pill comp-status--{{ competition.status }}">
+            {% if competition.status == 'registration_open' %}
+                <i class="fas fa-circle pulse-dot"></i> Registration Open
+            {% elif competition.status == 'approved' %}
+                <i class="fas fa-clock"></i> Coming Soon
+            {% elif competition.status == 'registration_closed' %}
+                <i class="fas fa-lock"></i> Registration Closed
+            {% elif competition.status == 'ongoing' %}
+                <i class="fas fa-play-circle pulse-dot"></i> Live Now
+            {% elif competition.status == 'completed' %}
+                <i class="fas fa-check-circle"></i> Completed
+            {% elif competition.status == 'checkin_submitted' or competition.status == 'results_pending' or competition.status == 'results_submitted' %}
+                <i class="fas fa-hourglass-half"></i> Processing Results
+            {% endif %}
+        </span>
+    </div>
+
+    <section class="comp-detail-hero component-card gradient-header">
+        <div class="comp-detail-hero-bg">
+            {% if competition.game.image %}
+                <img src="{{ competition.game.image.url }}" alt="{{ competition.game.name }}" class="comp-detail-hero-img">
+            {% endif %}
+            <div class="comp-detail-hero-overlay"></div>
+        </div>
+        <div class="comp-detail-hero-content">
+            <div class="comp-detail-hero-left">
+                <div class="comp-detail-game-badge">
+                    <i class="fas fa-gamepad"></i> {{ competition.game.name }}
+                </div>
+                <h1 class="comp-detail-title">{{ competition.name }}</h1>
+                <div class="comp-detail-meta-row">
+                    <span class="comp-detail-meta-item">
+                        <i class="fas fa-desktop"></i> {{ competition.platform.name }}
+                    </span>
+                    <span class="comp-detail-meta-item">
+                        <i class="fas fa-store"></i> {{ competition.shop.name }}
+                    </span>
+                    <span class="comp-detail-meta-item">
+                        <i class="fas fa-map-marker-alt"></i> {{ competition.shop.city }}
+                    </span>
+                </div>
+            </div>
+            <div class="comp-detail-hero-right">
+                <div class="comp-detail-hero-stat">
+                    <span class="hero-stat-value">{{ registered_count }}/{{ competition.max_participants }}</span>
+                    <span class="hero-stat-label">Participants</span>
+                </div>
+                <div class="comp-detail-hero-stat">
+                    <span class="hero-stat-value">
+                        {% if competition.entry_fee and competition.entry_fee > 0 %}
+                            KES {{ competition.entry_fee }}
+                        {% else %}
+                            Free
+                        {% endif %}
+                    </span>
+                    <span class="hero-stat-label">Entry Fee</span>
+                </div>
+                {% if competition.age_restricted %}
+                <div class="comp-detail-hero-stat">
+                    <span class="hero-stat-value age-restricted">18+</span>
+                    <span class="hero-stat-label">Age Limit</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <div class="comp-detail-grid">
+
+        <div class="comp-detail-main">
+
+            <section class="comp-detail-section component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-calendar-alt"></i> <span>Schedule</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="comp-schedule-grid">
+                        <div class="comp-schedule-item">
+                            <span class="schedule-label">Competition Date</span>
+                            <span class="schedule-value">{{ competition.scheduled_time|date:"l, N j, Y" }}</span>
+                        </div>
+                        <div class="comp-schedule-item">
+                            <span class="schedule-label">Start Time</span>
+                            <span class="schedule-value">{{ competition.scheduled_time|date:"g:i A" }}</span>
+                        </div>
+                        {% if competition.competition_end_time %}
+                        <div class="comp-schedule-item">
+                            <span class="schedule-label">End Time</span>
+                            <span class="schedule-value">{{ competition.competition_end_time|date:"g:i A" }}</span>
+                        </div>
+                        {% endif %}
+                        {% if competition.registration_opens_at %}
+                        <div class="comp-schedule-item">
+                            <span class="schedule-label">Registration Opens</span>
+                            <span class="schedule-value">{{ competition.registration_opens_at|date:"N j, Y · g:i A" }}</span>
+                        </div>
+                        {% endif %}
+                        {% if competition.registration_closes_at %}
+                        <div class="comp-schedule-item">
+                            <span class="schedule-label">Registration Closes</span>
+                            <span class="schedule-value">{{ competition.registration_closes_at|date:"N j, Y · g:i A" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <section class="comp-detail-section component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-info-circle"></i> <span>About This Competition</span></h2>
+                </div>
+                <div class="card-body">
+                    <p class="comp-detail-description">{{ competition.description }}</p>
+                </div>
+            </section>
+
+            {% if full_rules %}
+            <section class="comp-detail-section component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-scroll"></i> <span>Rules & Requirements</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="comp-rules-text">{{ full_rules|linebreaks }}</div>
+                </div>
+            </section>
+            {% endif %}
+
+            <section class="comp-detail-section component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-clock"></i> <span>Competition Timeline</span></h2>
+                </div>
+                <div class="card-body">
+                    {% with timeline=competition.generated_timeline %}
+                    <div class="timeline-events">
+                        <div class="timeline-event">
+                            <div class="event-time">{{ timeline.check_in_start|date:"M d, Y · g:i A" }}</div>
+                            <div class="event-label"><i class="fas fa-sign-in-alt"></i> Check-in Begins</div>
+                            <div class="event-detail">Gamers can start checking in</div>
+                        </div>
+                        
+                        <div class="timeline-event">
+                            <div class="event-time">{{ timeline.competition_start|date:"M d, Y · g:i A" }}</div>
+                            <div class="event-label"><i class="fas fa-play-circle"></i> Competition Starts</div>
+                            <div class="event-detail">Tournament officially begins</div>
+                        </div>
+                        
+                        <div class="timeline-event">
+                            <div class="event-time">{{ timeline.competition_end|date:"M d, Y · g:i A" }}</div>
+                            <div class="event-label"><i class="fas fa-stop-circle"></i> Competition Ends</div>
+                            <div class="event-detail">Tournament concludes</div>
+                        </div>
+                        
+                        <div class="timeline-event">
+                            <div class="event-time">{{ timeline.results_submit_min|date:"M d, Y · g:i A" }} - {{ timeline.results_submit_max|date:"M d, Y · g:i A" }}</div>
+                            <div class="event-label"><i class="fas fa-file-upload"></i> Results Submission Window</div>
+                            <div class="event-detail">Shop owner must submit results within this timeframe</div>
+                        </div>
+                        
+                        <div class="timeline-event">
+                            <div class="event-time">{{ timeline.prize_allocation_min|date:"M d, Y · g:i A" }} - {{ timeline.prize_allocation_max|date:"M d, Y · g:i A" }}</div>
+                            <div class="event-label"><i class="fas fa-gift"></i> Prize Allocation Window</div>
+                            <div class="event-detail">Admin verifies results and distributes prizes</div>
+                        </div>
+                    </div>
+                    {% endwith %}
+                </div>
+            </section>
+
+            {% if competition.status == 'completed' and results %}
+            <section class="comp-detail-section component-card hoverable" id="resultsSection">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-trophy"></i> <span>Final Results</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="comp-results-list">
+                        {% for result in results %}
+                        <div class="comp-result-row {% if result.is_win %}comp-result-row--win{% endif %} {% if result.is_no_show %}comp-result-row--noshow{% endif %}">
+                            <div class="comp-result-rank">
+                                {% if result.rank == 1 %}🥇
+                                {% elif result.rank == 2 %}🥈
+                                {% elif result.rank == 3 %}🥉
+                                {% elif result.is_no_show %}<i class="fas fa-times-circle" style="color:#F0354B;"></i>
+                                {% else %}<span class="rank-number">#{{ result.rank }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="comp-result-gamer">
+                                <span class="result-gamer-name">
+                                    {{ result.gamer.custom_username|default:result.gamer.first_name }}
+                                </span>
+                                {% if result.is_no_show %}
+                                    <span class="result-noshow-label">No-show</span>
+                                {% endif %}
+                            </div>
+                            <div class="comp-result-points">
+                                {% if not result.is_no_show and competition.prize_type == 'points' %}
+                                    <span class="result-xp">+{{ result.points_awarded }} XP</span>
+                                {% elif result.is_no_show %}
+                                    <span class="result-xp result-xp--zero">0 XP</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            {% if registrations %}
+            <section class="comp-detail-section component-card hoverable" id="registrationsPanel">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-users"></i> <span>Registered Gamers</span></h2>
+                    <span class="card-header-badge">{{ registered_count }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="comp-registrations-list">
+                        {% for reg in registrations %}
+                        <div class="comp-reg-row" id="regRow-{{ reg.id }}">
+                            <div class="comp-reg-gamer">
+                                <span class="reg-gamer-name">
+                                    {{ reg.gamer.custom_username|default:reg.gamer.first_name }}
+                                </span>
+                                <span class="reg-gamer-fullname">
+                                    {{ reg.gamer.first_name }} {{ reg.gamer.last_name }}
+                                </span>
+                            </div>
+                            <div class="comp-reg-status">
+                                {% if reg.checked_in %}
+                                    <span class="reg-status-badge reg-status--checkedin">
+                                        <i class="fas fa-check-circle"></i> Checked In
+                                        {% if reg.checked_in_at %}· {{ reg.checked_in_at|date:"g:i A" }}{% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="reg-status-badge reg-status--pending">
+                                        <i class="fas fa-clock"></i> Not Checked In
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            {% if competition.status == 'ongoing' %}
+            <section class="comp-detail-section component-card hoverable" id="verifyPanel">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-qrcode"></i> <span>Verify Gamers</span></h2>
+                </div>
+                <div class="card-body">
+                    <p class="comp-section-desc">Enter the gamer's unique registration code to verify and check them in before the competition starts.</p>
+                    <div class="comp-verify-form">
+                        <div class="comp-verify-input-wrap">
+                            <i class="fas fa-key"></i>
+                            <input
+                                type="text"
+                                id="verifyCodeInput"
+                                class="comp-verify-input"
+                                placeholder="Paste or type unique code here..."
+                                maxlength="36"
+                            >
+                        </div>
+                        <button class="comp-verify-btn" onclick="competitionDetail.verifyGamer()">
+                            <i class="fas fa-check-circle"></i> Verify
+                        </button>
+                    </div>
+                    <div class="comp-verify-feedback" id="verifyFeedback" style="display:none;"></div>
+
+                    <div class="comp-verify-divider">
+                        <span>Verified Gamers</span>
+                    </div>
+                    <div class="comp-verified-list" id="verifiedList">
+                        {% for reg in registrations %}
+                            {% if reg.checked_in %}
+                            <div class="comp-verified-item" id="verified-{{ reg.id }}">
+                                <div class="verified-gamer-info">
+                                    {% if reg.gamer.profile_picture %}
+                                        <img src="{{ reg.gamer.profile_picture.url }}" class="verified-avatar">
+                                    {% else %}
+                                        <i class="fas fa-user-circle fs-4 text-muted"></i>
+                                    {% endif %}
+                                    <div class="ms-2">
+                                        <span class="fw-bold d-block">{{ reg.gamer.first_name }} {{ reg.gamer.last_name }}</span>
+                                        <span class="text-muted small">@{{ reg.gamer.custom_username|default:"gamer" }}</span>
+                                    </div>
+                                </div>
+                                <span class="verified-time"><i class="fas fa-check-circle text-success me-1"></i> {{ reg.checked_in_at|date:"g:i A" }}</span>
+                            </div>
+                            {% endif %}
+                        {% empty %}
+                            <p class="comp-no-verified">No gamers verified yet.</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="comp-submit-checkins-section">
+                        <p class="comp-section-desc">Once all gamers have been verified, submit the check-in list to the admin for review.</p>
+                        <button class="comp-action-btn comp-action-btn--primary" onclick="competitionDetail.submitCheckins()">
+                            <i class="fas fa-paper-plane"></i> Submit Check-in List to Admin
+                        </button>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            {% if competition.status == 'results_pending' %}
+            <section class="comp-detail-section component-card hoverable" id="resultsSubmitPanel">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-list-ol"></i> <span>Submit Results</span></h2>
+                </div>
+                <div class="card-body">
+                    <p class="comp-section-desc">Rank all participants from 1st to last. Mark any registered gamers who did not participate as no-shows.</p>
+
+                    <div class="comp-results-form" id="resultsForm">
+                        {% for reg in registrations %}
+                        <div class="comp-result-entry" data-gamer-id="{{ reg.gamer.id }}">
+                            <div class="result-entry-gamer">
+                                <span class="result-entry-name">
+                                    {{ reg.gamer.custom_username|default:reg.gamer.first_name }}
+                                </span>
+                                <span class="result-entry-fullname">
+                                    {{ reg.gamer.first_name }} {{ reg.gamer.last_name }}
+                                </span>
+                                {% if not reg.checked_in %}
+                                <span class="result-entry-noshow-hint">Did not check in</span>
+                                {% endif %}
+                            </div>
+                            <div class="result-entry-controls">
+                                <input
+                                    type="number"
+                                    class="result-rank-input"
+                                    placeholder="Rank"
+                                    min="1"
+                                    data-gamer-id="{{ reg.gamer.id }}"
+                                    {% if not reg.checked_in %}disabled{% endif %}
+                                >
+                                <label class="result-noshow-label">
+                                    <input
+                                        type="checkbox"
+                                        class="result-noshow-check"
+                                        data-gamer-id="{{ reg.gamer.id }}"
+                                        {% if not reg.checked_in %}checked{% endif %}
+                                        onchange="competitionDetail.toggleNoShow(this)"
+                                    >
+                                    <span>No-show</span>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="comp-results-submit-row">
+                        <button class="comp-action-btn comp-action-btn--primary" onclick="competitionDetail.submitResults()">
+                            <i class="fas fa-paper-plane"></i> Submit Results
+                        </button>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+        </div>
+
+        <div class="comp-detail-sidebar">
+
+            {% if competition.prize_type %}
+            <div class="comp-detail-card component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2>
+                        {% if competition.prize_type == 'points' %}<i class="fas fa-star"></i>
+                        {% elif competition.prize_type == 'money' %}<i class="fas fa-money-bill-wave"></i>
+                        {% elif competition.prize_type == 'gift' %}<i class="fas fa-gift"></i>
+                        {% endif %}
+                        <span>Prize Details</span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    {% if competition.prize_type == 'points' %}
+                    <div class="comp-prize-breakdown">
+                        <div class="prize-tier prize-tier--gold">
+                            <span class="prize-position">🥇 1st Place</span>
+                            <span class="prize-value">{{ competition.points_1st }} XP</span>
+                        </div>
+                        <div class="prize-tier prize-tier--silver">
+                            <span class="prize-position">🥈 2nd Place</span>
+                            <span class="prize-value">{{ competition.points_2nd }} XP</span>
+                        </div>
+                        <div class="prize-tier prize-tier--bronze">
+                            <span class="prize-position">🥉 3rd Place</span>
+                            <span class="prize-value">{{ competition.points_3rd }} XP</span>
+                        </div>
+                        {% if competition.points_4_to_10 %}
+                        <div class="prize-tier">
+                            <span class="prize-position">4th–10th</span>
+                            <span class="prize-value">{{ competition.points_4_to_10 }} XP</span>
+                        </div>
+                        {% endif %}
+                        {% if competition.points_beyond_10 %}
+                        <div class="prize-tier">
+                            <span class="prize-position">11th+</span>
+                            <span class="prize-value">{{ competition.points_beyond_10 }} XP</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% elif competition.prize_type == 'money' %}
+                    <div class="comp-prize-breakdown">
+                        <div class="prize-pool-total">
+                            <span>Total Prize Pool</span>
+                            <strong>KES {{ competition.prize_money_total }}</strong>
+                        </div>
+                        {% if competition.prize_money_1st_pct %}
+                        <div class="prize-tier prize-tier--gold">
+                            <span class="prize-position">🥇 1st Place</span>
+                            <span class="prize-value">{{ competition.prize_money_1st_pct }}%</span>
+                        </div>
+                        {% endif %}
+                        {% if competition.prize_money_2nd_pct %}
+                        <div class="prize-tier prize-tier--silver">
+                            <span class="prize-position">🥈 2nd Place</span>
+                            <span class="prize-value">{{ competition.prize_money_2nd_pct }}%</span>
+                        </div>
+                        {% endif %}
+                        {% if competition.prize_money_3rd_pct %}
+                        <div class="prize-tier prize-tier--bronze">
+                            <span class="prize-position">🥉 3rd Place</span>
+                            <span class="prize-value">{{ competition.prize_money_3rd_pct }}%</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% elif competition.prize_type == 'gift' %}
+                    <p class="comp-gift-desc">{{ competition.prize_gift_description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="comp-detail-card component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-store"></i> <span>Venue</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="comp-venue-info">
+                        <p class="venue-name">{{ competition.shop.name }}</p>
+                        <p class="venue-detail"><i class="fas fa-building"></i> {{ competition.shop.building }}{% if competition.shop.floor %}, Floor {{ competition.shop.floor }}{% endif %}{% if competition.shop.room_number %}, Room {{ competition.shop.room_number }}{% endif %}</p>
+                        <p class="venue-detail"><i class="fas fa-map-marker-alt"></i> {{ competition.shop.location }}, {{ competition.shop.city }}</p>
+                        <p class="venue-detail"><i class="fas fa-map"></i> {{ competition.shop.address }}</p>
+                        <p class="venue-detail"><i class="fas fa-clock"></i> Opens: {{ competition.shop.opening_hours }} · Closes: {{ competition.shop.closing_hours }}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const COMP_DETAIL_CONFIG = {
+        competitionId: "{{ competition.slug }}",
+        registerUrl: "{% url 'competitions:register' competition.slug %}",
+        verifyUrl: "{% url 'competitions:shop_owner_verify_gamer' competition.slug %}",
+        submitCheckinsUrl: "{% url 'competitions:shop_owner_submit_checkins' competition.slug %}",
+        submitResultsUrl: "{% url 'competitions:shop_owner_submit_results' competition.slug %}",
+        csrfToken: "{{ csrf_token }}",
+        isShopOwner: true,
+        status: "{{ competition.status }}",
+    };
+</script>
+<script src="{% static 'competitions/js/competition_detail.js' %}"></script>
+{% endblock %}

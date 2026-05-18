@@ -1,0 +1,193 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}My Progression · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'progression/css/progression.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="prog-wrapper anim-fade-in">
+
+    {# ------------------------------------------------------------------ #}
+    {# Page Header                                                          #}
+    {# ------------------------------------------------------------------ #}
+    <div class="prog-header">
+        <div>
+            <h1 class="prog-title"><i class="fas fa-chart-line"></i> My Progression</h1>
+            <p class="prog-subtitle">Your level, achievements, and ranking across GamiKonnect</p>
+        </div>
+        <a href="{% url 'progression:leaderboard_global' %}" class="prog-btn-secondary">
+            <i class="fas fa-crown"></i> Leaderboard
+        </a>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Level Hero Card                                                      #}
+    {# ------------------------------------------------------------------ #}
+    <section class="prog-level-hero component-card anim-fade-in"
+             {% if current_level %}style="border-top: 4px solid {{ current_level.color_hex }};"{% endif %}>
+        <div class="prog-level-hero-content">
+
+            <div class="prog-level-badge-wrap">
+                {% if current_level and current_level.badge_image %}
+                    <img src="{{ current_level.badge_image.url }}"
+                         alt="{{ current_level.name }}"
+                         class="prog-level-badge-img">
+                {% else %}
+                    <div class="prog-level-badge-placeholder"
+                         {% if current_level %}style="background:{{ current_level.color_hex }}20; color:{{ current_level.color_hex }};"{% endif %}>
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="prog-level-info">
+                <div class="prog-level-name-row">
+                    <h2 class="prog-level-name"
+                        {% if current_level %}style="color:{{ current_level.color_hex }};"{% endif %}>
+                        {% if current_level %}{{ current_level.name }}{% else %}Unranked{% endif %}
+                    </h2>
+                    <span class="prog-global-rank">
+                        <i class="fas fa-globe"></i> Global Rank #{{ global_rank }}
+                    </span>
+                </div>
+
+                <div class="prog-xp-row">
+                    <span class="prog-total-xp">{{ gamer.points }} XP</span>
+                    {% if next_level %}
+                        <span class="prog-xp-to-next">{{ xp_for_next }} XP to {{ next_level.name }}</span>
+                    {% else %}
+                        <span class="prog-xp-to-next">Max level reached 🏆</span>
+                    {% endif %}
+                </div>
+
+                {% if next_level %}
+                <div class="prog-xp-bar">
+                    <div class="prog-xp-fill"
+                         style="width:{{ xp_progress_pct }}%;
+                                {% if current_level %}background:{{ current_level.color_hex }};{% endif %}">
+                    </div>
+                    <span class="prog-xp-bar-label">{{ xp_progress_pct }}%</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="prog-level-stats">
+                {% if gamer_level %}
+                <div class="prog-level-stat-item">
+                    <span class="prog-level-stat-value">{{ gamer_level.reached_at|date:"N j, Y" }}</span>
+                    <span class="prog-level-stat-label">Level Reached</span>
+                </div>
+                {% endif %}
+                <div class="prog-level-stat-item">
+                    <span class="prog-level-stat-value">{{ earned_achievements.count }}</span>
+                    <span class="prog-level-stat-label">Achievements</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ------------------------------------------------------------------ #}
+    {# Level Progression Timeline                                           #}
+    {# ------------------------------------------------------------------ #}
+    <section class="prog-timeline-section component-card hoverable anim-fade-in">
+        <div class="card-header component-card-header">
+            <h2><i class="fas fa-layer-group"></i> <span>Level Progression</span></h2>
+        </div>
+        <div class="card-body">
+            <div class="prog-timeline">
+                {% for level in all_levels %}
+                <div class="prog-timeline-item
+                    {% if current_level and level.order < current_level.order %}prog-timeline-item--done
+                    {% elif current_level and level == current_level %}prog-timeline-item--current
+                    {% else %}prog-timeline-item--locked{% endif %}">
+
+                    <div class="prog-timeline-dot"
+                         style="border-color:{{ level.color_hex }};
+                                {% if current_level and level.order <= current_level.order %}background:{{ level.color_hex }};{% endif %}">
+                        {% if current_level and level.order < current_level.order %}
+                            <i class="fas fa-check" style="color:#fff; font-size:10px;"></i>
+                        {% elif current_level and level == current_level %}
+                            <i class="fas fa-star" style="color:#fff; font-size:10px;"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="prog-timeline-info">
+                        <span class="prog-timeline-name"
+                              style="color:{{ level.color_hex }};">{{ level.name }}</span>
+                        <span class="prog-timeline-xp">{{ level.min_xp }} XP</span>
+                    </div>
+
+                    {% if level.badge_image %}
+                    <img src="{{ level.badge_image.url }}" alt="{{ level.name }}"
+                         class="prog-timeline-badge">
+                    {% endif %}
+
+                    {% if current_level and level == current_level %}
+                    <span class="prog-timeline-current-tag">Current</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# ------------------------------------------------------------------ #}
+    {# Achievements Grid                                                    #}
+    {# ------------------------------------------------------------------ #}
+    <section class="prog-achievements-section component-card hoverable anim-fade-in">
+        <div class="card-header component-card-header">
+            <h2><i class="fas fa-medal"></i> <span>Achievements</span></h2>
+            <span class="prog-achievement-count">
+                {{ earned_achievements.count }} earned
+            </span>
+        </div>
+        <div class="card-body">
+            {% if earned_achievements %}
+            <div class="prog-achievements-grid">
+                {% for ga in earned_achievements %}
+                <div class="prog-achievement-card hoverable">
+                    <div class="prog-achievement-badge">
+                        {% if ga.achievement.badge_image %}
+                            <img src="{{ ga.achievement.badge_image.url }}"
+                                 alt="{{ ga.achievement.name }}">
+                        {% else %}
+                            <div class="prog-achievement-badge-placeholder">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="prog-achievement-info">
+                        <span class="prog-achievement-name">{{ ga.achievement.name }}</span>
+                        <span class="prog-achievement-desc">{{ ga.achievement.description }}</span>
+                        <span class="prog-achievement-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ ga.earned_at|date:"N j, Y" }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-medal"></i>
+                <h3>No achievements yet</h3>
+                <p>Start competing to earn your first achievement!</p>
+                <a href="{% url 'competitions:list' %}?status=registration_open"
+                   class="btn btn-primary mt-3">
+                    <i class="fas fa-search"></i> Browse Competitions
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'progression/js/progression.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}Shop Detail | Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Shop Details: {{ shop.name }}</h6>
+                    <div>
+                        {% if not shop.is_approved %}
+                        <a href="{% url 'admin_panel:shop_approve' shop.id %}" class="btn btn-success btn-sm">Approve Shop</a>
+                        {% else %}
+                        <a href="{% url 'admin_panel:shop_reject' shop.id %}" class="btn btn-danger btn-sm">Reject/Suspend Shop</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <img src="{{ shop.logo.url }}" class="img-fluid rounded mb-3" style="max-height: 200px;">
+                        </div>
+                        <div class="col-md-8">
+                            <h5>{{ shop.name }}</h5>
+                            <p>{{ shop.description }}</p>
+                            <hr>
+                            <p><strong>Location:</strong> {{ shop.building }}, {{ shop.floor }}, {{ shop.city }}</p>
+                            <p><strong>Address:</strong> {{ shop.address }}</p>
+                            <p><strong>Screens:</strong> {{ shop.screen_number }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Consoles & Games</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Consoles</h6>
+                    <ul>
+                        {% for console in shop.consoles.all %}
+                        <li>{{ console.console_type.name }} (x{{ console.quantity }})</li>
+                        {% empty %}
+                        <li>No consoles listed.</li>
+                        {% endfor %}
+                    </ul>
+                    <hr>
+                    <h6>Games Available</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for game in shop.games_available.all %}
+                        <span class="badge bg-secondary">{{ game.name }}</span>
+                        {% empty %}
+                        <span>No games listed.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Update Status</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-check-label">
+                                <input type="checkbox" name="is_active" {% if shop.is_active %}checked{% endif %} class="form-check-input"> Active
+                            </label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-check-label">
+                                <input type="checkbox" name="is_approved" {% if shop.is_approved %}checked{% endif %} class="form-check-input"> Approved
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Business Permit</h6>
+                </div>
+                <div class="card-body text-center">
+                    <a href="{{ shop.business_permit.url }}" target="_blank" class="btn btn-outline-info">
+                        <i class="fas fa-file-pdf"></i> View Business Permit
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -30,7 +30,7 @@ def admin_competition_context(request):
         from competitions.models import Competition
         return {
             'pending_competitions_count': Competition.objects.filter(
-                status='pending_review'
+                status='pending'
             ).count()
         }
     return {}

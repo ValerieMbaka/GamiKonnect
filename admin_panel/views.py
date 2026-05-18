@@ -359,9 +359,9 @@ def admin_competition_create(request):
             try:
                 with transaction.atomic():
                     competition = form.save(commit=False)
-                    # Set the creator and status to 'approved' (admin-created competitions skip review)
+                    # Set the creator and status to 'live' (admin-created competitions skip review)
                     competition.created_by = request.user
-                    competition.status = 'approved'
+                    competition.status = 'live'
                     competition.approved_at = timezone.now()
                     competition.save()
 
@@ -435,9 +435,9 @@ def admin_competition_list(request):
         'competitions': competitions,
         'all_shops': Shop.objects.filter(is_approved=True).order_by('name'),
         'total_competitions': Competition.objects.count(),
-        'pending_review': Competition.objects.filter(status='pending_review').count(),
+        'pending_competitions_count': Competition.objects.filter(status='pending').count(),
         'live_competitions': Competition.objects.filter(
-            status__in=['approved', 'registration_open', 'registration_closed', 'ongoing']
+            status__in=['live', 'registration_open', 'registration_closed', 'ongoing']
         ).count(),
         'completed_competitions': Competition.objects.filter(status='completed').count(),
         'new_this_week': Competition.objects.filter(created_at__gte=seven_days_ago).count(),
@@ -465,6 +465,14 @@ def admin_competition_detail(request, slug):
     checked_in_count = registrations.filter(checked_in=True).count()
     no_show_count = registrations.count() - checked_in_count
     
+    # Prepare approval form with pre-filled rules if competition is pending
+    approval_form = None
+    if competition.status == 'pending':
+        initial_data = {
+            'rules': competition.get_rules_for_admin_editing(),
+        }
+        approval_form = CompetitionApprovalForm(instance=competition, initial=initial_data)
+    
     context = {
         'competition': competition,
         'registrations': registrations,
@@ -472,6 +480,8 @@ def admin_competition_detail(request, slug):
         'registered_count': competition.registered_count(),
         'checked_in_count': checked_in_count,
         'no_show_count': no_show_count,
+        'approval_form': approval_form,
+        'full_rules': competition.get_full_rules(),
     }
     return render(request, 'admin_panel/competitions/admin_competition_detail.html', context)
 
@@ -480,10 +490,10 @@ def admin_competition_detail(request, slug):
 def admin_competition_approve(request, slug):
     # Try slug first, then ID for backward compatibility
     try:
-        competition = Competition.objects.get(slug=slug, status='pending_review')
+        competition = Competition.objects.get(slug=slug, status='pending')
     except Competition.DoesNotExist:
         try:
-            competition = Competition.objects.get(integer_id=int(slug), status='pending_review')
+            competition = Competition.objects.get(integer_id=int(slug), status='pending')
         except (Competition.DoesNotExist, ValueError):
             return JsonResponse({'success': False, 'message': 'Competition not found or not in pending review.'}, status=404)
     
@@ -519,10 +529,10 @@ def admin_competition_approve(request, slug):
 def admin_competition_reject(request, slug):
     # Try slug first, then ID for backward compatibility
     try:
-        competition = Competition.objects.get(slug=slug, status='pending_review')
+        competition = Competition.objects.get(slug=slug, status='pending')
     except Competition.DoesNotExist:
         try:
-            competition = Competition.objects.get(integer_id=int(slug), status='pending_review')
+            competition = Competition.objects.get(integer_id=int(slug), status='pending')
         except (Competition.DoesNotExist, ValueError):
             return JsonResponse({'success': False, 'message': 'Competition not found or not in pending review.'}, status=404)
     

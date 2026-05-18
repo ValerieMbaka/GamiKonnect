@@ -1,0 +1,170 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}Site Settings · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'admin_panel/css/settings/site_settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-page-header flex-between">
+    <div class="header-content">
+        <h1 class="page-title">Global Site Settings</h1>
+        <p class="page-subtitle">Manage platform identity, metadata, and visual styling.</p>
+    </div>
+</div>
+
+<form id="siteSettingsForm" method="POST" action="{% url 'admin_panel:site_settings' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="admin-card master-settings-container mt-4">
+
+        <div class="settings-section">
+            <div class="section-header">
+                <h2><i class="fas fa-fingerprint text-primary me-2"></i> Platform Identity</h2>
+                <p class="text-muted">Set your core brand details and SEO metadata.</p>
+            </div>
+
+            <div class="identity-layout">
+                <div class="logo-column">
+                    <div class="logo-upload-wrapper">
+                        <label class="logo-label">Platform Logo</label>
+                        <div class="logo-preview-box">
+                            <img src="{% if current_logo %}{{ current_logo.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" id="logoPreview" alt="Site Logo">
+                        </div>
+                        <div class="logo-upload-actions">
+                            <label for="id_logo" class="btn-admin-secondary w-100 justify-content-center mt-3">
+                                <i class="fas fa-camera"></i> Change Logo
+                            </label>
+                            <small class="text-muted d-block mt-2 text-center">250x80px (PNG/SVG)</small>
+                            <div class="django-hidden-file-input">
+                                {{ project_form.logo }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-inputs-column">
+                    <div class="form-group">
+                        <label>Platform Name</label>
+                        {{ project_form.title }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Short Description (Tagline)</label>
+                        {{ project_form.short_description }}
+                        <small class="help-text">Used in headers and brief previews.</small>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label>Full SEO Description</label>
+                        {{ project_form.description }}
+                        <small class="help-text">Used for meta tags and the 'About' section.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <div class="settings-section">
+            <div class="section-header">
+                <h2><i class="fas fa-paint-roller text-purple me-2"></i> Theme Engine</h2>
+                <p class="text-muted">Customize the visual aesthetics of your platform.</p>
+            </div>
+
+            <div class="theme-sub-row">
+                <h3 class="sub-section-title">Typography Settings</h3>
+                <div class="form-grid typography-grid">
+                    <div class="form-group">
+                        <label>Base Font Family</label>
+                        {{ style_form.font_family }}
+                    </div>
+                    <div class="form-group">
+                        <label>Custom Font (If 'Other')</label>
+                        {{ style_form.custom_font_family }}
+                    </div>
+                    <div class="form-group">
+                        <label>Base Font Size</label>
+                        {{ style_form.font_size }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-sub-row mt-4">
+                <h3 class="sub-section-title">Brand Palette</h3>
+                <div class="color-swatch-grid">
+                    <div class="color-picker-group">
+                        <label>Primary Accent</label>
+                        <div class="color-input-wrapper">
+                            {{ style_form.primary_color }}
+                            <span class="hex-display"></span>
+                        </div>
+                    </div>
+
+                    <div class="color-picker-group">
+                        <label>Secondary Accent</label>
+                        <div class="color-input-wrapper">
+                            {{ style_form.secondary_color }}
+                            <span class="hex-display"></span>
+                        </div>
+                    </div>
+
+                    <div class="color-picker-group">
+                        <label>Background Color</label>
+                        <div class="color-input-wrapper">
+                            {{ style_form.background_color }}
+                            <span class="hex-display"></span>
+                        </div>
+                    </div>
+
+                    <div class="color-picker-group">
+                        <label>Main Text Color</label>
+                        <div class="color-input-wrapper">
+                            {{ style_form.font_color }}
+                            <span class="hex-display"></span>
+                        </div>
+                    </div>
+
+                    <div class="color-picker-group">
+                        <label>Button Background</label>
+                        <div class="color-input-wrapper">
+                            {{ style_form.button_color }}
+                            <span class="hex-display"></span>
+                        </div>
+                    </div>
+
+                    <div class="color-picker-group">
+                        <label>Button Text Color</label>
+                        <div class="color-input-wrapper">
+                            {{ style_form.button_text_color }}
+                            <span class="hex-display"></span>
+                        </div>
+                    </div>
+
+                    <div class="color-picker-group">
+                        <label>Hyperlink Color</label>
+                        <div class="color-input-wrapper">
+                            {{ style_form.link_color }}
+                            <span class="hex-display"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-footer">
+            <span class="text-muted fw-500"><i class="fas fa-info-circle me-1"></i> Changes apply immediately.</span>
+            <button type="submit" class="btn-admin-primary btn-lg" id="saveSettingsBtn">
+                <i class="fas fa-save me-2"></i> Save Configuration
+            </button>
+        </div>
+
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'admin_panel/js/settings/site_settings.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,319 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}Competition Management · {{ project_detail.title|default:"GamiKonnect" }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'admin_panel/css/competitions/admin_competitions.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper-fluid">
+
+    {# ------------------------------------------------------------------ #}
+    {# Page Header                                                          #}
+    {# ------------------------------------------------------------------ #}
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <h1 class="page-title m-0">Competition Management</h1>
+            <p class="page-subtitle text-muted mt-1">Review, approve, and manage all competitions across GamiKonnect.</p>
+        </div>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# KPI Cards                                                            #}
+    {# ------------------------------------------------------------------ #}
+    <section class="dashboard-island transparent-island">
+        <h3 class="island-title">Overview</h3>
+        <div class="kpi-master-grid">
+
+            <div class="admin-card kpi-card-v2">
+                <div class="kpi-top">
+                    <div class="kpi-icon blue"><i class="fas fa-trophy"></i></div>
+                    <span class="kpi-label">Total Competitions</span>
+                </div>
+                <div class="kpi-bottom">
+                    <h3 class="kpi-value">{{ total_competitions }}</h3>
+                    <span class="kpi-trend {% if new_this_week > 0 %}positive{% else %}neutral{% endif %}">
+                        {% if new_this_week > 0 %}<i class="fas fa-arrow-up"></i> {{ new_this_week }} this week{% else %}--{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="admin-card kpi-card-v2">
+                <div class="kpi-top">
+                    <div class="kpi-icon orange"><i class="fas fa-hourglass-half"></i></div>
+                    <span class="kpi-label">Pending Review</span>
+                </div>
+                <div class="kpi-bottom">
+                    <h3 class="kpi-value">{{ pending_competitions_count }}</h3>
+                    <span class="kpi-trend {% if pending_competitions_count > 0 %}warning{% else %}neutral{% endif %}">
+                        {% if pending_competitions_count > 0 %}<i class="fas fa-exclamation-circle"></i> Action needed{% else %}--{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="admin-card kpi-card-v2">
+                <div class="kpi-top">
+                    <div class="kpi-icon success"><i class="fas fa-broadcast-tower"></i></div>
+                    <span class="kpi-label">Live</span>
+                </div>
+                <div class="kpi-bottom">
+                    <h3 class="kpi-value">{{ live_competitions }}</h3>
+                    <span class="kpi-trend neutral">--</span>
+                </div>
+            </div>
+
+            <div class="admin-card kpi-card-v2">
+                <div class="kpi-top">
+                    <div class="kpi-icon purple"><i class="fas fa-flag-checkered"></i></div>
+                    <span class="kpi-label">Completed</span>
+                </div>
+                <div class="kpi-bottom">
+                    <h3 class="kpi-value">{{ completed_competitions }}</h3>
+                    <span class="kpi-trend neutral">--</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    {# ------------------------------------------------------------------ #}
+    {# Filters                                                              #}
+    {# ------------------------------------------------------------------ #}
+    <section class="dashboard-island elevated-island filter-island">
+        <form method="GET" class="filters-grid">
+            <div class="filter-left">
+                <div class="filter-group search-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="q" placeholder="Search by name, shop, or game..."
+                           value="{{ request.GET.q }}">
+                </div>
+            </div>
+            <div class="filter-right">
+                <div class="filter-group">
+                    <select name="status" class="custom-select" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option value="pending"   {% if request.GET.status == 'pending' %}selected{% endif %}>Pending Review</option>
+                        <option value="rejected"         {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="approved"         {% if request.GET.status == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="registration_open"{% if request.GET.status == 'registration_open' %}selected{% endif %}>Registration Open</option>
+                        <option value="registration_closed"{% if request.GET.status == 'registration_closed' %}selected{% endif %}>Registration Closed</option>
+                        <option value="ongoing"          {% if request.GET.status == 'ongoing' %}selected{% endif %}>Ongoing</option>
+                        <option value="checkin_submitted"{% if request.GET.status == 'checkin_submitted' %}selected{% endif %}>Check-in Submitted</option>
+                        <option value="results_pending"  {% if request.GET.status == 'results_pending' %}selected{% endif %}>Results Pending</option>
+                        <option value="results_submitted"{% if request.GET.status == 'results_submitted' %}selected{% endif %}>Results Submitted</option>
+                        <option value="pending_prize_verification" {% if request.GET.status == 'pending_prize_verification' %}selected{% endif %}>Prize Verification</option>
+                        <option value="completed"        {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-icon"></i>
+                </div>
+
+                <div class="filter-group">
+                    <select name="prize_type" class="custom-select" onchange="this.form.submit()">
+                        <option value="">All Prize Types</option>
+                        <option value="points" {% if request.GET.prize_type == 'points' %}selected{% endif %}>XP Points</option>
+                        <option value="money"  {% if request.GET.prize_type == 'money' %}selected{% endif %}>Cash</option>
+                        <option value="gift"   {% if request.GET.prize_type == 'gift' %}selected{% endif %}>Gift</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-icon"></i>
+                </div>
+
+                <div class="filter-group">
+                    <select name="shop" class="custom-select" onchange="this.form.submit()">
+                        <option value="">All Shops</option>
+                        {% for shop in all_shops %}
+                            <option value="{{ shop.id }}" {% if request.GET.shop == shop.id|stringformat:"s" %}selected{% endif %}>
+                                {{ shop.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <i class="fas fa-chevron-down select-icon"></i>
+                </div>
+
+                <button type="submit" class="btn-icon submit-filter-btn" data-tooltip="Apply Filters">
+                    <i class="fas fa-filter"></i>
+                </button>
+
+                {% if request.GET.q or request.GET.status or request.GET.prize_type or request.GET.shop %}
+                <a href="{% url 'admin_panel:competition_list' %}" class="btn-icon" style="background:#fee2e2;color:#F0354B;" data-tooltip="Clear Filters">
+                    <i class="fas fa-times"></i>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </section>
+
+    {# ------------------------------------------------------------------ #}
+    {# Competitions Table                                                   #}
+    {# ------------------------------------------------------------------ #}
+    <section class="dashboard-island tinted-island p-0">
+
+        {% if competitions %}
+        <table class="modern-table competitions-table">
+            <thead>
+                <tr>
+                    <th>Competition</th>
+                    <th>Shop</th>
+                    <th>Game & Platform</th>
+                    <th>Scheduled</th>
+                    <th>Participants</th>
+                    <th>Prize</th>
+                    <th>Status</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for competition in competitions %}
+                <tr id="comp-row-{{ competition.integer_id }}">
+
+                    {# Competition #}
+                    <td>
+                        <div class="comp-name-cell">
+                            <div class="comp-thumb">
+                                {% if competition.game.image %}
+                                    <img src="{{ competition.game.image.url }}" alt="{{ competition.game.name }}">
+                                {% else %}
+                                    <i class="fas fa-gamepad"></i>
+                                {% endif %}
+                            </div>
+                            <div class="comp-name-info">
+                                <span class="comp-name">{{ competition.name }}</span>
+                                <span class="comp-id text-muted">#{{ competition.integer_id|stringformat:"03d" }}</span>
+                            </div>
+                        </div>
+                    </td>
+
+                    {# Shop #}
+                    <td>
+                        <span class="comp-shop">{{ competition.shop.name }}</span>
+                        <br><small class="text-muted">{{ competition.shop.city }}</small>
+                    </td>
+
+                    {# Game & Platform #}
+                    <td>
+                        <span class="comp-game">{{ competition.game.name }}</span>
+                        <br><span class="badge badge-outline">{{ competition.platform.name }}</span>
+                    </td>
+
+                    {# Scheduled #}
+                    <td>
+                        <span class="comp-date">{{ competition.scheduled_time|date:"N j, Y" }}</span>
+                        <br><small class="text-muted">{{ competition.scheduled_time|date:"g:i A" }}</small>
+                    </td>
+
+                    {# Participants #}
+                    <td>
+                        <div class="comp-participants">
+                            <span>{{ competition.registered_count }}/{{ competition.max_participants }}</span>
+                            <div class="mini-bar">
+                                <div class="mini-fill" style="width:{% widthratio competition.registered_count competition.max_participants 100 %}%"></div>
+                            </div>
+                        </div>
+                    </td>
+
+                    {# Prize #}
+                    <td>
+                        {% if competition.prize_type == 'points' %}
+                            <span class="badge badge-blue"><i class="fas fa-star"></i> XP Points</span>
+                        {% elif competition.prize_type == 'money' %}
+                            <span class="badge badge-green"><i class="fas fa-money-bill-wave"></i> Cash</span>
+                        {% elif competition.prize_type == 'gift' %}
+                            <span class="badge badge-purple"><i class="fas fa-gift"></i> Gift</span>
+                        {% else %}
+                            <span class="badge badge-outline">TBA</span>
+                        {% endif %}
+                    </td>
+
+                    {# Status #}
+                    <td>
+                        <span class="status-badge {{ competition.status }}">
+                            {{ competition.get_status_display }}
+                        </span>
+                    </td>
+
+                    {# Actions #}
+                    <td class="text-right">
+                        <div class="action-buttons">
+                            <a href="{% url 'admin_panel:competition_detail' competition.slug %}"
+                               class="btn-action view" data-tooltip="View & Manage">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                            {% if competition.status == 'pending' %}
+                                <a href="#" class="btn-action ajax-approve" title="Approve" data-comp-id="{{ competition.slug }}" data-approve-url="{% url 'admin_panel:competition_approve' competition.slug %}">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                                <a href="#" class="btn-action ajax-reject" title="Reject" data-comp-id="{{ competition.slug }}" data-reject-url="{% url 'admin_panel:competition_reject' competition.slug %}">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {# Pagination #}
+        {% if competitions.has_other_pages %}
+        <div class="pagination-container mt-4 flex-between p-4 border-top">
+            <span class="text-muted text-sm">
+                Showing page {{ competitions.number }} of {{ competitions.paginator.num_pages }}
+                · {{ competitions.paginator.count }} total
+            </span>
+            <div class="pagination-controls">
+                {% if competitions.has_previous %}
+                    <a href="?page={{ competitions.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.prize_type %}&prize_type={{ request.GET.prize_type }}{% endif %}{% if request.GET.shop %}&shop={{ request.GET.shop }}{% endif %}"
+                       class="btn-page"><i class="fas fa-chevron-left"></i></a>
+                {% else %}
+                    <button class="btn-page disabled"><i class="fas fa-chevron-left"></i></button>
+                {% endif %}
+                <button class="btn-page active">{{ competitions.number }}</button>
+                {% if competitions.has_next %}
+                    <a href="?page={{ competitions.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.prize_type %}&prize_type={{ request.GET.prize_type }}{% endif %}{% if request.GET.shop %}&shop={{ request.GET.shop }}{% endif %}"
+                       class="btn-page"><i class="fas fa-chevron-right"></i></a>
+                {% else %}
+                    <button class="btn-page disabled"><i class="fas fa-chevron-right"></i></button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="p-5 text-center">
+            <i class="fas fa-trophy text-muted" style="font-size:40px; opacity:0.3;"></i>
+            <p class="text-muted mt-3">No competitions found matching your filters.</p>
+            {% if request.GET.q or request.GET.status or request.GET.prize_type or request.GET.shop %}
+            <a href="{% url 'admin_panel:competition_list' %}" class="btn-secondary mt-2">Clear Filters</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'admin_panel/js/competitions/admin_competitions.js' %}"></script>
+    <!-- Reject modal for admin quick actions -->
+    <div id="adminRejectModal" class="modal" style="display:none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Competition</h5>
+                    <button type="button" class="close-modal" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Please provide a short reason for rejecting this competition (shop owner will be notified):</p>
+                    <textarea id="rejectReason" rows="4" style="width:100%;" placeholder="Reason (required)"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button id="rejectCancel" class="btn btn-secondary">Cancel</button>
+                    <button id="rejectSubmit" class="btn btn-danger">Reject Competition</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

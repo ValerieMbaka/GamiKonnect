@@ -53,6 +53,11 @@ class Gamer(Account):
         on_delete=models.SET_NULL,
         help_text="The gamer's current progression level."
     )
+    is_pwa = models.BooleanField(
+        default=False,
+        verbose_name="Is PWA",
+        help_text="If True, indicates the gamer has PWA (Persons With Albinism) or other specified status."
+    )
     
     class Meta:
         verbose_name = 'Gamer'

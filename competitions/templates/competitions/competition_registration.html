@@ -1,0 +1,232 @@
+{% load static %}
+<div class="registration-modal-content anim-fade-in-up">
+    <button class="modal-close-btn" data-action="close-modal" title="Close">
+        <i class="fas fa-times"></i>
+    </button>
+
+    <div class="reg-layout">
+
+        {# ================================================================== #}
+        {# LEFT SIDEBAR: Competition Context                                  #}
+        {# ================================================================== #}
+        <div class="reg-sidebar">
+            <div class="reg-image-wrapper">
+                {% if competition.game.image %}
+                    <img src="{{ competition.game.image.url }}" alt="{{ competition.game.name }}">
+                {% else %}
+                    <div class="reg-image-placeholder">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <h2 class="reg-comp-title">{{ competition.name }}</h2>
+
+            {# The 2x2 Grid for Meta Details #}
+            <div class="reg-meta-list">
+                <div class="reg-meta-item">
+                    <i class="fas fa-gamepad"></i>
+                    <div class="meta-text">
+                        <span>Game</span>
+                        <strong title="{{ competition.game.name }}">{{ competition.game.name }}</strong>
+                    </div>
+                </div>
+                <div class="reg-meta-item">
+                    <i class="fas fa-desktop"></i>
+                    <div class="meta-text">
+                        <span>Platform</span>
+                        <strong title="{{ competition.platform.name }}">{{ competition.platform.name }}</strong>
+                    </div>
+                </div>
+                <div class="reg-meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div class="meta-text">
+                        <span>Kickoff</span>
+                        <strong title='{{ competition.scheduled_time|date:"M d, H:i" }}'>{{ competition.scheduled_time|date:"M d, H:i" }}</strong>
+                    </div>
+                </div>
+                <div class="reg-meta-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="meta-text">
+                        <span>Arena</span>
+                        <strong title="{{ competition.shop.name }}">{{ competition.shop.name }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reg-rules-section">
+                <h4><i class="fas fa-book"></i> Competition Rules</h4>
+                <div class="rules-scroll-box">
+                    {{ competition.get_full_rules|linebreaks }}
+                </div>
+            </div>
+        </div>
+
+        {# ================================================================== #}
+        {# RIGHT PANEL: Registration Form                                     #}
+        {# ================================================================== #}
+        <div class="reg-main">
+            <div class="reg-main-header">
+                <h2>Complete Registration</h2>
+                <p>Verify your details and finalize your entry.</p>
+            </div>
+
+            <form class="reg-form" id="registrationForm" data-competition-id="{{ competition.slug }}">
+                {% csrf_token %}
+
+                {# Gamer Profile #}
+                <div class="form-section">
+                    <h3 class="section-title">Gamer Profile</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            <div class="readonly-field">{{ gamer.first_name }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <div class="readonly-field">{{ gamer.last_name }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <div class="readonly-field">{{ gamer.custom_username|default:gamer.email }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <div class="readonly-field text-truncate" title="{{ gamer.email }}">{{ gamer.email }}</div>
+                        </div>
+
+                        <div class="form-group full-width mt-2">
+                            <label class="form-label">M-Pesa Phone Number <span class="text-danger">*</span></label>
+                            <span class="input-help">Required for payment and contact updates.</span>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-phone-alt"></i>
+                                <input type="text" class="premium-input" id="phoneNumber" name="phone_number" value="{{ gamer.phone }}" placeholder="e.g. 0712345678" required>
+                            </div>
+                        </div>
+
+                        {% if competition.is_pwa_only %}
+                        <div class="form-group full-width mt-3">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" id="isPWA" name="is_pwa" required>
+                                <span class="checkmark"></span>
+                                <span class="check-text">I confirm I am using a Progressive Web App (PWA)</span>
+                            </label>
+                            <span class="input-help text-warning">This competition requires PWA participation.</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Payment Summary #}
+                <div class="form-section checkout-section">
+                    <h3 class="section-title">
+                        {% if competition.entry_fee|floatformat:2 == '0.00' %}
+                            Free Entry
+                        {% else %}
+                            Payment Summary
+                        {% endif %}
+                    </h3>
+
+                    {% if competition.entry_fee > 0 %}
+                        <div class="payment-receipt">
+                            <div class="receipt-row">
+                                <span>Tournament Entry</span>
+                                <span>KES {{ competition.entry_fee }}</span>
+                            </div>
+                            <div class="receipt-row total-row">
+                                <span>Total Due</span>
+                                <span class="total-amount">KES {{ competition.entry_fee }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="info-alert">
+                            <i class="fas fa-ticket-alt"></i>
+                            <div>No payment is required to join this competition.</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="terms-agreement mt-3">
+                        <label class="custom-checkbox">
+                            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                            <span class="checkmark"></span>
+                            <span class="check-text">I accept the <a href="#" class="terms-link">Terms & Conditions</a></span>
+                        </label>
+                        <div class="validation-error" id="termsError">You must accept the terms to proceed.</div>
+                    </div>
+                </div>
+
+                {# Actions #}
+                <div class="form-actions border-top pt-3">
+                    <button type="button" class="btn-wizard btn-wizard-outline" data-action="cancel-registration">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-wizard btn-wizard-primary" id="payNowBtn">
+                        {% if competition.entry_fee > 0 %}
+                            <i class="fas fa-lock"></i> Pay & Join
+                        {% else %}
+                            <i class="fas fa-check-circle"></i> Complete Entry
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ================================================================== #}
+{# Loading & Confirmation Modals                                      #}
+{# ================================================================== #}
+
+<div class="modal-container loading-modal hidden" id="loadingModal">
+    <div class="loading-content">
+        <div class="loading-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+        </div>
+        <div class="loading-text">
+            <h3>Awaiting M-Pesa</h3>
+            <p>Please check your phone for the payment prompt...</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal-container confirmation-modal hidden" id="confirmationModal">
+    <div class="confirmation-content">
+        <div class="confirmation-header">
+            <h3>Confirm Entry</h3>
+            <button class="close-btn" data-action="close-confirmation">&times;</button>
+        </div>
+        <div class="confirmation-body">
+            {% if competition.entry_fee > 0 %}
+                <p>Authorize payment of <strong class="text-primary">KES {{ competition.entry_fee }}</strong> to enter <strong>"{{ competition.name }}"</strong>?</p>
+            {% else %}
+                <p>Are you ready to officially join <strong>"{{ competition.name }}"</strong>?</p>
+            {% endif %}
+        </div>
+        <div class="confirmation-actions">
+            <button class="btn-wizard btn-wizard-outline" data-action="cancel-payment">Go Back</button>
+            <button class="btn-wizard btn-wizard-primary" id="confirmPaymentBtn" data-competition-id="{{ competition.slug }}">
+                {% if competition.entry_fee > 0 %}
+                    Yes, Pay Now
+                {% else %}
+                    Yes, Join Now
+                {% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Maintaining your debug scripts
+function checkElements() {
+    const elements = {
+        'registrationForm': document.getElementById('registrationForm'),
+        'agreeTerms': document.getElementById('agreeTerms'),
+        'payNowBtn': document.getElementById('payNowBtn'),
+        'confirmPaymentBtn': document.getElementById('confirmPaymentBtn')
+    };
+    for (const [name, element] of Object.entries(elements)) {
+        if(!element) console.warn(`🔧 Missing critical element: ${name}`);
+    }
+}
+document.addEventListener('DOMContentLoaded', checkElements);
+</script>

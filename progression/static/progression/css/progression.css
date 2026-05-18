@@ -1,0 +1,238 @@
+/* ==========================================================================
+   leaderboard.css — Global and per-game leaderboard pages
+   ========================================================================== */
+
+.lb-wrapper { padding: 0 0 40px; }
+
+/* Header */
+.lb-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+.lb-title { font-family:'Oxanium',sans-serif; font-size:26px; font-weight:700; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:10px; }
+.lb-title i { color:var(--primary-color); }
+.lb-title-game-img { width:32px; height:32px; border-radius:6px; object-fit:cover; }
+.lb-subtitle { font-size:14px; color:var(--text-secondary); margin:4px 0 0; }
+.lb-header-actions { display:flex; gap:10px; }
+
+.lb-btn-primary,.lb-btn-secondary {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 18px; border-radius:9px; font-size:13px;
+    font-weight:600; text-decoration:none; transition:all .2s;
+}
+.lb-btn-primary { background:var(--primary-color); color:#fff; }
+.lb-btn-primary:hover { opacity:.88; color:#fff; }
+.lb-btn-secondary { background:var(--bg-secondary,#f5f5f5); color:var(--text-secondary); border:1px solid var(--border-color,#e0e0e0); }
+.lb-btn-secondary:hover { border-color:var(--primary-color); color:var(--primary-color); }
+.mt-3 { margin-top:12px; }
+
+/* Game filter pills */
+.lb-game-filter { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+.lb-game-pill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600;
+    text-decoration:none; color:var(--text-secondary);
+    background:var(--bg-secondary,#f5f5f5);
+    border:1px solid var(--border-color,#e0e0e0);
+    transition:all .2s;
+}
+.lb-game-pill img { width:18px; height:18px; border-radius:4px; object-fit:cover; }
+.lb-game-pill:hover { border-color:var(--primary-color); color:var(--primary-color); }
+.lb-game-pill--active { background:var(--primary-color); color:#fff; border-color:var(--primary-color); }
+.lb-game-pill--active:hover { color:#fff; }
+
+/* Grid */
+.lb-grid { display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start; }
+
+/* Your rank card */
+.lb-your-rank {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; margin-bottom:14px;
+    border-left:4px solid var(--primary-color);
+}
+.lb-your-rank-left { display:flex; flex-direction:column; gap:2px; }
+.lb-your-rank-label { font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; }
+.lb-your-rank-value { font-family:'Oxanium',sans-serif; font-size:28px; font-weight:700; color:var(--primary-color); }
+.lb-your-rank-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.lb-your-xp { font-family:'Oxanium',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); }
+.lb-your-level { font-size:13px; font-weight:600; }
+
+/* Table section */
+.lb-table-section { overflow:hidden; }
+.lb-table-header {
+    padding:12px 16px; border-bottom:1px solid var(--border-color,#f0f0f0);
+    font-size:12px; color:var(--text-secondary); font-weight:600;
+}
+
+/* Leaderboard rows */
+.lb-table { display:flex; flex-direction:column; }
+.lb-row {
+    display:flex; align-items:center; gap:12px;
+    padding:12px 16px; border-bottom:1px solid var(--border-color,#f0f0f0);
+    transition:background .15s;
+}
+.lb-row:last-child { border-bottom:none; }
+.lb-row:hover { background:var(--bg-secondary,#fafafa); }
+.lb-row--self { background:rgba(53,168,240,.06); border-left:3px solid var(--primary-color); }
+.lb-row--gold   { border-left:3px solid #FFD700; }
+.lb-row--silver { border-left:3px solid #C0C0C0; }
+.lb-row--bronze { border-left:3px solid #CD7F32; }
+
+.lb-row-rank { font-size:20px; min-width:36px; text-align:center; flex-shrink:0; }
+.lb-rank-num { font-family:'Oxanium',sans-serif; font-size:14px; font-weight:700; color:var(--text-secondary); }
+
+.lb-row-avatar { width:36px; height:36px; border-radius:50%; overflow:hidden; flex-shrink:0; }
+.lb-row-avatar img { width:100%; height:100%; object-fit:cover; }
+.lb-avatar-placeholder {
+    width:36px; height:36px; border-radius:50%;
+    background:var(--bg-secondary,#f0f0f0);
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; color:var(--text-secondary);
+}
+
+.lb-row-info { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.lb-row-username { font-size:14px; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:6px; }
+.lb-you-tag {
+    font-size:10px; font-weight:700; padding:1px 7px; border-radius:6px;
+    background:rgba(53,168,240,.15); color:var(--primary-color);
+    text-transform:uppercase; letter-spacing:.5px;
+}
+.lb-row-level { font-size:12px; font-weight:600; }
+
+.lb-row-xp { text-align:right; flex-shrink:0; }
+.lb-xp-value { display:block; font-family:'Oxanium',sans-serif; font-size:16px; font-weight:700; color:var(--text-primary); }
+.lb-xp-label { display:block; font-size:11px; color:var(--text-secondary); }
+
+/* Empty */
+.lb-empty { padding:40px; text-align:center; color:var(--text-secondary); font-size:14px; }
+.lb-empty i { font-size:36px; opacity:.3; display:block; margin-bottom:12px; }
+
+/* Pagination */
+.lb-pagination { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-top:1px solid var(--border-color,#f0f0f0); flex-wrap:wrap; gap:10px; }
+.lb-page-info { font-size:12px; color:var(--text-secondary); }
+.lb-page-controls { display:flex; gap:6px; }
+.lb-page-btn { width:32px; height:32px; border-radius:7px; border:1px solid var(--border-color,#e0e0e0); background:var(--card-bg,#fff); color:var(--text-primary); font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:all .2s; }
+.lb-page-btn:hover:not(:disabled) { background:var(--primary-color); color:#fff; border-color:var(--primary-color); }
+.lb-page-btn--active { background:var(--primary-color); color:#fff; border-color:var(--primary-color); font-weight:700; }
+.lb-page-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+/* Sidebar — Top 10 */
+.lb-top10-card,.lb-levels-card { margin-bottom:16px; }
+.lb-top10-row {
+    display:flex; align-items:center; gap:8px;
+    padding:10px 14px; border-bottom:1px solid var(--border-color,#f0f0f0);
+    font-size:13px;
+}
+.lb-top10-row:last-child { border-bottom:none; }
+.lb-top10-row--self { background:rgba(53,168,240,.06); }
+.lb-top10-rank { font-size:16px; min-width:28px; flex-shrink:0; }
+.lb-top10-avatar { width:28px; height:28px; border-radius:50%; overflow:hidden; flex-shrink:0; }
+.lb-top10-avatar img { width:100%; height:100%; object-fit:cover; }
+.lb-top10-avatar-placeholder { width:28px; height:28px; border-radius:50%; background:var(--bg-secondary,#f0f0f0); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-secondary); }
+.lb-top10-name { flex:1; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lb-top10-xp { font-family:'Oxanium',sans-serif; font-size:12px; font-weight:700; color:var(--primary-color); flex-shrink:0; }
+
+/* Sidebar — Level Guide */
+.lb-level-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border-color,#f0f0f0); }
+.lb-level-row:last-child { border-bottom:none; }
+.lb-level-row--current { background:rgba(53,168,240,.05); }
+.lb-level-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.lb-level-info { flex:1; display:flex; flex-direction:column; gap:2px; }
+.lb-level-name { font-size:13px; font-weight:700; }
+.lb-level-xp { font-size:11px; color:var(--text-secondary); }
+.lb-level-badge { width:24px; height:24px; object-fit:contain; flex-shrink:0; }
+.lb-level-current-tag { font-size:10px; font-weight:700; padding:2px 7px; border-radius:6px; background:rgba(53,168,240,.15); color:var(--primary-color); }
+
+/* Responsive */
+@media(max-width:900px){ .lb-grid{ grid-template-columns:1fr; } .lb-sidebar{ order:-1; } }
+@media(max-width:600px){ .lb-header{ flex-direction:column; align-items:flex-start; } }
+
+/* ==========================================================================
+   progression.css — Gamer progression page (level, achievements, timeline)
+   ========================================================================== */
+
+.prog-wrapper { padding:0 0 40px; }
+
+/* Header */
+.prog-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+.prog-title { font-family:'Oxanium',sans-serif; font-size:26px; font-weight:700; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:10px; }
+.prog-title i { color:var(--primary-color); }
+.prog-subtitle { font-size:14px; color:var(--text-secondary); margin:4px 0 0; }
+.prog-btn-secondary { display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border-radius:9px; font-size:13px; font-weight:600; text-decoration:none; background:var(--bg-secondary,#f5f5f5); color:var(--text-secondary); border:1px solid var(--border-color,#e0e0e0); transition:all .2s; }
+.prog-btn-secondary:hover { border-color:var(--primary-color); color:var(--primary-color); }
+
+/* Level Hero */
+.prog-level-hero { margin-bottom:16px; }
+.prog-level-hero-content { padding:24px; display:flex; align-items:flex-start; gap:24px; flex-wrap:wrap; }
+
+.prog-level-badge-wrap { flex-shrink:0; }
+.prog-level-badge-img { width:80px; height:80px; object-fit:contain; }
+.prog-level-badge-placeholder {
+    width:80px; height:80px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:32px; background:rgba(53,168,240,.1); color:var(--primary-color);
+}
+
+.prog-level-info { flex:1; min-width:200px; }
+.prog-level-name-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px; }
+.prog-level-name { font-family:'Oxanium',sans-serif; font-size:28px; font-weight:700; margin:0; }
+.prog-global-rank { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:var(--text-secondary); padding:5px 12px; border-radius:20px; background:var(--bg-secondary,#f5f5f5); }
+.prog-global-rank i { color:var(--primary-color); }
+
+.prog-xp-row { display:flex; align-items:center; gap:14px; margin-bottom:10px; flex-wrap:wrap; }
+.prog-total-xp { font-family:'Oxanium',sans-serif; font-size:20px; font-weight:700; color:var(--text-primary); }
+.prog-xp-to-next { font-size:13px; color:var(--text-secondary); }
+
+.prog-xp-bar { position:relative; height:8px; background:var(--bg-secondary,#f0f0f0); border-radius:8px; overflow:visible; }
+.prog-xp-fill { height:100%; border-radius:8px; transition:width .6s ease; background:var(--primary-color); }
+.prog-xp-bar-label { position:absolute; right:0; top:-20px; font-size:11px; font-weight:700; color:var(--text-secondary); }
+
+.prog-level-stats { display:flex; flex-direction:column; gap:10px; align-items:flex-end; flex-shrink:0; }
+.prog-level-stat-item { text-align:right; }
+.prog-level-stat-value { display:block; font-family:'Oxanium',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); }
+.prog-level-stat-label { display:block; font-size:11px; color:var(--text-secondary); }
+
+/* Timeline */
+.prog-timeline { display:flex; flex-direction:column; gap:0; }
+.prog-timeline-item { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--border-color,#f0f0f0); }
+.prog-timeline-item:last-child { border-bottom:none; }
+
+.prog-timeline-dot {
+    width:28px; height:28px; border-radius:50%;
+    border:2px solid var(--border-color,#e0e0e0);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:all .2s;
+}
+.prog-timeline-item--done .prog-timeline-dot,
+.prog-timeline-item--current .prog-timeline-dot { border-width:2px; }
+
+.prog-timeline-info { flex:1; display:flex; flex-direction:column; gap:2px; }
+.prog-timeline-name { font-size:14px; font-weight:700; }
+.prog-timeline-xp { font-size:12px; color:var(--text-secondary); }
+.prog-timeline-badge { width:28px; height:28px; object-fit:contain; flex-shrink:0; }
+.prog-timeline-item--locked .prog-timeline-name { color:var(--text-secondary) !important; }
+.prog-timeline-item--locked { opacity:.5; }
+
+.prog-timeline-current-tag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; background:rgba(53,168,240,.15); color:var(--primary-color); flex-shrink:0; }
+
+/* Achievements */
+.prog-achievement-count { font-size:12px; font-weight:600; padding:3px 10px; border-radius:12px; background:var(--bg-secondary,#f0f0f0); color:var(--text-secondary); }
+.prog-achievements-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.prog-achievement-card { display:flex; align-items:flex-start; gap:14px; padding:14px; border-radius:12px; background:var(--bg-secondary,#f8f8f8); border:1px solid var(--border-color,#e8e8e8); transition:transform .2s,box-shadow .2s; }
+.prog-achievement-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.07); }
+
+.prog-achievement-badge { flex-shrink:0; }
+.prog-achievement-badge img { width:48px; height:48px; object-fit:contain; }
+.prog-achievement-badge-placeholder { width:48px; height:48px; border-radius:50%; background:rgba(53,168,240,.1); color:var(--primary-color); display:flex; align-items:center; justify-content:center; font-size:22px; }
+
+.prog-achievement-info { flex:1; display:flex; flex-direction:column; gap:4px; }
+.prog-achievement-name { font-size:14px; font-weight:700; color:var(--text-primary); }
+.prog-achievement-desc { font-size:12px; color:var(--text-secondary); line-height:1.5; }
+.prog-achievement-date { font-size:11px; color:var(--text-secondary); display:flex; align-items:center; gap:5px; }
+.prog-achievement-date i { color:var(--primary-color); font-size:10px; }
+
+/* Responsive */
+@media(max-width:768px){
+    .prog-header{ flex-direction:column; align-items:flex-start; }
+    .prog-level-hero-content{ flex-direction:column; align-items:center; text-align:center; }
+    .prog-level-name-row{ justify-content:center; }
+    .prog-level-stats{ align-items:center; flex-direction:row; justify-content:center; }
+    .prog-achievements-grid{ grid-template-columns:1fr; }
+}

@@ -1,0 +1,78 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}User Detail | Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center">
+                    <img src="{% static 'core/images/gamepad.jpeg' %}" alt="Avatar" class="rounded-circle img-fluid mb-3" style="width: 150px;">
+                    <h5 class="my-3">{{ user_obj.get_full_name|default:user_obj.username }}</h5>
+                    <p class="text-muted mb-1">{{ user_obj.get_role_display }}</p>
+                    <p class="text-muted mb-4">{{ user_obj.email }}</p>
+                    <div class="d-flex justify-content-center mb-2">
+                        <a href="{% url 'admin_panel:user_toggle_status' user_obj.id %}" class="btn {% if user_obj.is_active %}btn-outline-danger{% else %}btn-success{% endif %}">
+                            {% if user_obj.is_active %}Deactivate{% else %}Activate{% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            {% if profile %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profile Details</h6>
+                </div>
+                <div class="card-body">
+                    {% if user_obj.role == 'GAMER' %}
+                        <p><strong>Points:</strong> {{ profile.points }}</p>
+                        <p><strong>Level:</strong> {{ profile.level.name|default:"Amateur" }}</p>
+                        <p><strong>Wins:</strong> {{ profile.wins }}</p>
+                    {% elif user_obj.role == 'SHOP_OWNER' %}
+                        <p><strong>Phone:</strong> {{ profile.phone_number }}</p>
+                        <p><strong>Shops:</strong> {{ profile.shops.count }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity Log</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Description</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in activities %}
+                                <tr>
+                                    <td><span class="badge bg-info">{{ log.action_type }}</span></td>
+                                    <td>{{ log.description }}</td>
+                                    <td>{{ log.timestamp|date:"M d, Y H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No recent activity logged.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %} Create Competition · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'competitions/css/create_competition.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="create-comp-wrapper anim-fade-in-up">
+
+    {# ------------------------------------------------------------------ #}
+    {# Premium Hero Banner                                                  #}
+    {# ------------------------------------------------------------------ #}
+    <div class="comp-hero-banner">
+        <div class="comp-hero-content">
+            <h1 class="comp-hero-title"><i class="fas fa-rocket"></i> Deploy Competition</h1>
+            <p class="comp-hero-subtitle">Set up a new tournament for your arena and invite gamers.</p>
+        </div>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Wizard Card                                                          #}
+    {# ------------------------------------------------------------------ #}
+    <div class="create-comp-card w-100">
+
+        {# Progress Tracker #}
+        <div class="wizard-progress-tracker mt-2 mb-5">
+            <div class="step-indicator active" data-step="1">
+                <div class="step-number">1</div>
+                <span class="step-label">Basics</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="2">
+                <div class="step-number">2</div>
+                <span class="step-label">Game & Time</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="3">
+                <div class="step-number">3</div>
+                <span class="step-label">Rules & Entry</span>
+            </div>
+        </div>
+
+        <form id="createCompForm" novalidate>
+            {% csrf_token %}
+
+            {# --- STEP 1: BASICS --- #}
+            <div class="wizard-step active" data-step="1">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold">Competition Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control form-control-lg premium-input" placeholder="e.g. FIFA Weekend Cup" required maxlength="255">
+                        <div class="invalid-feedback d-block" id="err-name"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold">Venue (Shop) <span class="text-danger">*</span></label>
+                        <div class="select-wrapper">
+                            <select name="shop" class="form-select form-select-lg premium-input" required id="shopSelect">
+                                <option value="">Select your shop...</option>
+                                {% for shop in approved_shops %}
+                                    <option value="{{ shop.id }}">{{ shop.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="invalid-feedback d-block" id="err-shop"></div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                    <textarea name="description" class="form-control form-control-lg premium-input" rows="4" placeholder="What is this competition about? Who can join? What's the format?" required></textarea>
+                    <div class="invalid-feedback d-block" id="err-description"></div>
+                </div>
+            </div>
+
+            {# --- STEP 2: GAME & TIME --- #}
+            <div class="wizard-step" data-step="2">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold">Game <span class="text-danger">*</span></label>
+                        <div class="select-wrapper">
+                            <select name="game" id="gameSelect" class="form-select form-select-lg premium-input" required>
+                                <option value="">Select a shop first...</option>
+                            </select>
+                        </div>
+                        <div class="invalid-feedback d-block" id="err-game"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold">Platform <span class="text-danger">*</span></label>
+                        <div class="select-wrapper">
+                            <select name="platform" id="platformSelect" class="form-select form-select-lg premium-input" required>
+                                <option value="">Select a game first...</option>
+                            </select>
+                        </div>
+                        <div class="form-text text-muted small mt-2" id="platformNote" style="display:none;">
+                            <i class="fas fa-info-circle"></i> Only platforms available at your shop are shown.
+                        </div>
+                        <div class="invalid-feedback d-block" id="err-platform"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold"><i class="fas fa-calendar-alt text-primary"></i> Start Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="scheduled_time" id="scheduledTime" class="form-control form-control-lg premium-input" required>
+                        <div class="invalid-feedback d-block" id="err-scheduled_time"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold"><i class="fas fa-flag-checkered text-success"></i> End Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="competition_end_time" id="endTime" class="form-control form-control-lg premium-input" required>
+                        <div class="invalid-feedback d-block" id="err-competition_end_time"></div>
+                    </div>
+                </div>
+
+                <div class="create-duration-display text-center mb-3" id="durationDisplay" style="display:none;">
+                    <span class="duration-badge">
+                        <i class="fas fa-clock"></i> <span id="durationText">Duration: —</span>
+                    </span>
+                </div>
+            </div>
+
+            {# --- STEP 3: RULES & ENTRY --- #}
+            <div class="wizard-step" data-step="3">
+
+                {# Group 1: Format & Entry #}
+                <h5 class="step-section-title"><i class="fas fa-users-cog"></i> Format & Entry</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label fw-semibold">Capacity <span class="text-danger">*</span></label>
+                        <input type="number" name="max_participants" class="form-control form-control-lg premium-input" min="2" max="256" placeholder="e.g. 16" required>
+                        <div class="invalid-feedback d-block" id="err-max_participants"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label fw-semibold">Team Size <span class="text-danger">*</span></label>
+                        <input type="number" name="team_size" class="form-control form-control-lg premium-input" min="1" value="1" required>
+                        <div class="invalid-feedback d-block" id="err-team_size"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label fw-semibold">Entry Fee</label>
+                        <div class="input-group input-group-lg premium-input-group">
+                            <span class="input-group-text">KES</span>
+                            <input type="number" name="entry_fee" class="form-control" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-text small mt-2 text-muted">Leave 0 for free entry.</div>
+                        <div class="invalid-feedback d-block" id="err-entry_fee"></div>
+                    </div>
+                </div>
+
+                {# Group 2: Restrictions & Access #}
+                <h5 class="step-section-title mt-2"><i class="fas fa-shield-alt"></i> Restrictions & Access</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label fw-semibold">Gender Rules</label>
+                        <div class="select-wrapper">
+                            <select name="gender_rules" class="form-select form-select-lg premium-input">
+                                <option value="all">All (All Genders)</option>
+                                <option value="male">Male (Only)</option>
+                                <option value="female">Female (Only)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label fw-semibold d-block">Age Restriction</label>
+                        <div class="form-check form-switch custom-switch mt-3">
+                            <input class="form-check-input" type="checkbox" role="switch" name="age_restricted" id="ageRestrictedToggle" checked>
+                            <label class="form-check-label fw-bold ms-2" for="ageRestrictedToggle" id="ageToggleText">18+ Required</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label fw-semibold d-block">Platform Access</label>
+                        <div class="form-check form-switch custom-switch mt-3">
+                            <input class="form-check-input" type="checkbox" role="switch" name="is_pwa_only" id="pwaOnlyToggle">
+                            <label class="form-check-label fw-bold ms-2" for="pwaOnlyToggle">PWA Only</label>
+                        </div>
+                    </div>
+                </div>
+
+                {# Group 3: Guidelines #}
+                <h5 class="step-section-title mt-2"><i class="fas fa-book"></i> Guidelines</h5>
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <label class="form-label fw-semibold">Rules</label>
+                        <textarea name="rules" class="form-control premium-input" rows="4" placeholder="Specific rules or restrictions..."></textarea>
+                    </div>
+                </div>
+
+                <div class="info-alert mt-2">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Admin Review:</strong> Your competition will be reviewed and prize pools will be allocated by the admin before going live.
+                    </div>
+                </div>
+            </div>
+
+            {# --- ACTIONS --- #}
+            <div class="wizard-actions mt-5 pt-4 border-top d-flex justify-content-between">
+                <button type="button" class="btn-wizard btn-wizard-outline wizard-btn-hidden" id="btnPrev">
+                    <i class="fas fa-chevron-left"></i> Back
+                </button>
+                <div class="ms-auto d-flex gap-3">
+                    <button type="button" class="btn-wizard btn-wizard-primary" id="btnNext">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button type="button" class="btn-wizard btn-wizard-success wizard-btn-hidden" id="createCompSubmitBtn">
+                        <i class="fas fa-rocket"></i> Submit for Review
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# The Data Islands (Do Not Remove) #}
+{{ shop_games_data|json_script:"shopGamesData" }}
+{{ shop_consoles_data|json_script:"shopConsolesData" }}
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'competitions/js/create_competition.js' %}"></script>
+{% endblock %}

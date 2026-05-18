@@ -1,0 +1,65 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}Transaction Detail | Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Transaction Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 font-weight-bold">Receipt Number:</div>
+                        <div class="col-sm-8"><code>{{ transaction.receipt_number|default:"N/A" }}</code></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 font-weight-bold">Status:</div>
+                        <div class="col-sm-8">
+                            <span class="badge {% if transaction.status == 'SUCCESS' %}bg-success{% elif transaction.status == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ transaction.status }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 font-weight-bold">Amount:</div>
+                        <div class="col-sm-8">KES {{ transaction.amount }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 font-weight-bold">Gamer:</div>
+                        <div class="col-sm-8">{{ transaction.gamer.email }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 font-weight-bold">Phone:</div>
+                        <div class="col-sm-8">{{ transaction.phone_number }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 font-weight-bold">Checkout Request ID:</div>
+                        <div class="col-sm-8"><small class="text-muted">{{ transaction.checkout_request_id }}</small></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 font-weight-bold">Date:</div>
+                        <div class="col-sm-8">{{ transaction.created_at }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 font-weight-bold">Competition:</div>
+                        <div class="col-sm-8">
+                            {% if transaction.competition_registration %}
+                                {{ transaction.competition_registration.competition.name }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin_panel:payment_list' %}" class="btn btn-secondary">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

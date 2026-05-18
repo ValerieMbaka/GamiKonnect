@@ -1,0 +1,369 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}{{ competition.name }} · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'competitions/css/competition_common.css' %}">
+    <link rel="stylesheet" href="{% static 'competitions/css/competition_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# Pass context flags to JS #}
+<div id="compDetailState"
+     data-competition-id="{{ competition.slug }}"
+     data-status="{{ competition.status }}"
+     data-is-shop-owner="{{ is_shop_owner_of_competition|yesno:'true,false' }}"
+     data-is-registered="{{ registration|yesno:'true,false' }}"
+     data-csrf="{{ csrf_token }}"
+     style="display:none;">
+</div>
+
+<div class="comp-detail-wrapper anim-fade-in-up">
+
+    {# ------------------------------------------------------------------ #}
+    {# Back Navigation & Status                                             #}
+    {# ------------------------------------------------------------------ #}
+    <div class="comp-detail-nav">
+        <a href="{% url 'competitions:list' %}" class="btn-back-pill">
+            <i class="fas fa-arrow-left"></i> Back to Competitions
+        </a>
+        <span class="comp-status-badge comp-status--{{ competition.status }}">
+            {% if competition.status == 'registration_open' %}<i class="fas fa-circle pulse-dot"></i> Registration Open
+            {% elif competition.status == 'live' %}<i class="fas fa-clock"></i> Coming Soon
+            {% elif competition.status == 'registration_closed' %}<i class="fas fa-lock"></i> Registration Closed
+            {% elif competition.status == 'ongoing' %}<i class="fas fa-play-circle pulse-dot"></i> Live Now
+            {% elif competition.status == 'completed' %}<i class="fas fa-check-circle"></i> Completed
+            {% else %}{{ competition.get_status_display }}
+            {% endif %}
+        </span>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Cinematic Hero Section (Now matches project theme!)                  #}
+    {# ------------------------------------------------------------------ #}
+    <div class="comp-hero-card">
+        <div class="comp-hero-background">
+            {% if competition.game.image %}
+                <img src="{{ competition.game.image.url }}" alt="Background">
+            {% endif %}
+            <div class="comp-hero-overlay"></div>
+        </div>
+
+        <div class="comp-hero-content">
+            <div class="comp-hero-image">
+                {% if competition.game.image %}
+                    <img src="{{ competition.game.image.url }}" alt="{{ competition.game.name }}">
+                {% else %}
+                    <div class="comp-hero-placeholder"><i class="fas fa-gamepad"></i></div>
+                {% endif %}
+            </div>
+
+            <div class="comp-hero-info">
+                <div class="comp-hero-tags">
+                    <span class="comp-platform-badge"><i class="fas fa-desktop"></i> {{ competition.platform.name }}</span>
+                    {% if competition.age_restricted %}
+                        <span class="comp-age-badge"><i class="fas fa-exclamation-triangle"></i> 18+ Only</span>
+                    {% endif %}
+                </div>
+                
+                <h1 class="comp-hero-title">{{ competition.name }}</h1>
+                
+                <div class="comp-hero-meta">
+                    <span><i class="fas fa-gamepad"></i> {{ competition.game.name }}</span>
+                    <span><i class="fas fa-store"></i> {{ competition.shop.name }}, {{ competition.shop.city }}</span>
+                    <span><i class="fas fa-calendar-alt"></i> {{ competition.scheduled_time|date:"M j, Y · g:i A" }}</span>
+                </div>
+            </div>
+
+            <div class="comp-hero-action">
+                {% if is_shop_owner_of_competition %}
+                    <div class="admin-panel-box">
+                        <h4><i class="fas fa-crown"></i> Admin Controls</h4>
+                        <p>Manage participants and update tournament status.</p>
+                        <a href="{% url 'competitions:shop_owner_manage' %}" class="btn-primary-action w-100">
+                            <i class="fas fa-cog"></i> Go to Dashboard
+                        </a>
+                    </div>
+                {% else %}
+                    {# Gamer Actions #}
+                    {% if registration %}
+                        {# Sleek, minimal entry ticket for registered users #}
+                        <div class="registered-ticket-box">
+                            <h4><i class="fas fa-check-circle text-success pulse-icon"></i> Entry Secured</h4>
+                            <p>You are on the official tournament roster.</p>
+                        </div>
+                    {% elif competition.status == 'registration_open' %}
+                        {% if not competition.is_registration_full %}
+                            <div class="join-box">
+                                <div class="join-price">
+                                    {% if competition.entry_fee > 0 %}
+                                        KES {{ competition.entry_fee }}
+                                    {% else %}
+                                        Free Entry
+                                    {% endif %}
+                                </div>
+                                <button class="btn-primary-action w-100 detail-register-btn" data-competition-id="{{ competition.slug }}">
+                                    <i class="fas fa-ticket-alt"></i> Join Tournament
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="registered-ticket-box full">
+                                <h4><i class="fas fa-ban text-danger"></i> Roster Full</h4>
+                                <p>No more slots available.</p>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Sleek Navigation Tabs                                                #}
+    {# ------------------------------------------------------------------ #}
+    <div class="comp-tabs-container">
+        <button class="comp-tab-btn active" data-target="overview">
+            <i class="fas fa-info-circle"></i> Overview
+        </button>
+        <button class="comp-tab-btn" data-target="participants">
+            <i class="fas fa-users"></i> Participants <span class="tab-count">{{ participants|length }}/{{ competition.max_participants }}</span>
+        </button>
+        <button class="comp-tab-btn" data-target="bracket">
+            <i class="fas fa-sitemap"></i> Bracket/Results
+        </button>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Tab Contents                                                         #}
+    {# ------------------------------------------------------------------ #}
+    <div class="comp-tab-content-area">
+        
+        {# TAB: OVERVIEW (Now structured as a pure Grid for perfect horizontal alignment) #}
+        <div class="comp-tab-pane active" id="tab-overview">
+            <div class="overview-grid">
+                
+                {# ROW 1 #}
+                <div class="content-box">
+                    <h3 class="box-title">About Tournament</h3>
+                    <p class="box-text">{{ competition.description|linebreaksbr }}</p>
+                </div>
+
+                <div class="content-box">
+                    <h3 class="box-title">Tournament Format</h3>
+                    <div class="meta-2x2-grid">
+                        <div class="meta-box">
+                            <span class="meta-label">Capacity</span>
+                            <strong class="meta-val"><i class="fas fa-users text-primary"></i> {{ competition.max_participants }} Players</strong>
+                        </div>
+                        <div class="meta-box">
+                            <span class="meta-label">Team Size</span>
+                            <strong class="meta-val"><i class="fas fa-user text-primary"></i> 1v1</strong>
+                        </div>
+                        <div class="meta-box">
+                            <span class="meta-label">Prize Type</span>
+                            <strong class="meta-val">
+                                {% if competition.prize_type == 'points' %}<i class="fas fa-star text-warning"></i> XP Points
+                                {% elif competition.prize_type == 'money' %}<i class="fas fa-money-bill-wave text-success"></i> Cash
+                                {% else %}<i class="fas fa-gift text-info"></i> Gift{% endif %}
+                            </strong>
+                        </div>
+                        <div class="meta-box">
+                            <span class="meta-label">Format</span>
+                            <strong class="meta-val"><i class="fas fa-trophy text-primary"></i> Elimination</strong>
+                        </div>
+                    </div>
+                </div>
+
+                {# ROW 2 #}
+                <div class="content-box">
+                    <h3 class="box-title">Rules & Guidelines</h3>
+                    <div class="rules-box">
+                        {{ competition.get_full_rules|linebreaks }}
+                    </div>
+                </div>
+
+                <div class="content-box bg-gradient-light">
+                    <h3 class="box-title">Prize Pool</h3>
+                    <div class="prize-pool-list">
+                        <div class="prize-tier tier-1">
+                            <div class="tier-medal"><i class="fas fa-medal" style="color: #FFD700;"></i> 1st</div>
+                            <div class="tier-reward">
+                                {% if competition.prize_type == 'points' %}{{ competition.points_1st }} XP
+                                {% elif competition.prize_type == 'money' %}KES {{ competition.prize_money_1st|default:"0" }}
+                                {% else %}{{ competition.gift_1st|default:"TBA" }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="prize-tier tier-2">
+                            <div class="tier-medal"><i class="fas fa-medal" style="color: #C0C0C0;"></i> 2nd</div>
+                            <div class="tier-reward">
+                                {% if competition.prize_type == 'points' %}{{ competition.points_2nd }} XP
+                                {% elif competition.prize_type == 'money' %}KES {{ competition.prize_money_2nd|default:"0" }}
+                                {% else %}{{ competition.gift_2nd|default:"TBA" }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="prize-tier tier-3">
+                            <div class="tier-medal"><i class="fas fa-medal" style="color: #CD7F32;"></i> 3rd</div>
+                            <div class="tier-reward">
+                                {% if competition.prize_type == 'points' %}{{ competition.points_3rd }} XP
+                                {% elif competition.prize_type == 'money' %}KES {{ competition.prize_money_3rd|default:"0" }}
+                                {% else %}{{ competition.gift_3rd|default:"TBA" }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {# TAB: PARTICIPANTS #}
+        <div class="comp-tab-pane" id="tab-participants">
+            <div class="content-box">
+                <div class="roster-header">
+                    <h3 class="box-title m-0">Registered Roster</h3>
+                    <span class="roster-count">{{ participants|length }}/{{ competition.max_participants }} Filled</span>
+                </div>
+
+                {% if participants %}
+                    <div class="roster-list">
+                        {% for p in participants %}
+                        <div class="roster-row">
+                            <div class="roster-gamer">
+                                <div class="roster-avatar">
+                                    {% if p.gamer.avatar %}
+                                        <img src="{{ p.gamer.avatar.url }}" alt="{{ p.gamer.user.username }}">
+                                    {% else %}
+                                        <i class="fas fa-user"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="roster-info">
+                                    <strong>{{ p.gamer.custom_username|default:p.gamer.user.username }}</strong>
+                                    <span>Joined {{ p.registration_time|date:"M j" }}</span>
+                                </div>
+                            </div>
+                            <div class="roster-status">
+                                {% if p.checked_in %}
+                                    <span class="status-badge checked-in"><i class="fas fa-check-circle"></i> Checked In</span>
+                                {% else %}
+                                    <span class="status-badge pending"><i class="fas fa-clock"></i> Pending</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state-box">
+                        <i class="fas fa-users-slash"></i>
+                        <p>No gamers have registered yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Shop Owner Tools inside Participants Tab #}
+            {% if is_shop_owner_of_competition and competition.status == 'registration_closed' %}
+                <div class="admin-tools-box mt-4">
+                    <h3 class="box-title"><i class="fas fa-clipboard-check"></i> Check-in Management</h3>
+                    <p class="text-muted text-sm mb-3">Verify gamers as they arrive using their unique access codes.</p>
+                    
+                    <div class="verify-input-group">
+                        <input type="text" id="verifyCodeInput" class="premium-input" placeholder="Enter Gamer Access Code">
+                        <button class="btn-primary-action comp-verify-btn" onclick="competitionDetail.verifyGamer()">
+                            Verify Gamer
+                        </button>
+                    </div>
+                    <div id="verifyFeedback" class="verify-feedback mt-2"></div>
+
+                    {% if participants %}
+                        <button class="btn-success-action w-100 mt-4" onclick="competitionDetail.submitCheckins()">
+                            <i class="fas fa-flag-checkered"></i> Start Tournament (Lock Check-ins)
+                        </button>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        {# TAB: BRACKET/RESULTS #}
+        <div class="comp-tab-pane" id="tab-bracket">
+            <div class="content-box text-center py-5">
+                <div class="empty-state-box">
+                    <i class="fas fa-sitemap mb-3" style="font-size: 3rem; color: var(--primary-light);"></i>
+                    <h3 class="box-title">Tournament Bracket</h3>
+                    <p class="text-muted">Brackets and final results will appear here once the tournament begins.</p>
+                </div>
+            </div>
+
+            {# Shop Owner Results Submission #}
+            {% if is_shop_owner_of_competition and competition.status == 'ongoing' %}
+                <div class="admin-tools-box mt-4">
+                    <h3 class="box-title"><i class="fas fa-trophy"></i> Submit Final Results</h3>
+                    <p class="text-muted text-sm mb-3">Enter the final rankings for all checked-in participants.</p>
+                    
+                    <form id="submitResultsForm">
+                        <div class="results-table-wrapper">
+                            <table class="premium-table w-100">
+                                <thead>
+                                    <tr>
+                                        <th>Gamer</th>
+                                        <th width="120">Rank (1-{{ competition.max_participants }})</th>
+                                        <th width="100" class="text-center">No-Show</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in participants %}
+                                        {% if p.checked_in %}
+                                        <tr>
+                                            <td>
+                                                <div class="roster-gamer">
+                                                    <div class="roster-avatar small">
+                                                        {% if p.gamer.avatar %}<img src="{{ p.gamer.avatar.url }}">
+                                                        {% else %}<i class="fas fa-user"></i>{% endif %}
+                                                    </div>
+                                                    <strong>{{ p.gamer.custom_username|default:p.gamer.user.username }}</strong>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="premium-input text-center result-rank-input" 
+                                                       name="rank_{{ p.gamer.id }}" data-gamer-id="{{ p.gamer.id }}" min="1">
+                                            </td>
+                                            <td class="text-center">
+                                                <label class="custom-checkbox">
+                                                    <input type="checkbox" class="result-noshow-input" 
+                                                           name="noshow_{{ p.gamer.id }}" data-gamer-id="{{ p.gamer.id }}" 
+                                                           onchange="competitionDetail.toggleNoShow(this)">
+                                                    <span class="checkmark mx-auto"></span>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="btn-success-action w-100 mt-4" onclick="competitionDetail.submitResults()">
+                            <i class="fas fa-paper-plane"></i> Submit Final Results
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const COMP_DETAIL_CONFIG = {
+        competitionId: "{{ competition.slug }}",
+        registerUrl: "{% url 'competitions:register' competition.slug %}",
+        verifyUrl: "{% url 'competitions:shop_owner_verify_gamer' competition.slug %}",
+        submitCheckinsUrl: "{% url 'competitions:shop_owner_submit_checkins' competition.slug %}",
+        submitResultsUrl: "{% url 'competitions:shop_owner_submit_results' competition.slug %}",
+        csrfToken: "{{ csrf_token }}",
+        isShopOwner: {{ is_shop_owner_of_competition|yesno:'true,false' }},
+        status: "{{ competition.status }}",
+    };
+</script>
+<script src="{% static 'competitions/js/competition_detail.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,539 @@
+/* ==========================================================================
+   gamer_competitions.css
+   Full "My Competitions" page styles for the gamer dashboard.
+   ========================================================================== */
+
+/* ------------------------------------------------------------------
+   Wrapper
+   ------------------------------------------------------------------ */
+.my-comp-wrapper {
+    padding: 0 0 40px 0;
+}
+
+/* ------------------------------------------------------------------
+   Header
+   ------------------------------------------------------------------ */
+.my-comp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.my-comp-title {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.my-comp-title i {
+    color: var(--primary-color);
+}
+
+.my-comp-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 4px 0 0 0;
+}
+
+.btn-browse-competitions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-browse-competitions:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+    color: #fff;
+}
+
+/* ------------------------------------------------------------------
+   KPI Cards
+   ------------------------------------------------------------------ */
+.my-comp-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.my-comp-kpi-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e8e8e8);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.my-comp-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+}
+
+.kpi-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.kpi-blue   { background: rgba(53,168,240,0.12); color: var(--primary-color); }
+.kpi-green  { background: rgba(16,185,129,0.12); color: #10B981; }
+.kpi-gold   { background: rgba(255,215,0,0.15);  color: #e6a800; }
+.kpi-purple { background: rgba(102,16,242,0.12); color: #6610f2; }
+
+.kpi-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.kpi-value {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.kpi-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------------
+   Tab Navigation
+   ------------------------------------------------------------------ */
+.my-comp-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border-color, #e8e8e8);
+    padding-bottom: 0;
+}
+
+.my-comp-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    border-radius: 8px 8px 0 0;
+}
+
+.my-comp-tab:hover {
+    color: var(--primary-color);
+    background: rgba(53,168,240,0.06);
+}
+
+.my-comp-tab.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 12px;
+    background: var(--bg-secondary, #f0f0f0);
+    color: var(--text-secondary);
+}
+
+.my-comp-tab.active .tab-badge {
+    background: rgba(53,168,240,0.15);
+    color: var(--primary-color);
+}
+
+/* ------------------------------------------------------------------
+   Tab Content
+   ------------------------------------------------------------------ */
+.my-comp-tab-content {
+    display: none;
+}
+
+.my-comp-tab-content.active {
+    display: block;
+}
+
+/* ------------------------------------------------------------------
+   Competition List
+   ------------------------------------------------------------------ */
+.my-comp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ------------------------------------------------------------------
+   Competition Card
+   ------------------------------------------------------------------ */
+.my-comp-card {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.my-comp-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.09);
+}
+
+/* Left Image */
+.my-comp-card-img {
+    width: 120px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--primary-color), #7FDBFF);
+    overflow: hidden;
+}
+
+.my-comp-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.my-comp-img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: rgba(255,255,255,0.4);
+    min-height: 120px;
+}
+
+/* Center Body */
+.my-comp-card-body {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.my-comp-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Status Badges */
+.my-comp-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.my-comp-status--registration_open   { background: rgba(16,185,129,0.1);  color: #10B981; }
+.my-comp-status--approved            { background: rgba(53,168,240,0.1);  color: var(--primary-color); }
+.my-comp-status--registration_closed { background: rgba(102,16,242,0.1); color: #6610f2; }
+.my-comp-status--ongoing             { background: rgba(240,53,75,0.1);   color: #F0354B; }
+.my-comp-status--completed           { background: rgba(16,185,129,0.1);  color: #10B981; }
+.my-comp-status--checkin_submitted,
+.my-comp-status--results_pending,
+.my-comp-status--results_submitted,
+.my-comp-status--pending_prize_verification { background: rgba(253,126,20,0.1); color: #fd7e14; }
+
+.my-comp-age-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(240,53,75,0.1);
+    color: #F0354B;
+}
+
+.my-comp-card-title {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-comp-card-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.my-comp-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.my-comp-meta i {
+    color: var(--primary-color);
+    font-size: 11px;
+    width: 12px;
+}
+
+/* Unique Code Row */
+.my-comp-code-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    background: var(--bg-secondary, #f5f5f5);
+    border: 1px dashed var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.my-comp-code-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.my-comp-code-label i {
+    color: var(--primary-color);
+}
+
+.my-comp-code-value {
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-comp-copy-btn {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.my-comp-copy-btn:hover { opacity: 0.85; }
+
+.my-comp-code-expired {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #10B981;
+    font-weight: 600;
+}
+
+/* Prize Preview */
+.my-comp-prize-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.prize-points { background: rgba(53,168,240,0.1);  color: var(--primary-color); }
+.prize-money  { background: rgba(16,185,129,0.1);  color: #10B981; }
+.prize-gift   { background: rgba(102,16,242,0.1); color: #6610f2; }
+
+/* Result Summary */
+.my-comp-result-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.result-win          { background: rgba(255,215,0,0.12); color: #e6a800; }
+.result-participated { background: rgba(53,168,240,0.1); color: var(--primary-color); }
+.result-noshow       { background: rgba(240,53,75,0.08); color: #F0354B; }
+
+.result-xp {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #10B981;
+    margin-left: 4px;
+}
+
+.my-comp-result-pending {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #fd7e14;
+    font-weight: 600;
+}
+
+/* Right Actions */
+.my-comp-card-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    border-left: 1px solid var(--border-color, #e8e8e8);
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+.my-comp-action-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    text-align: center;
+    width: 100%;
+}
+
+.my-comp-action-btn i {
+    font-size: 16px;
+}
+
+.my-comp-action-btn--view {
+    background: var(--bg-secondary, #f5f5f5);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color, #e0e0e0);
+}
+
+.my-comp-action-btn--view:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.my-comp-action-btn--results {
+    background: rgba(255,215,0,0.12);
+    color: #e6a800;
+    border: 1px solid rgba(255,215,0,0.3);
+}
+
+.my-comp-action-btn--results:hover {
+    background: rgba(255,215,0,0.2);
+    color: #e6a800;
+}
+
+.my-comp-checkedin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #10B981;
+    text-align: center;
+}
+
+/* ------------------------------------------------------------------
+   Empty State
+   ------------------------------------------------------------------ */
+.my-comp-empty {
+    padding: 60px 20px;
+}
+
+/* ------------------------------------------------------------------
+   Pulse Dot
+   ------------------------------------------------------------------ */
+.pulse-dot { animation: pulseDot 1.5s infinite; }
+@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+    .my-comp-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .my-comp-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .my-comp-card {
+        flex-direction: column;
+    }
+
+    .my-comp-card-img {
+        width: 100%;
+        height: 120px;
+    }
+
+    .my-comp-card-actions {
+        flex-direction: row;
+        border-left: none;
+        border-top: 1px solid var(--border-color, #e8e8e8);
+        padding: 12px 16px;
+        justify-content: flex-end;
+    }
+
+    .my-comp-action-btn {
+        flex-direction: row;
+        width: auto;
+        padding: 8px 16px;
+    }
+}

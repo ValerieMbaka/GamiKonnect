@@ -1,0 +1,143 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %} Edit Profile · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_profile_edit.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_settings.css' %}">
+{% endblock %}
+
+{% block content %}
+	<section class="settings-header">
+        <div class="settings-header-content">
+            <div class="settings-header-info">
+                <h1><i class="fas fa-user-edit"></i> Edit Profile</h1>
+                <p>Update your profile information and gaming preferences</p>
+            </div>
+            <div class="settings-header-actions">
+                <a href="{% url 'accounts:gamer_settings' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Settings
+                </a>
+            </div>
+        </div>
+	</section>
+
+	<div class="settings-content">
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <h2><i class="fas fa-user-edit"></i> Edit Profile</h2>
+                <p>Update your profile information and gaming preferences</p>
+            </div>
+
+            <div class="settings-section-body">
+                <form method="post" enctype="multipart/form-data" class="settings-form" id="editProfileForm" data-url="{% url 'accounts:gamer_profile_edit' %}">
+                    {% csrf_token %}
+	                <div class="form-section">
+		                <h3 class="section-title"><i class="fas fa-user"></i> Personal Information</h3>
+		                <div class="form-group">
+			                <label for="id_profile_picture">Profile Picture</label>
+			                <div class="profile-picture-upload">
+				                <div class="current-picture">
+					                <img src="{% if gamer.profile_picture %}{{ gamer.profile_picture.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}"
+					                     alt="Current Profile Picture" id="currentProfilePic">
+				                </div>
+				                <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*">
+                                <label for="id_profile_picture" class="upload-btn">
+                                    <i class="fas fa-camera"></i> Change Picture
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_custom_username">Username <span class="required">*</span></label>
+                            <div class="username-input-group">
+                                          <input type="text" name="custom_username" id="id_custom_username"
+                                              value="{% if gamer.custom_username %}{{ gamer.custom_username }}{% endif %}"
+                                              data-original-username="{% if gamer.custom_username %}{{ gamer.custom_username }}{% endif %}"
+                                    placeholder="Enter your username" required>
+                                <button type="button" id="generateUsernameBtn" class="generate-btn">
+                                    <i class="fas fa-dice"></i>
+	                                <span>Generate</span>
+                                </button>
+                            </div>
+                            <div id="custom_username-error" class="error-message"></div>
+	                        <small>This is your unique username on {{ project_detail.title }} (3-15 characters, letters/numbers/underscores only)</small>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_bio">Bio <span class="required">*</span></label>
+                                <input type="text" name="bio" id="id_bio"
+                                   value="{% if gamer.bio and gamer.bio != 'Bio' %}{{ gamer.bio }}{% endif %}"
+                                    placeholder="Tell us about yourself in one line" required>
+                                <div id="bio-error" class="error-message"></div>
+	                            <small>A short description about yourself (10-160 characters)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_location">Location <span class="required">*</span></label>
+                                <input type="text" name="location" id="id_location"
+                                   value="{% if gamer.location %}{{ gamer.location }}{% endif %}"
+                                   placeholder="Your location" required>
+                                <small>Where are you located?</small>
+                            </div>
+                        </div>
+
+	                    <div class="form-group">
+		                    <label for="id_about">About <small class="text-muted">(optional)</small></label>
+                            <textarea name="about" id="id_about" rows="4"
+                                  placeholder="Tell us more about yourself, your gaming experience, and what you're looking for in the community">{% if gamer.about and gamer.about != 'About' %}{{ gamer.about }}{% endif %}</textarea>
+                            <div class="char-counter">
+                                <span id="aboutCounter">0</span>/500
+                            </div>
+                            <small>Tell us more about yourself (30-500 characters)</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title"><i class="fas fa-gamepad"></i> Gaming Preferences</h3>
+                        <div class="form-group">
+                            <label>Gaming Platforms <span class="required">*</span></label>
+                            <small class="form-text">Select platform categories; Console is expanded into specific consoles.</small>
+                            <div class="chips" id="platformsTagsEdit" data-existing-platforms='{{ gamer.platforms|safe }}'></div>
+                            <input type="hidden" name="platforms" id="id_platforms" value="{{ gamer.platforms|safe }}">
+                            <div id="platforms-error" class="error-message"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="games_input">Games <span class="required">*</span></label>
+                            <div class="games-input-container single-column">
+                                <input type="text" id="games_input" placeholder="Search for a game..." autocomplete="off">
+                                <div id="gameSuggestionsEdit" class="game-suggestions" aria-label="Game suggestions" style="display:none"></div>
+                                <small class="form-text">Enter adds first match or creates custom suggestion.</small>
+                            </div>
+                            <div class="selected-games-wrapper">
+                                <div class="chips" id="selectedGames">
+                                    {% for game in gamer.games.all %}
+                                        <span class="chip active" data-existing="true">{{ game.name }} <span class="remove" data-game="{{ game.name }}">×</span></span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <input type="hidden" name="games" id="id_games" value="{% for game in gamer.games.all %}{{ game.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+                            <div id="games-error" class="error-message"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="editProfileSubmitBtn">
+                            <i class="fas fa-save"></i> <span>Save Changes</span>
+                        </button>
+                        <a href="{% url 'accounts:gamer_settings' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'accounts/js/gamers/gamer_profile_edit.js' %}"></script>
+{% endblock %}

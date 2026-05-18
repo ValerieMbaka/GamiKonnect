@@ -1,0 +1,152 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %} {{ gamer.custom_username|default:gamer.first_name }}'s Profile · {{ project_detail.title }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/gamers/gamer_public_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+	<section class="profile-header-wrapper card-modern shadow-sm anim-fade-in-up mb-4">
+        <div class="profile-header-grid">
+            <div class="profile-avatar-column">
+                <div class="profile-avatar-container">
+                    <img src="{% if gamer.profile_picture %}{{ gamer.profile_picture.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}"
+                         alt="Profile Avatar" class="profile-main-avatar">
+                </div>
+                <div class="profile-info text-center mt-3">
+                    <div class="profile-name-wrapper d-flex justify-content-center align-items-center gap-2 mb-1">
+                        <h1 class="profile-name h4 fw-bold m-0 text-white">
+                            {% if gamer.first_name or gamer.last_name %}
+                                {{ gamer.first_name }} {{ gamer.last_name }}
+                            {% else %}
+                                {{ gamer.custom_username|default:gamer.email }}
+                            {% endif %}
+                        </h1>
+                        <span class="verified-badge bg-white text-primary rounded-circle p-1 d-flex" title="Verified Account">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    </div>
+                    <p class="profile-username text-white-50 small mb-2">
+                        {% if gamer.custom_username %}@{{ gamer.custom_username }}{% else %}@gamer{% endif %}
+                    </p>
+
+                    {% if gamer.gamer_level %}
+                    <div class="profile-level-badge mb-2" data-level-color="{{ gamer.gamer_level.level.color_hex }}">
+                        {% if gamer.gamer_level.level.badge_image %}
+                            <img src="{{ gamer.gamer_level.level.badge_image.url }}"
+                                 alt="{{ gamer.gamer_level.level.name }}" width="32">
+                        {% endif %}
+                        {{ gamer.gamer_level.level.name }}
+                    </div>
+                    {% endif %}
+
+                    <p class="profile-title text-white mb-3">
+                        {% if gamer.bio and gamer.bio != "Bio" %}{{ gamer.bio }}{% else %}Gaming Enthusiast{% endif %}
+                    </p>
+                    <div class="d-flex justify-content-center gap-3 text-white-50 small">
+                        <div class="profile-location">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            <span>{% if gamer.location %}{{ gamer.location }}{% else %}Location not set{% endif %}</span>
+                        </div>
+                        <div class="profile-join-date">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            <span>Joined {{ gamer.date_joined|date:"M Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-content-column">
+                <div class="profile-cover-section rounded-3 overflow-hidden mb-4">
+                    <div class="profile-cover-container">
+                        <img src="{% static 'core/images/gameroom1.jpeg' %}" alt="Profile Cover" class="profile-cover-image w-100 object-fit-cover public-profile-cover-image">
+                    </div>
+                </div>
+
+                <div class="performance-stats-section bg-white bg-opacity-10 p-4 rounded-3 backdrop-blur">
+                    <h3 class="section-title h6 text-white text-uppercase letter-spacing-1 mb-3">Performance Stats</h3>
+                    <div class="stats-grid-horizontal">
+	                    <div class="stat-item-horizontal win-rate">
+                            <div class="stat-content d-flex justify-content-between mb-2 text-white">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-trophy text-warning"></i>
+                                    <span class="stat-label">Win Rate</span>
+                                </div>
+                                <div class="stat-value fw-bold">87% <span class="text-success small ms-2"><i class="fas fa-arrow-up"></i> 2%</span></div>
+                            </div>
+                            <div class="progress bg-white bg-opacity-25 profile-progress">
+                                <div class="progress-bar bg-warning profile-progress-bar" role="progressbar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</section>
+
+	<div class="profile-content anim-fade-in-up anim-delay-100">
+        <section class="profile-card card-modern shadow-sm">
+            <div class="card-header border-bottom border-light pb-3 mb-4">
+                <h2 class="h5 m-0 fw-bold"><i class="fas fa-user text-primary me-2"></i>About Gamer</h2>
+            </div>
+            <div class="card-body">
+                <div class="user-details-grid row g-4">
+                    <div class="user-detail-section col-md-6 border-end border-light pe-md-4">
+                        <h3 class="detail-title h6 text-muted text-uppercase mb-3"><i class="fas fa-info-circle me-2"></i> About</h3>
+                        <p class="detail-content m-0">
+                            {% if gamer.about and gamer.about != "About" %}{{ gamer.about }}{% else %}No about information provided yet.{% endif %}
+                        </p>
+                    </div>
+                    <div class="user-detail-section col-md-6 ps-md-4">
+                        <h3 class="detail-title h6 text-muted text-uppercase mb-3"><i class="fas fa-gamepad me-2"></i> Games</h3>
+                        <div class="detail-content d-flex flex-wrap gap-2">
+                            {% if gamer.games.all %}
+                                {% for game in gamer.games.all %}
+                                    <span class="badge bg-secondary border text-primary px-3 py-2 rounded-pill">{{ game.name }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">No games added yet.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="profile-card card-modern shadow-sm mt-4">
+            <div class="card-header border-bottom border-light pb-3 mb-4">
+                <h2 class="h5 m-0 fw-bold"><i class="fas fa-medal text-warning me-2"></i>Achievements</h2>
+            </div>
+            <div class="card-body">
+                <div class="achievements-grid row g-3">
+                    {% for ga in earned_achievements %}
+                    <div class="col-md-4">
+                        <div class="achievement-item d-flex align-items-center gap-3 p-3 border rounded">
+                            <div class="achievement-icon">
+                                {% if ga.achievement.badge_image %}
+                                    <img src="{{ ga.achievement.badge_image.url }}" alt="{{ ga.achievement.name }}" width="48">
+                                {% else %}
+                                    <i class="fas fa-certificate fa-2x text-warning"></i>
+                                {% endif %}
+                            </div>
+                            <div class="achievement-info">
+                                <h4 class="h6 mb-1 fw-bold">{{ ga.achievement.name }}</h4>
+                                <p class="small text-muted mb-0">{{ ga.earned_at|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <p class="text-muted text-center py-4">No achievements earned yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+	</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'accounts/js/gamers/gamer_public_profile.js' %}"></script>
+{% endblock %}

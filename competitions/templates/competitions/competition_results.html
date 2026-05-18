@@ -1,0 +1,284 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}{{ competition.name }} — My Result · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'competitions/css/competition_common.css' %}">
+    <link rel="stylesheet" href="{% static 'competitions/css/gamer_competition_result.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="result-wrapper anim-fade-in">
+
+    {# ------------------------------------------------------------------ #}
+    {# Back Navigation                                                      #}
+    {# ------------------------------------------------------------------ #}
+    <div class="result-nav">
+        <a href="{% url 'competitions:gamer_competitions' %}" class="result-back-btn">
+            <i class="fas fa-arrow-left"></i> My Competitions
+        </a>
+        <span class="result-competition-label">
+            <i class="fas fa-trophy"></i> {{ competition.name }}
+        </span>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Result Hero — Personal Outcome                                       #}
+    {# ------------------------------------------------------------------ #}
+    <section class="result-hero component-card
+        {% if result.is_win %}result-hero--win
+        {% elif result.is_no_show %}result-hero--noshow
+        {% else %}result-hero--participated{% endif %}">
+
+        <div class="result-hero-bg">
+            {% if competition.game.image %}
+                <img src="{{ competition.game.image.url }}" alt="{{ competition.game.name }}" class="result-hero-img">
+            {% endif %}
+            <div class="result-hero-overlay"></div>
+        </div>
+
+        <div class="result-hero-content">
+            <div class="result-hero-rank">
+                {% if result.is_no_show %}
+                    <div class="result-rank-icon result-rank-icon--noshow">
+                        <i class="fas fa-times"></i>
+                    </div>
+                {% elif result.rank == 1 %}
+                    <div class="result-rank-icon result-rank-icon--gold">🥇</div>
+                {% elif result.rank == 2 %}
+                    <div class="result-rank-icon result-rank-icon--silver">🥈</div>
+                {% elif result.rank == 3 %}
+                    <div class="result-rank-icon result-rank-icon--bronze">🥉</div>
+                {% else %}
+                    <div class="result-rank-icon result-rank-icon--default">
+                        <span>#{{ result.rank }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="result-hero-info">
+                {% if result.is_no_show %}
+                    <h1 class="result-hero-title">No-Show Recorded</h1>
+                    <p class="result-hero-subtitle">You were registered but didn't make it to {{ competition.name }}.</p>
+                {% elif result.is_win %}
+                    <h1 class="result-hero-title">
+                        {% if result.rank == 1 %}Champion!
+                        {% elif result.rank == 2 %}Runner-Up!
+                        {% elif result.rank == 3 %}Third Place!
+                        {% endif %}
+                    </h1>
+                    <p class="result-hero-subtitle">Outstanding performance at {{ competition.name }}!</p>
+                {% else %}
+                    <h1 class="result-hero-title">Rank #{{ result.rank }}</h1>
+                    <p class="result-hero-subtitle">You competed in {{ competition.name }}. Keep pushing!</p>
+                {% endif %}
+
+                {% if not result.is_no_show and competition.prize_type == 'points' %}
+                <div class="result-xp-earned">
+                    <i class="fas fa-star"></i>
+                    <span>+{{ result.points_awarded }} XP Earned</span>
+                </div>
+                {% elif not result.is_no_show and competition.prize_type == 'money' and result.is_win %}
+                <div class="result-xp-earned result-xp-earned--money">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Cash Prize — Contact shop for details</span>
+                </div>
+                {% elif not result.is_no_show and competition.prize_type == 'gift' and result.is_win %}
+                <div class="result-xp-earned result-xp-earned--gift">
+                    <i class="fas fa-gift"></i>
+                    <span>Gift Prize — Contact shop for details</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    {# ------------------------------------------------------------------ #}
+    {# Main Content Grid                                                    #}
+    {# ------------------------------------------------------------------ #}
+    <div class="result-grid">
+
+        {# ---- Left Column -------------------------------------------- #}
+        <div class="result-main">
+
+            {# Full Leaderboard #}
+            <section class="result-section component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-list-ol"></i> <span>Final Leaderboard</span></h2>
+                    <span class="result-total-badge">
+                        {{ results|length }} Participant{{ results|length|pluralize }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="result-leaderboard">
+                        {% for r in results %}
+                        <div class="result-leaderboard-row
+                            {% if r.gamer == gamer %}result-leaderboard-row--self{% endif %}
+                            {% if r.rank == 1 %}result-leaderboard-row--gold{% endif %}
+                            {% if r.rank == 2 %}result-leaderboard-row--silver{% endif %}
+                            {% if r.rank == 3 %}result-leaderboard-row--bronze{% endif %}
+                            {% if r.is_no_show %}result-leaderboard-row--noshow{% endif %}">
+
+                            <div class="lb-rank">
+                                {% if r.is_no_show %}
+                                    <i class="fas fa-times-circle" style="color:#F0354B; font-size:18px;"></i>
+                                {% elif r.rank == 1 %}🥇
+                                {% elif r.rank == 2 %}🥈
+                                {% elif r.rank == 3 %}🥉
+                                {% else %}
+                                    <span class="lb-rank-num">#{{ r.rank }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="lb-gamer">
+                                <span class="lb-gamer-name">
+                                    {{ r.gamer.custom_username|default:r.gamer.first_name }}
+                                    {% if r.gamer == gamer %}
+                                        <span class="lb-you-badge">You</span>
+                                    {% endif %}
+                                </span>
+                                {% if r.is_no_show %}
+                                    <span class="lb-noshow-tag">No-show</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="lb-points">
+                                {% if not r.is_no_show %}
+                                    {% if competition.prize_type == 'points' %}
+                                        <span class="lb-xp {% if r.gamer == gamer %}lb-xp--self{% endif %}">
+                                            +{{ r.points_awarded }} XP
+                                        </span>
+                                    {% elif r.is_win %}
+                                        <span class="lb-prize-badge">
+                                            {% if competition.prize_type == 'money' %}
+                                                <i class="fas fa-money-bill-wave"></i> Prize
+                                            {% elif competition.prize_type == 'gift' %}
+                                                <i class="fas fa-gift"></i> Prize
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="lb-zero">0 XP</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        {# ---- Right Sidebar ------------------------------------------ #}
+        <div class="result-sidebar">
+
+            {# Personal Stats Card #}
+            <div class="result-card component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-user-chart"></i> <span>Your Stats</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="result-stats-list">
+                        <div class="result-stat-item">
+                            <span class="result-stat-label">Final Rank</span>
+                            <span class="result-stat-value">
+                                {% if result.is_no_show %}—
+                                {% else %}#{{ result.rank }}{% endif %}
+                            </span>
+                        </div>
+                        <div class="result-stat-item">
+                            <span class="result-stat-label">XP Earned</span>
+                            <span class="result-stat-value result-stat-value--xp">
+                                +{{ result.points_awarded }} XP
+                            </span>
+                        </div>
+                        <div class="result-stat-item">
+                            <span class="result-stat-label">Result</span>
+                            <span class="result-stat-value">
+                                {% if result.is_no_show %}No-show
+                                {% elif result.is_win %}Win 🏆
+                                {% else %}Participated{% endif %}
+                            </span>
+                        </div>
+                        {% if registration.participation_hours %}
+                        <div class="result-stat-item">
+                            <span class="result-stat-label">Time Participated</span>
+                            <span class="result-stat-value">{{ registration.participation_hours }} hrs</span>
+                        </div>
+                        {% endif %}
+                        <div class="result-stat-item">
+                            <span class="result-stat-label">Total XP</span>
+                            <span class="result-stat-value result-stat-value--total">{{ gamer.points }} XP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Competition Info Card #}
+            <div class="result-card component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-info-circle"></i> <span>Competition Info</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="result-info-list">
+                        <div class="result-info-item">
+                            <span class="result-info-label"><i class="fas fa-gamepad"></i> Game</span>
+                            <span class="result-info-value">{{ competition.game.name }}</span>
+                        </div>
+                        <div class="result-info-item">
+                            <span class="result-info-label"><i class="fas fa-desktop"></i> Platform</span>
+                            <span class="result-info-value">{{ competition.platform.name }}</span>
+                        </div>
+                        <div class="result-info-item">
+                            <span class="result-info-label"><i class="fas fa-store"></i> Venue</span>
+                            <span class="result-info-value">{{ competition.shop.name }}</span>
+                        </div>
+                        <div class="result-info-item">
+                            <span class="result-info-label"><i class="fas fa-map-marker-alt"></i> Location</span>
+                            <span class="result-info-value">{{ competition.shop.city }}</span>
+                        </div>
+                        <div class="result-info-item">
+                            <span class="result-info-label"><i class="fas fa-calendar-alt"></i> Date</span>
+                            <span class="result-info-value">{{ competition.scheduled_time|date:"N j, Y" }}</span>
+                        </div>
+                        <div class="result-info-item">
+                            <span class="result-info-label"><i class="fas fa-users"></i> Participants</span>
+                            <span class="result-info-value">{{ results|length }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# CTA Card #}
+            <div class="result-card component-card">
+                <div class="card-body result-cta-body">
+                    <p class="result-cta-text">
+                        {% if result.is_win %}
+                            Amazing performance! 🎉 Keep competing to climb the rankings.
+                        {% elif result.is_no_show %}
+                            Next time, don't miss out! There are more competitions waiting for you.
+                        {% else %}
+                            Great effort! Every competition brings you closer to the top.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'competitions:list' %}?status=registration_open"
+                       class="result-cta-btn">
+                        <i class="fas fa-search"></i> Find Next Competition
+                    </a>
+                    <a href="{% url 'competitions:gamer_competitions' %}"
+                       class="result-back-link">
+                        <i class="fas fa-arrow-left"></i> Back to My Competitions
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'competitions/js/gamer_competition_result.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,219 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}{{ selected_game.name }} Leaderboard · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'progression/css/leaderboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper anim-fade-in">
+
+    {# ------------------------------------------------------------------ #}
+    {# Page Header                                                          #}
+    {# ------------------------------------------------------------------ #}
+    <div class="lb-header">
+        <div class="lb-header-text">
+            <h1 class="lb-title">
+                {% if selected_game.image %}
+                    <img src="{{ selected_game.image.url }}" alt="{{ selected_game.name }}" class="lb-title-game-img">
+                {% endif %}
+                {{ selected_game.name }} Leaderboard
+            </h1>
+            <p class="lb-subtitle">Gamers ranked by XP earned from {{ selected_game.name }} competitions</p>
+        </div>
+        <div class="lb-header-actions">
+            <a href="{% url 'progression:leaderboard_global' %}" class="lb-btn-secondary">
+                <i class="fas fa-globe"></i> Global Leaderboard
+            </a>
+        </div>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Game Filter                                                          #}
+    {# ------------------------------------------------------------------ #}
+    <div class="lb-game-filter">
+        <a href="{% url 'progression:leaderboard_global' %}" class="lb-game-pill">
+            <i class="fas fa-globe"></i> Global
+        </a>
+        {% for game in games_with_competitions %}
+        <a href="{% url 'progression:leaderboard_game' game.id %}"
+           class="lb-game-pill {% if game == selected_game %}lb-game-pill--active{% endif %}">
+            {% if game.image %}<img src="{{ game.image.url }}" alt="{{ game.name }}">{% endif %}
+            {{ game.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="lb-grid">
+
+        {# ---- Left: Full Leaderboard ---------------------------------- #}
+        <div class="lb-main">
+
+            {# Gamer's own game rank #}
+            {% if gamer and gamer_rank %}
+            <div class="lb-your-rank component-card">
+                <div class="lb-your-rank-left">
+                    <span class="lb-your-rank-label">Your {{ selected_game.name }} Rank</span>
+                    <span class="lb-your-rank-value">#{{ gamer_rank }}</span>
+                </div>
+                <div class="lb-your-rank-right">
+                    {% if gamer.gamer_level %}
+                    <span class="lb-your-level" style="color:{{ gamer.gamer_level.level.color_hex }};">
+                        {{ gamer.gamer_level.level.name }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Leaderboard Table #}
+            <section class="lb-table-section component-card">
+                <div class="lb-table-header">
+                    <span>{{ total_gamers }} Gamer{{ total_gamers|pluralize }} in {{ selected_game.name }}</span>
+                </div>
+                <div class="lb-table">
+                    {% for entry in leaderboard %}
+                    <div class="lb-row
+                        {% if entry.gamer == gamer %}lb-row--self{% endif %}
+                        {% if forloop.counter == 1 and leaderboard.number == 1 %}lb-row--gold{% endif %}
+                        {% if forloop.counter == 2 and leaderboard.number == 1 %}lb-row--silver{% endif %}
+                        {% if forloop.counter == 3 and leaderboard.number == 1 %}lb-row--bronze{% endif %}">
+
+                        <div class="lb-row-rank">
+                            {% if leaderboard.number == 1 %}
+                                {% if forloop.counter == 1 %}🥇
+                                {% elif forloop.counter == 2 %}🥈
+                                {% elif forloop.counter == 3 %}🥉
+                                {% else %}<span class="lb-rank-num">#{{ leaderboard.start_index|add:forloop.counter0 }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="lb-rank-num">#{{ leaderboard.start_index|add:forloop.counter0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="lb-row-avatar">
+                            {% if entry.gamer.profile_picture %}
+                                <img src="{{ entry.gamer.profile_picture.url }}" alt="{{ entry.gamer.custom_username }}">
+                            {% else %}
+                                <div class="lb-avatar-placeholder"><i class="fas fa-user"></i></div>
+                            {% endif %}
+                        </div>
+
+                        <div class="lb-row-info">
+                            <span class="lb-row-username">
+                                {{ entry.gamer.custom_username|default:entry.gamer.first_name }}
+                                {% if entry.gamer == gamer %}
+                                    <span class="lb-you-tag">You</span>
+                                {% endif %}
+                            </span>
+                            {% if entry.gamer.gamer_level %}
+                            <span class="lb-row-level"
+                                  style="color:{{ entry.gamer.gamer_level.level.color_hex }};">
+                                {{ entry.gamer.gamer_level.level.name }}
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="lb-row-xp">
+                            <span class="lb-xp-value">{{ entry.game_xp }}</span>
+                            <span class="lb-xp-label">XP</span>
+                        </div>
+
+                    </div>
+                    {% empty %}
+                    <div class="lb-empty">
+                        <i class="fas fa-gamepad"></i>
+                        <p>No competition results for {{ selected_game.name }} yet.</p>
+                        <a href="{% url 'competitions:list' %}" class="lb-btn-primary mt-3">Browse Competitions</a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if leaderboard.has_other_pages %}
+                <div class="lb-pagination">
+                    <span class="lb-page-info">Page {{ leaderboard.number }} of {{ leaderboard.paginator.num_pages }}</span>
+                    <div class="lb-page-controls">
+                        {% if leaderboard.has_previous %}
+                            <a href="?page={{ leaderboard.previous_page_number }}" class="lb-page-btn"><i class="fas fa-chevron-left"></i></a>
+                        {% else %}
+                            <button class="lb-page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+                        {% endif %}
+                        <span class="lb-page-btn lb-page-btn--active">{{ leaderboard.number }}</span>
+                        {% if leaderboard.has_next %}
+                            <a href="?page={{ leaderboard.next_page_number }}" class="lb-page-btn"><i class="fas fa-chevron-right"></i></a>
+                        {% else %}
+                            <button class="lb-page-btn" disabled><i class="fas fa-chevron-right"></i></button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        {# ---- Right: Top 10 Widget + Levels --------------------------- #}
+        <div class="lb-sidebar">
+            <div class="lb-top10-card component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-fire"></i> <span>Top 10 — {{ selected_game.name }}</span></h2>
+                </div>
+                <div class="card-body p-0">
+                    {% for entry in top_10 %}
+                    <div class="lb-top10-row {% if entry.gamer == gamer %}lb-top10-row--self{% endif %}">
+                        <span class="lb-top10-rank">
+                            {% if forloop.counter == 1 %}🥇
+                            {% elif forloop.counter == 2 %}🥈
+                            {% elif forloop.counter == 3 %}🥉
+                            {% else %}#{{ forloop.counter }}{% endif %}
+                        </span>
+                        <div class="lb-top10-avatar">
+                            {% if entry.gamer.profile_picture %}
+                                <img src="{{ entry.gamer.profile_picture.url }}" alt="">
+                            {% else %}
+                                <div class="lb-top10-avatar-placeholder"><i class="fas fa-user"></i></div>
+                            {% endif %}
+                        </div>
+                        <span class="lb-top10-name">
+                            {{ entry.gamer.custom_username|default:entry.gamer.first_name }}
+                        </span>
+                        <span class="lb-top10-xp">{{ entry.game_xp }} XP</span>
+                    </div>
+                    {% empty %}
+                    <div class="p-4 text-center" style="color:var(--text-secondary); font-size:13px;">No data yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="lb-levels-card component-card hoverable">
+                <div class="card-header component-card-header">
+                    <h2><i class="fas fa-layer-group"></i> <span>Level Guide</span></h2>
+                </div>
+                <div class="card-body p-0">
+                    {% for level in all_levels %}
+                    <div class="lb-level-row
+                        {% if gamer and gamer.gamer_level and gamer.gamer_level.level == level %}lb-level-row--current{% endif %}">
+                        <div class="lb-level-dot" style="background:{{ level.color_hex }};"></div>
+                        <div class="lb-level-info">
+                            <span class="lb-level-name" style="color:{{ level.color_hex }};">{{ level.name }}</span>
+                            <span class="lb-level-xp">≥ {{ level.min_xp }} XP</span>
+                        </div>
+                        {% if level.badge_image %}
+                        <img src="{{ level.badge_image.url }}" alt="{{ level.name }}" class="lb-level-badge">
+                        {% endif %}
+                        {% if gamer and gamer.gamer_level and gamer.gamer_level.level == level %}
+                        <span class="lb-level-current-tag">You</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'progression/js/leaderboard.js' %}"></script>
+{% endblock %}

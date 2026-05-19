@@ -10,6 +10,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count
 import json
 import logging
+import os
 from django.db import transaction
 
 from core.email_service import EmailManager
@@ -26,6 +27,7 @@ from competitions.forms import CompetitionApprovalForm, CompetitionRejectionForm
 from competitions.scheduler import schedule_competition_jobs
 from competitions.services import CompetitionService
 from activities.services import ActivityFeedService
+from notifications.models import NotificationRecipient
 
 # Imports for custom logic
 from .decorators import admin_required
@@ -140,7 +142,17 @@ def admin_dashboard(request):
             'activity_labels': activity_labels,
             'activity_data': activity_data,
             'revenue_data': revenue_data,
-        }
+        },
+        'admin_unread_notifications_count': NotificationRecipient.objects.filter(
+            admin_user=request.user,
+            is_read=False
+        ).count(),
+        'admin_recent_notifications': NotificationRecipient.objects.filter(
+            admin_user=request.user
+        ).select_related('notification').order_by('-created_at')[:5],
+        # Pusher real-time notifications
+        'pusher_key': os.environ.get('PUSHER_KEY', ''),
+        'pusher_cluster': os.environ.get('PUSHER_CLUSTER', ''),
     }
     return render(request, 'admin_panel/base/admin_dashboard.html', context)
 

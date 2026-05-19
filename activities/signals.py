@@ -2,10 +2,12 @@ import logging
 from django.dispatch import Signal, receiver
 from django.db.models.signals import post_save
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from .models import ActivityLog, Level, Activity
 from accounts.models import Gamer
 from competitions.models import CompetitionRegistration, CompetitionResult
 from .models import GamerAchievement
+from notifications.pusher_client import broadcast_activity_feed
 
 logger = logging.getLogger(__name__)
 
@@ -124,3 +126,36 @@ def log_achievement_unlocked(sender, instance, created, **kwargs):
             'achievement_xp': instance.achievement.xp
         }
     )
+
+
+# --- REAL-TIME ACTIVITY BROADCAST VIA PUSHER ---
+@receiver(post_save, sender=ActivityLog)
+def broadcast_activity(sender, instance, created, **kwargs):
+    """
+    Broadcast new activity logs to all connected clients via Pusher.
+    
+    When a new activity is created (achievement unlocked, competition won, etc.),
+    instantly notify all users with a real-time update without page refresh.
+    
+    This receiver is triggered AFTER the ActivityLog is saved to the database,
+    ensuring all related data is available for the broadcast.
+    """
+    if not created:
+        return
+    
+    # Build activity data to broadcast
+    activity_data = {
+        'title': 'Activity Update',
+        'message': instance.description,
+        'activity_type': instance.action_type,
+        'timestamp': instance.created_at.isoformat(),
+    }
+    
+    # Add actor (who performed the action) if available
+    if instance.actor:
+        actor_username = getattr(instance.actor, 'custom_username', None) or getattr(instance.actor, 'username', 'Unknown')
+        activity_data['actor'] = actor_username
+    
+    # Broadcast globally to the activity feed channel
+    # This enables real-time visibility of all system activities
+    broadcast_activity_feed(activity_data)

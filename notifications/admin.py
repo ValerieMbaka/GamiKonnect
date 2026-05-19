@@ -145,12 +145,12 @@ class NotificationRecipientAdmin(admin.ModelAdmin):
         'created_at'
     ]
     list_filter = ['is_read', 'delivery_status', 'created_at', 'notification__category']
-    search_fields = ['notification__title', 'user__custom_username', 'user__email']
-    readonly_fields = ['notification', 'user', 'created_at', 'updated_at']
+    search_fields = ['notification__title', 'gamer__custom_username', 'gamer__email', 'shop_owner__email', 'admin_user__username']
+    readonly_fields = ['notification', 'gamer', 'shop_owner', 'admin_user', 'created_at', 'updated_at']
     
     fieldsets = (
         ('Notification & Recipient', {
-            'fields': ('notification', 'user')
+            'fields': ('notification', 'gamer', 'shop_owner', 'admin_user')
         }),
         ('Read Status', {
             'fields': ('is_read', 'read_at')
@@ -178,12 +178,23 @@ class NotificationRecipientAdmin(admin.ModelAdmin):
     
     def user_link(self, obj):
         """Link to user."""
-        url = reverse('admin:accounts_gamer_change', args=[obj.user.id])
-        return format_html(
-            '<a href="{}">{}</a>',
-            url,
-            obj.user.custom_username
-        )
+        if obj.gamer:
+            url = reverse('admin:accounts_gamer_change', args=[obj.gamer.id])
+            return format_html(
+                '<a href="{}">{}</a>',
+                url,
+                obj.gamer.custom_username
+            )
+        elif obj.shop_owner:
+            url = reverse('admin:accounts_shopowner_change', args=[obj.shop_owner.id])
+            return format_html(
+                '<a href="{}">{}</a>',
+                url,
+                f"{obj.shop_owner.first_name} {obj.shop_owner.last_name}"
+            )
+        elif obj.admin_user:
+            return obj.admin_user.username
+        return "Unknown"
     user_link.short_description = 'User'
     
     def read_status_badge(self, obj):
@@ -224,7 +235,7 @@ class NotificationRecipientAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """Optimize with select_related."""
         qs = super().get_queryset(request)
-        return qs.select_related('notification', 'user')
+        return qs.select_related('notification', 'gamer', 'shop_owner', 'admin_user')
 
 
 @admin.register(NotificationGroup)

@@ -41,7 +41,8 @@ def send_notification_to_users(
     notification,
     user_list,
     send_email=True,
-    send_in_app=True
+    send_in_app=True,
+    user_type='gamer'
 ):
     """
     Send a notification to a list of users.
@@ -49,9 +50,10 @@ def send_notification_to_users(
     
     Args:
         notification: Notification instance
-        user_list: QuerySet or list of Gamer instances
+        user_list: QuerySet or list of user instances (Gamer, ShopOwner, or Account)
         send_email: Whether to send email notifications
         send_in_app: Whether to create in-app notifications
+        user_type: Type of users ('gamer', 'shop_owner', 'admin')
     
     Returns:
         Dict with statistics: {'created': int, 'updated': int, 'failed': int}
@@ -60,18 +62,25 @@ def send_notification_to_users(
         return {'created': 0, 'updated': 0, 'failed': 0}
     
     # Prepare NotificationRecipient records
-    recipients_to_create = []
     stats = {'created': 0, 'updated': 0, 'failed': 0}
     
     for user in user_list:
+        # Create/get NotificationRecipient with appropriate user field
+        recipient_data = {'notification': notification}
+        
+        if user_type == 'gamer':
+            recipient_data['gamer'] = user
+        elif user_type == 'shop_owner':
+            recipient_data['shop_owner'] = user
+        elif user_type == 'admin':
+            recipient_data['admin_user'] = user
+        
         recipient, created = NotificationRecipient.objects.get_or_create(
-            notification=notification,
-            user=user,
+            **recipient_data,
             defaults={'delivery_status': 'pending'}
         )
         
         if created:
-            recipients_to_create.append(recipient)
             stats['created'] += 1
         else:
             stats['updated'] += 1
@@ -87,11 +96,12 @@ def send_notification_to_users(
                 recipient.delivery_status = 'failed'
                 recipient.save(update_fields=['delivery_status'])
                 stats['failed'] += 1
+                logger.error(f"Failed to send email to {user.email}: {str(e)}")
     
     # Update denormalized count
     notification.total_recipients = NotificationRecipient.objects.filter(
         notification=notification
-    ).count()
+    ).exclude(gamer__isnull=True, shop_owner__isnull=True, admin_user__isnull=True).count()
     notification.save(update_fields=['total_recipients'])
     
     return stats

@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{% static 'core/css/base_dashboard_styles.css' %}">
 
     <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shop_owner_dashboard_base.css' %}">
+    <link rel="stylesheet" href="{% static 'notifications/css/notifications.css' %}">
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -47,12 +48,40 @@
             </button>
 
             <div class="nav-dropdown">
-                <button class="nav-icon" title="Notifications" data-tooltip="Notifications" onclick="window.location.href=''">
+                <button class="nav-icon notifications-btn" title="Notifications" data-tooltip="Notifications" id="notification-badge">
                     <i class="fas fa-bell"></i>
                     {% if shop_owner_unread_notifications_count and shop_owner_unread_notifications_count > 0 %}
                         <span class="notification-bubble">{{ shop_owner_unread_notifications_count }}</span>
                     {% endif %}
                 </button>
+                <div class="nav-dropdown-content notifications-dropdown-content">
+                    <div class="dropdown-header">
+                        <h5>Notifications</h5>
+                    </div>
+                    <div class="notifications-list">
+                        {% if shop_owner_recent_notifications %}
+                            {% for notif_recipient in shop_owner_recent_notifications %}
+                            <div class="notification-item {% if not notif_recipient.is_read %}unread{% endif %}">
+                                <div class="notification-content">
+                                    <div class="notification-title">{{ notif_recipient.notification.title }}</div>
+                                    <div class="notification-message">{{ notif_recipient.notification.message|truncatewords:15 }}</div>
+                                    <div class="notification-meta">
+                                        <span class="notification-category">
+                                            <i class="fas fa-tag"></i> {{ notif_recipient.notification.get_category_display }}
+                                        </span>
+                                        <span class="notification-time">{{ notif_recipient.created_at|timesince }} ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>No notifications yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
             <div class="nav-dropdown profile-dropdown">
@@ -186,6 +215,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 
     <script type="application/json" id="django-messages">
         {% if messages %}[
@@ -195,6 +225,18 @@
 
     <script src="{% static 'core/js/toast.js' %}"></script>
     <script src="{% static 'core/js/base_sidebar.js' %}"></script>
+    
+    {% comment %} Pusher Real-time Notifications Configuration {% endcomment %}
+    <script>
+        // Set Pusher credentials from Django settings
+        window.PUSHER_KEY = '{{ pusher_key|default:"" }}';
+        window.PUSHER_CLUSTER = '{{ pusher_cluster|default:"" }}';
+    </script>
+    
+    <script src="{% static 'core/js/pusher-notifications.js' %}"></script>
+    
+    {% comment %} User data for private channel subscription {% endcomment %}
+    <div data-user-id="{{ shop_owner.id }}" data-user-type="shop_owner" style="display:none;"></div>
 
     <script src="{% static 'accounts/js/shop_owners/shop_owner_dashboard_base.js' %}"></script>
 

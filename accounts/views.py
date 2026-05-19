@@ -9,6 +9,7 @@ from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
 import json
 import logging
 import re
+import os
 
 from activities.signals import security_event_triggered
 from activities.models import ActivityLog, Activity
@@ -754,6 +755,9 @@ def gamer_dashboard(request):
             # Notifications
             'gamer_unread_notifications_count': unread_count,
             'gamer_recent_notifications': recent_notifications,
+            # Pusher real-time notifications
+            'pusher_key': os.environ.get('PUSHER_KEY', ''),
+            'pusher_cluster': os.environ.get('PUSHER_CLUSTER', ''),
         }
         return render(request, 'accounts/gamers/gamer_dashboard.html', context)
 
@@ -1211,6 +1215,16 @@ def shop_owner_dashboard(request):
             
             pending_total = pending_shops.count()
             
+            # Add notification context
+            shop_owner_unread_count = NotificationRecipient.objects.filter(
+                shop_owner=shop_owner,
+                is_read=False
+            ).count()
+            
+            shop_owner_recent_notifications = NotificationRecipient.objects.filter(
+                shop_owner=shop_owner
+            ).select_related('notification').order_by('-created_at')[:5]
+            
             context = {
                 **base_site_context(),
                 'shop_owner': shop_owner,
@@ -1224,6 +1238,11 @@ def shop_owner_dashboard(request):
                 'recent_activity_feed': recent_activity_feed,
                 'verification_percent': verification_percent,
                 'inactive_mode': False,
+                'shop_owner_unread_notifications_count': shop_owner_unread_count,
+                'shop_owner_recent_notifications': shop_owner_recent_notifications,
+                # Pusher real-time notifications
+                'pusher_key': os.environ.get('PUSHER_KEY', ''),
+                'pusher_cluster': os.environ.get('PUSHER_CLUSTER', ''),
             }
             return render(request, 'accounts/shop_owners/shop_owner_dashboard.html', context)
         except ShopOwner.DoesNotExist:

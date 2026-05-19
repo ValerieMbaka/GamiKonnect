@@ -24,6 +24,9 @@ env_file = os.path.join(BASE_DIR, '.env')
 if os.path.exists(env_file):
     environ.Env.read_env(env_file)
 
+# Import pusher for real-time notifications
+import pusher
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -39,8 +42,6 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '.o
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',  # Django Channels ASGI server (must be first)
-    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,7 +54,6 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'django_apscheduler',
-    'channels',
     
     # Local apps
     'core',
@@ -112,15 +112,7 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = 'gami_konnect.asgi.application'
 WSGI_APPLICATION = 'gami_konnect.wsgi.application'
-
-# Django Channels Configuration
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer'
-    }
-}
 
 
 # Database
@@ -276,3 +268,13 @@ MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
 NOTIFICATION_EMAIL_BATCH_SIZE = 100  # Process emails in batches
 NOTIFICATION_RETENTION_DAYS = 30  # General notification retention
 NOTIFICATION_CLEANUP_HOUR = 2  # Run cleanup at 2 AM
+
+# Pusher Real-Time Notifications Configuration
+# Pusher provides managed WebSocket infrastructure without consuming Render free tier
+PUSHER_CLIENT = pusher.Pusher(
+    app_id=os.environ.get('PUSHER_APP_ID', 'your_local_app_id'),
+    key=os.environ.get('PUSHER_KEY', 'your_local_key'),
+    secret=os.environ.get('PUSHER_SECRET', 'your_local_secret'),
+    cluster=os.environ.get('PUSHER_CLUSTER', 'your_local_cluster'),
+    ssl=True
+)

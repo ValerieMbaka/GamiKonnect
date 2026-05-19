@@ -121,19 +121,37 @@ class NotificationRecipient(models.Model):
     """
     Tracks delivery and read status for each user receiving a notification.
     One Notification can have many NotificationRecipient records.
+    Supports Gamer, ShopOwner, and Admin users.
     """
     id = models.BigAutoField(primary_key=True)
     
-    # Foreign keys
+    # Foreign keys - support multiple user types
     notification = models.ForeignKey(
         Notification,
         on_delete=models.CASCADE,
         related_name='recipients'
     )
-    user = models.ForeignKey(
+    gamer = models.ForeignKey(
         'accounts.Gamer',
         on_delete=models.CASCADE,
-        related_name='notifications'
+        related_name='notifications',
+        null=True,
+        blank=True
+    )
+    shop_owner = models.ForeignKey(
+        'accounts.ShopOwner',
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        null=True,
+        blank=True
+    )
+    admin_user = models.ForeignKey(
+        'accounts.Account',
+        on_delete=models.CASCADE,
+        related_name='admin_notifications',
+        null=True,
+        blank=True,
+        limit_choices_to={'is_staff': True}
     )
     
     # Read status
@@ -154,16 +172,20 @@ class NotificationRecipient(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['notification', 'user']
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['user', 'is_read']),
-            models.Index(fields=['user', '-created_at']),
-            models.Index(fields=['user', 'delivery_status']),
+            models.Index(fields=['gamer', 'is_read']),
+            models.Index(fields=['gamer', '-created_at']),
+            models.Index(fields=['gamer', 'delivery_status']),
+            models.Index(fields=['shop_owner', 'is_read']),
+            models.Index(fields=['shop_owner', '-created_at']),
+            models.Index(fields=['admin_user', 'is_read']),
+            models.Index(fields=['admin_user', '-created_at']),
         ]
     
     def __str__(self):
-        return f"{self.notification.title} → {self.user.custom_username}"
+        user_display = self.gamer.custom_username if self.gamer else (self.shop_owner.first_name if self.shop_owner else self.admin_user.username)
+        return f"{self.notification.title} → {user_display}"
     
     def mark_as_read(self):
         """Mark notification as read."""

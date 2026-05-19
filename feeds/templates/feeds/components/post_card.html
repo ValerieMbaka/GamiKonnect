@@ -1,0 +1,351 @@
+{% load static %}
+
+{# Post Card Component - Reusable in feed_list.html, post_detail.html, gamer_feed.html #}
+<article class="post-card" data-post-id="{{ post.id }}">
+    
+    {# Post Header #}
+    <div class="post-header">
+        <div class="post-author-info">
+            {% if post.author.profile_picture %}
+                <img src="{{ post.author.profile_picture.url }}" alt="{{ post.author.first_name }}" class="post-avatar">
+            {% else %}
+                <div class="post-avatar post-avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            {% endif %}
+            
+            <div class="post-author-details">
+                <a href="{% url 'feeds:gamer_feed' post.author.id %}" class="post-author-name">
+                    {{ post.author.custom_username|default:post.author.get_full_name }}
+                </a>
+                <a href="{% url 'feeds:post_detail' post.id %}" class="post-time">
+                    {{ post.created_at|timesince }} ago
+                </a>
+            </div>
+        </div>
+
+        {# Post Menu (Edit/Delete for author) #}
+        {% if current_gamer and current_gamer.id == post.author.id %}
+        <div class="post-menu">
+            <button class="post-menu-btn" title="More options">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+            <div class="post-menu-dropdown">
+                <a href="#">Edit Post</a>
+                <button class="btn-danger-text" onclick="deletePost('{{ post.id }}')">Delete Post</button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Post Content #}
+    <div class="post-content">
+        {% if post.content %}
+            <p class="post-text">{{ post.content|linebreaks }}</p>
+        {% endif %}
+    </div>
+
+    {# Post Media #}
+    {% if post.media.all %}
+    <div class="post-media">
+        {% for media in post.media.all %}
+            {% if media.media_type == 'image' %}
+                <img src="{{ media.image_file.url }}" alt="Post image" class="post-media-image" loading="lazy">
+            {% elif media.media_type == 'video' %}
+                <video controls class="post-media-video">
+                    <source src="{{ media.video_file.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Post Stats #}
+    <div class="post-stats">
+        <div class="stat">
+            <span class="stat-number" data-like-count>{{ post.like_count }}</span>
+            <span class="stat-label">{{ post.like_count|pluralize:"Like,Likes" }}</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number" data-comment-count>{{ post.comment_count }}</span>
+            <span class="stat-label">{{ post.comment_count|pluralize:"Comment,Comments" }}</span>
+        </div>
+    </div>
+
+    {# Post Actions #}
+    <div class="post-actions">
+        {% if current_gamer %}
+            <button class="post-action-btn like-btn" onclick="toggleLike('{{ post.id }}', this)" data-liked="{% if current_gamer in post.likes.all %}true{% endif %}">
+                <i class="{% if current_gamer in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                <span>Like</span>
+            </button>
+        {% else %}
+            <a href="{% url 'login' %}" class="post-action-btn">
+                <i class="far fa-heart"></i>
+                <span>Like</span>
+            </a>
+        {% endif %}
+
+        <a href="{% url 'feeds:post_detail' post.id %}#comments" class="post-action-btn">
+            <i class="far fa-comment"></i>
+            <span>Comment</span>
+        </a>
+
+        <a href="javascript:void(0)" class="post-action-btn" onclick="sharePost('{{ post.id }}')">
+            <i class="far fa-share-square"></i>
+            <span>Share</span>
+        </a>
+    </div>
+
+</article>
+
+<style>
+    .post-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: slideUp 0.3s ease;
+    }
+
+    .post-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-color);
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .post-author-info {
+        display: flex;
+        gap: 0.75rem;
+        flex: 1;
+    }
+
+    .post-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--border-color);
+    }
+
+    .post-avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .post-author-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .post-author-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 0.95rem;
+    }
+
+    .post-author-name:hover {
+        text-decoration: underline;
+        color: var(--primary-color);
+    }
+
+    .post-time {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+    }
+
+    .post-time:hover {
+        color: var(--primary-color);
+    }
+
+    .post-menu {
+        position: relative;
+    }
+
+    .post-menu-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-secondary);
+        padding: 0.5rem;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .post-menu-btn:hover {
+        color: var(--primary-color);
+    }
+
+    .post-menu-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        min-width: 150px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: none;
+        z-index: 10;
+    }
+
+    .post-menu:hover .post-menu-dropdown {
+        display: block;
+    }
+
+    .post-menu-dropdown a,
+    .post-menu-dropdown button {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .post-menu-dropdown a:hover,
+    .post-menu-dropdown button:hover {
+        background: var(--hover-bg);
+    }
+
+    .btn-danger-text {
+        color: #ff6b6b;
+    }
+
+    .post-content {
+        padding: 1rem;
+    }
+
+    .post-text {
+        margin: 0;
+        color: var(--text-primary);
+        line-height: 1.6;
+        word-wrap: break-word;
+    }
+
+    .post-media {
+        position: relative;
+        width: 100%;
+        max-height: 400px;
+        overflow: hidden;
+        background: var(--bg-secondary);
+    }
+
+    .post-media-image,
+    .post-media-video {
+        width: 100%;
+        height: auto;
+        max-height: 400px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .post-stats {
+        display: flex;
+        gap: 1.5rem;
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stat-number {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .post-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .post-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .post-action-btn:hover {
+        background: var(--hover-bg);
+        color: var(--primary-color);
+    }
+
+    .post-action-btn i {
+        font-size: 1.1rem;
+    }
+
+    .post-action-btn.like-btn[data-liked="true"] {
+        color: #ff6b6b;
+    }
+
+    .post-action-btn.like-btn[data-liked="true"] i {
+        font-style: solid;
+    }
+
+    @media (max-width: 768px) {
+        .post-card {
+            border-radius: 0;
+        }
+
+        .post-media-image,
+        .post-media-video {
+            max-height: 300px;
+        }
+
+        .post-actions {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>

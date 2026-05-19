@@ -1,8 +1,28 @@
 from django.apps import AppConfig
+import logging
+import os
+import sys
+
+
+logger = logging.getLogger(__name__)
 
 
 class CompetitionsConfig(AppConfig):
     name = "competitions"
+    _scheduler_started = False
+
+    @classmethod
+    def _start_scheduler_once(cls):
+        """Start scheduler only once per process."""
+        if cls._scheduler_started:
+            return
+
+        try:
+            from .scheduler import start_scheduler
+            start_scheduler()
+            cls._scheduler_started = True
+        except Exception as e:
+            logger.error(f"Failed to start competition scheduler: {e}")
 
     def ready(self):
         """
@@ -15,23 +35,27 @@ class CompetitionsConfig(AppConfig):
         """
         # Import signals first
         import competitions.signals  # noqa
-        
-        import os
-        import sys
 
-        # Skip scheduler during migrations, shell, or test runs
-        excluded_commands = {'migrate', 'makemigrations', 'shell', 'test', 'collectstatic'}
-        if len(sys.argv) > 1 and sys.argv[1] in excluded_commands:
+        # Skip scheduler for manage.py commands that should not run background jobs.
+        # Keep it only for runserver in development.
+        if (
+            len(sys.argv) > 1
+            and sys.argv[0].endswith('manage.py')
+            and sys.argv[1] != 'runserver'
+        ):
             return
 
-        # In Django's dev server, ready() is called twice (reloader + main process).
-        # RUN_MAIN is set only in the main process — skip the reloader.
-        if os.environ.get('RUN_MAIN') == 'true' or not os.environ.get('RUN_MAIN'):
-            try:
-                from .scheduler import start_scheduler
-                start_scheduler()
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).error(
-                    f"Failed to start competition scheduler: {e}"
-                )
+        # In Django's dev server, ready() is called twice (reloader + worker process).
+        # Only continue in the worker process.
+        is_runserver = len(sys.argv) > 1 and sys.argv[1] == 'runserver'
+        if is_runserver:
+            if os.environ.get('RUN_MAIN') != 'true':
+                return
+
+        # Defer scheduler startup to first HTTP request to avoid DB access in ready().
+        from django.core.signals import request_started
+
+        request_started.connect(
+            lambda **kwargs: self._start_scheduler_once(),
+            dispatch_uid='competitions.start_scheduler_on_first_request',
+        )

@@ -1,0 +1,391 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}{{ post.author.custom_username }}'s Post · {{ project_detail.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'feeds/css/feeds.css' %}">
+    <style>
+        .post-detail-wrapper {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .post-detail-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comments-section {
+            margin-top: 2rem;
+        }
+
+        .comments-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding: 0 2rem;
+            padding-top: 1.5rem;
+        }
+
+        .comment-form-wrapper {
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .comment-form-wrapper h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .comment-form {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .comment-textarea {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            background: var(--card-bg);
+            resize: none;
+            min-height: 44px;
+            transition: all 0.3s ease;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(62, 112, 237, 0.1);
+        }
+
+        .comment-textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .comment-submit-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .comment-submit-btn:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .comment-submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .comments-list {
+            padding: 1.5rem 2rem;
+        }
+
+        .comment {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comment:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--border-color);
+        }
+
+        .comment-avatar-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .comment-author-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .comment-author-name:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .comment-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .comment-action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0;
+            transition: all 0.2s ease;
+        }
+
+        .comment-action-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .comment-content {
+            padding: 0 0 0 2.5rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .empty-comments {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-comments i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+
+        .login-prompt {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-prompt p {
+            margin: 0 0 1rem 0;
+        }
+
+        .login-prompt a {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: white;
+            color: var(--primary-color);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .login-prompt a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .post-detail-wrapper {
+                padding: 1rem;
+            }
+
+            .comments-header,
+            .comments-list,
+            .comment-form-wrapper {
+                padding: 1rem;
+            }
+
+            .comment-form {
+                flex-direction: column;
+            }
+
+            .comment-textarea {
+                min-height: 80px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="post-detail-wrapper anim-fade-in-up" data-active-post-id="{{ post.id }}">
+    
+    <div class="post-detail-card">
+        
+        {# Post Card #}
+        {% include 'feeds/components/post_card.html' with post=post current_gamer=current_gamer %}
+
+        {# Comments Section #}
+        <div class="comments-section" id="comments">
+            
+            <div class="comments-header">
+                <i class="fas fa-comments" style="margin-right: 0.5rem;"></i>
+                <span data-comment-count>{{ post.comment_count }}</span> {{ post.comment_count|pluralize:"Comment,Comments" }}
+            </div>
+
+            {# Comment Form #}
+            {% if current_gamer %}
+                <div class="comment-form-wrapper">
+                    <h3>Add your comment</h3>
+                    <form method="POST" action="{% url 'feeds:add_comment' post.id %}" class="comment-form" id="commentForm">
+                        {% csrf_token %}
+                        <textarea 
+                            name="content" 
+                            class="comment-textarea" 
+                            placeholder="What's your take on this post?"
+                            maxlength="1000"
+                            required
+                        ></textarea>
+                        <button type="submit" class="comment-submit-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Post
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="login-prompt">
+                    <p><i class="fas fa-lock"></i> Log in to comment on this post</p>
+                    <a href="{% url 'login' %}">Login Now</a>
+                </div>
+            {% endif %}
+
+            {# Comments List #}
+            <div class="comments-list" data-comments-list>
+                {% if post.comments.all %}
+                    {% for comment in post.comments.all %}
+                    <div class="comment" data-comment-id="{{ comment.id }}">
+                        <div class="comment-header">
+                            <div class="comment-author-info">
+                                {% if comment.author.profile_picture %}
+                                    <img src="{{ comment.author.profile_picture.url }}" alt="{{ comment.author.first_name }}" class="comment-avatar">
+                                {% else %}
+                                    <div class="comment-avatar comment-avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <div>
+                                    <a href="{% url 'feeds:gamer_feed' comment.author.id %}" class="comment-author-name">
+                                        {{ comment.author.custom_username|default:comment.author.get_full_name }}
+                                    </a>
+                                    <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
+                                </div>
+                            </div>
+
+                            {# Comment Actions (for author) #}
+                            {% if current_gamer and current_gamer.id == comment.author.id %}
+                            <div class="comment-actions">
+                                <button class="comment-action-btn" onclick="deleteComment('{{ comment.id }}')" title="Delete comment">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="comment-content">
+                            {{ comment.content|linebreaks }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-comments">
+                        <i class="fas fa-comments"></i>
+                        <p>No comments yet. Be the first to share your thoughts!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    async function deleteComment(commentId) {
+        if (confirm('Delete this comment?')) {
+            try {
+                const response = await fetch(`{% url 'feeds:delete_comment' 'COMMENT_ID' %}`.replace('COMMENT_ID', commentId), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                });
+
+                if (response.ok) {
+                    const comment = document.querySelector(`[data-comment-id="${commentId}"]`);
+                    comment.style.opacity = '0';
+                    setTimeout(() => comment.remove(), 300);
+                    
+                    // Update comment count
+                    location.reload();
+                } else {
+                    alert('Failed to delete comment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred');
+            }
+        }
+    }
+
+    if (window.feedsManager) {
+        window.feedsManager.setActivePost('{{ post.id }}');
+    }
+
+    // Autosize textarea
+    const textarea = document.querySelector('.comment-textarea');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+        });
+    }
+</script>
+{% endblock %}

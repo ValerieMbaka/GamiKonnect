@@ -83,6 +83,14 @@ class PusherNotifications {
             channel.bind('competition-update', (data) => {
                 this.handleCompetitionUpdate(data);
             });
+
+            channel.bind('feed-comment-created', (data) => {
+                this.handleFeedCommentCreated(data);
+            });
+
+            channel.bind('feed-like-updated', (data) => {
+                this.handleFeedLikeUpdated(data);
+            });
             
             this.channels.add('gamikonnect-global');
             console.log('🎮 Subscribed to global notifications channel');
@@ -205,6 +213,32 @@ class PusherNotifications {
             data.status || data.message,
             'competition'
         );
+    }
+
+    /**
+     * Handle live feed comment events.
+     */
+    handleFeedCommentCreated(data) {
+        console.log('🎮 Feed comment event:', data.post_id);
+        if (window.feedsManager && typeof window.feedsManager.handleLiveCommentCreated === 'function') {
+            window.feedsManager.handleLiveCommentCreated(data);
+            return;
+        }
+
+        this.showToast(`💬 New comment from ${data.author_name}`, data.content || '', 'activity');
+    }
+
+    /**
+     * Handle live feed like events.
+     */
+    handleFeedLikeUpdated(data) {
+        console.log('🎮 Feed like event:', data.post_id);
+        if (window.feedsManager && typeof window.feedsManager.handleLiveLikeUpdated === 'function') {
+            window.feedsManager.handleLiveLikeUpdated(data);
+            return;
+        }
+
+        this.showToast(`❤️ ${data.actor_name || 'Someone'} liked a post`, '', 'activity');
     }
     
     /**

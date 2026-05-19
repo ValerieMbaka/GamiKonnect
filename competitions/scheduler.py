@@ -21,7 +21,7 @@ Setup:
 
 import logging
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.conf import settings
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
@@ -412,15 +412,20 @@ def safety_net_check():
         transitioned += 1
 
     # registration_open → registration_closed
-    missed_close = Competition.objects.filter(
-        Q(status='registration_open'),
-        Q(registration_closes_at__lte=now) | Q(is_registration_full=True)
+    # Evaluate close conditions in Python from annotated values to avoid brittle
+    # filter chains and keep this safety-net resilient across model refactors.
+    close_candidates = Competition.objects.filter(
+        status='registration_open'
+    ).annotate(
+        active_registrations=Count('registrations', filter=Q(registrations__is_cancelled=False))
     )
-    for competition in missed_close:
-        # Extra check for full registration if closes_at hasn't passed
-        if competition.registration_closes_at > now and not competition.is_registration_full():
+    for competition in close_candidates:
+        deadline_passed = competition.registration_closes_at <= now
+        registration_full = competition.active_registrations >= competition.max_participants
+
+        if not (deadline_passed or registration_full):
             continue
-            
+
         competition.status = 'registration_closed'
         competition.save(update_fields=['status', 'updated_at'])
 

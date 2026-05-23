@@ -67,7 +67,7 @@ class PostMediaAdmin(admin.ModelAdmin):
                 obj.image_file.url
             )
         elif obj.video_file:
-            return format_html('<span style="color: #0066cc;">🎬 Video</span>')
+            return format_html('<span style="color: #0066cc;">{}</span>', '🎬 Video')
         return '-'
     get_media_display.short_description = 'Media'
     

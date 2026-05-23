@@ -16,7 +16,11 @@
             
             <div class="post-author-details">
                 <a href="{% url 'feeds:gamer_feed' post.author.id %}" class="post-author-name">
-                    {{ post.author.custom_username|default:post.author.get_full_name }}
+                    {% if current_gamer and current_gamer.id == post.author.id %}
+                        You
+                    {% else %}
+                        {{ post.author.custom_username|default:post.author.get_full_name }}
+                    {% endif %}
                 </a>
                 <a href="{% url 'feeds:post_detail' post.id %}" class="post-time">
                     {{ post.created_at|timesince }} ago

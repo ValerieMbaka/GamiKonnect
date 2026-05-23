@@ -24,6 +24,37 @@
         </div>
     </div>
 
+    <section class="hub-summary-grid mb-4">
+        <a class="hub-summary-card text-decoration-none" href="{% url 'admin_panel:content_library' %}">
+            <div class="hub-summary-icon"><i class="fas fa-palette"></i></div>
+            <div class="hub-summary-copy">
+                <h3>Content Library</h3>
+                <p>Manage navigation, homepage, and editorial blocks.</p>
+            </div>
+        </a>
+        <a class="hub-summary-card text-decoration-none" href="{% url 'admin_panel:notification_hub' %}">
+            <div class="hub-summary-icon alt"><i class="fas fa-bell"></i></div>
+            <div class="hub-summary-copy">
+                <h3>Notification Hub</h3>
+                <p>Compose alerts, groups, and delivery schedules.</p>
+            </div>
+        </a>
+        <a class="hub-summary-card text-decoration-none" href="{% url 'admin_panel:site_settings' %}">
+            <div class="hub-summary-icon success"><i class="fas fa-sliders-h"></i></div>
+            <div class="hub-summary-copy">
+                <h3>Brand Settings</h3>
+                <p>Adjust project identity and visual styling.</p>
+            </div>
+        </a>
+        <a class="hub-summary-card text-decoration-none" href="{% url 'admin_panel:competition_list' %}">
+            <div class="hub-summary-icon warning"><i class="fas fa-trophy"></i></div>
+            <div class="hub-summary-copy">
+                <h3>Competitions</h3>
+                <p>Review live, pending, and completed competitions.</p>
+            </div>
+        </a>
+    </section>
+
     <div class="kpi-master-grid mb-4">
 
         <div class="admin-card kpi-card">
@@ -142,27 +173,13 @@
         </div>
 
         <div class="admin-card">
-            <div class="card-header styled-header flex-between">
+                <div class="card-header styled-header flex-between">
                 <h2 class="m-0"><i class="fas fa-list-ul me-2 text-primary"></i> Recent Activity</h2>
-                <a href="#" class="view-all-link">View All</a>
+                <a href="{% url 'activities:all_activity' %}" class="view-all-link">View All</a>
             </div>
             <div class="card-body">
                 <div class="vertical-timeline">
-                    {% for activity in recent_activity_feed %}
-                    <div class="timeline-item">
-                        <div class="timeline-node {% if activity.source == 'audit' %}border-warning{% elif activity.is_self %}border-primary{% else %}border-success{% endif %}"></div>
-                        <div class="timeline-content">
-                            <h4>{{ activity.title }}</h4>
-                            <p class="mb-1">{{ activity.description }}</p>
-                            {% if activity.meta %}
-                                <small class="text-muted d-block">{{ activity.meta }}</small>
-                            {% endif %}
-                            <span class="timeline-date">{{ activity.timestamp|timesince }} ago{% if activity.actor_name %} · {{ activity.actor_name }}{% endif %}</span>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p class="text-muted text-center py-4">No recent activity found.</p>
-                    {% endfor %}
+                    {% include 'accounts/includes/activity_feed.html' with activity_feed=recent_activity_feed %}
                 </div>
             </div>
         </div>
@@ -269,8 +286,6 @@
 
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const DASHBOARD_CHART_DATA = {{ chart_data|safe }};
-    </script>
+    <script id="dashboard-chart-data" type="application/json">{{ chart_data_json|safe }}</script>
     <script src="{% static 'admin_panel/js/base/admin_dashboard.js' %}"></script>
 {% endblock %}

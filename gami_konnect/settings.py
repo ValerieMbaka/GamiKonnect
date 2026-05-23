@@ -107,6 +107,7 @@ TEMPLATES = [
                 'core.context_processor.firebase_config',
                 'core.context_processor.global_site_context',
                 'core.context_processor.admin_competition_context',
+                'core.context_processor.admin_notification_context',
             ],
         },
     },
@@ -201,6 +202,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # WhiteNoise settings to ignore missing files during post-processing
@@ -263,6 +268,13 @@ MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
 MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE')
 MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
+
+
+# Paystack Configuration
+PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = os.getenv('PAYSTACK_PUBLIC_KEY')
+
+
 
 # Notifications settings
 NOTIFICATION_EMAIL_BATCH_SIZE = 100  # Process emails in batches

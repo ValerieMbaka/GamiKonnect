@@ -184,7 +184,14 @@ class NotificationRecipient(models.Model):
         ]
     
     def __str__(self):
-        user_display = self.gamer.custom_username if self.gamer else (self.shop_owner.first_name if self.shop_owner else self.admin_user.username)
+        if self.gamer:
+            user_display = self.gamer.custom_username or self.gamer.email
+        elif self.shop_owner:
+            user_display = self.shop_owner.first_name or self.shop_owner.email
+        elif self.admin_user:
+            user_display = self.admin_user.email or self.admin_user.first_name or self.admin_user.last_name
+        else:
+            user_display = 'Unknown recipient'
         return f"{self.notification.title} → {user_display}"
     
     def mark_as_read(self):

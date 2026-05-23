@@ -4,74 +4,96 @@
 {% block title %}User Detail | Admin Panel{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-lg-4">
-            <div class="card shadow mb-4">
-                <div class="card-body text-center">
-                    <img src="{% static 'core/images/gamepad.jpeg' %}" alt="Avatar" class="rounded-circle img-fluid mb-3" style="width: 150px;">
-                    <h5 class="my-3">{{ user_obj.get_full_name|default:user_obj.username }}</h5>
-                    <p class="text-muted mb-1">{{ user_obj.get_role_display }}</p>
-                    <p class="text-muted mb-4">{{ user_obj.email }}</p>
-                    <div class="d-flex justify-content-center mb-2">
-                        <a href="{% url 'admin_panel:user_toggle_status' user_obj.id %}" class="btn {% if user_obj.is_active %}btn-outline-danger{% else %}btn-success{% endif %}">
-                            {% if user_obj.is_active %}Deactivate{% else %}Activate{% endif %}
-                        </a>
+<div class="admin-hub-shell">
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <div class="breadcrumb-row">
+                <a href="{% url 'admin_panel:user_list' %}" class="breadcrumb-link"><i class="fas fa-arrow-left"></i> Users</a>
+                <span class="breadcrumb-sep">/</span>
+                <span class="breadcrumb-current">Account Detail</span>
+            </div>
+            <h1 class="page-title m-0 mt-1">{{ user_obj.first_name|default:user_obj.email }} {{ user_obj.last_name }}</h1>
+            <p class="page-subtitle text-muted mt-1">{{ user_obj.email }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'admin_panel:user_toggle_status' user_obj.id %}" class="{% if user_obj.is_active %}btn-secondary{% else %}btn-admin-primary{% endif %}">
+                {% if user_obj.is_active %}Deactivate{% else %}Activate{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-detail-grid">
+        <div class="admin-detail-main">
+            <section class="admin-card">
+                <div class="hub-section-header">
+                    <div>
+                        <h2><i class="fas fa-user-shield"></i> Account Snapshot</h2>
+                        <p>Identity, role, and status information.</p>
                     </div>
                 </div>
-            </div>
-            
+                <div class="admin-card-body">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <img src="{% static 'core/images/gamepad.jpeg' %}" class="hub-avatar" style="width:88px;height:88px;" alt="Avatar">
+                        <div>
+                            <p class="hub-cell-title mb-1">{{ user_obj.first_name|default:user_obj.email }} {{ user_obj.last_name }}</p>
+                            <p class="hub-cell-subtitle mb-1">{% if user_obj.is_superuser %}Superuser{% elif user_obj.is_staff %}Staff{% elif profile %}{% if profile.custom_username %}Gamer{% else %}Shop Owner{% endif %}{% else %}Account{% endif %}</p>
+                            <span class="status-badge {% if user_obj.is_active %}success{% else %}danger{% endif %}">{% if user_obj.is_active %}Active{% else %}Inactive{% endif %}</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-grid">
+                        <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value">{{ user_obj.email }}</span></div>
+                        <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value">{{ user_obj.phone|default:"N/A" }}</span></div>
+                        <div class="detail-item"><span class="detail-label">Joined</span><span class="detail-value">{{ user_obj.created_at|date:"M d, Y" }}</span></div>
+                        <div class="detail-item"><span class="detail-label">UID</span><span class="detail-value">{{ user_obj.uid|default:"N/A" }}</span></div>
+                    </div>
+                </div>
+            </section>
+
             {% if profile %}
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Profile Details</h6>
+            <section class="admin-card">
+                <div class="hub-section-header">
+                    <div>
+                        <h2><i class="fas fa-id-card"></i> Profile Details</h2>
+                        <p>Role-specific account information.</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    {% if user_obj.role == 'GAMER' %}
-                        <p><strong>Points:</strong> {{ profile.points }}</p>
-                        <p><strong>Level:</strong> {{ profile.level.name|default:"Amateur" }}</p>
-                        <p><strong>Wins:</strong> {{ profile.wins }}</p>
-                    {% elif user_obj.role == 'SHOP_OWNER' %}
-                        <p><strong>Phone:</strong> {{ profile.phone_number }}</p>
-                        <p><strong>Shops:</strong> {{ profile.shops.count }}</p>
-                    {% endif %}
+                <div class="admin-card-body">
+                    <div class="detail-grid">
+                        {% if profile.points is not None %}<div class="detail-item"><span class="detail-label">Points</span><span class="detail-value">{{ profile.points }}</span></div>{% endif %}
+                        {% if profile.current_level %}<div class="detail-item"><span class="detail-label">Level</span><span class="detail-value">{{ profile.current_level.name }}</span></div>{% endif %}
+                        {% if profile.custom_username %}<div class="detail-item"><span class="detail-label">Username</span><span class="detail-value">{{ profile.custom_username }}</span></div>{% endif %}
+                        {% if profile.shops %}<div class="detail-item"><span class="detail-label">Linked Shops</span><span class="detail-value">{{ profile.shops.count }}</span></div>{% endif %}
+                    </div>
                 </div>
-            </div>
+            </section>
             {% endif %}
         </div>
-        
-        <div class="col-lg-8">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity Log</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Action</th>
-                                    <th>Description</th>
-                                    <th>Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for log in activities %}
-                                <tr>
-                                    <td><span class="badge bg-info">{{ log.action_type }}</span></td>
-                                    <td>{{ log.description }}</td>
-                                    <td>{{ log.timestamp|date:"M d, Y H:i" }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="text-center">No recent activity logged.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+
+        <div class="admin-detail-sidebar">
+            <section class="admin-card">
+                <div class="hub-section-header">
+                    <div>
+                        <h2><i class="fas fa-clock"></i> Recent Activity</h2>
+                        <p>Latest actions recorded for this account.</p>
                     </div>
                 </div>
-            </div>
+                <div class="admin-card-body">
+                    <div class="meta-list">
+                        {% for log in activities %}
+                        <div class="meta-item">
+                            <div class="d-flex justify-content-between gap-3">
+                                <span class="status-badge neutral">{{ log.action_type }}</span>
+                                <small class="text-muted">{{ log.timestamp|date:"M d, H:i" }}</small>
+                            </div>
+                            <div class="meta-value mt-2">{{ log.description }}</div>
+                        </div>
+                        {% empty %}
+                        <div class="hub-empty-state"><p class="mb-0">No recent activity logged.</p></div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 </div>

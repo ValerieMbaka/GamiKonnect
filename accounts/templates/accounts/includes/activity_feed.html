@@ -1,0 +1,24 @@
+{% comment %}Reusable activity feed include. Expects one of: `activity_feed`, `recent_activity_feed`, or `recent_activities` in context.{% endcomment %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'accounts/css/activity_feed.css' %}">
+{% with feed=activity_feed|default:recent_activity_feed %}
+<div class="activity-feed-component">
+    {% if feed %}
+        {% for activity in feed %}
+            <div class="activity-item">
+                <div class="activity-icon"><i class="{{ activity.icon }}"></i></div>
+                <div class="activity-content">
+                    <h4 class="activity-title">{{ activity.title }}</h4>
+                    <p class="activity-meta text-muted">{{ activity.timestamp|timesince }} ago{% if activity.actor_name %} · {{ activity.actor_name }}{% endif %}</p>
+                    <p class="activity-description">{{ activity.description }}</p>
+                    {% if activity.meta %}
+                        <div class="activity-meta-detail text-muted">{{ activity.meta }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted text-center py-4 mb-0">No recent activity found.</p>
+    {% endif %}
+</div>
+{% endwith %}

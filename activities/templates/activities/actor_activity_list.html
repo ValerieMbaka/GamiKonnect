@@ -1,0 +1,33 @@
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-3">{{ title }}</h1>
+    <ul class="list-group">
+        {% for log in feed_items %}
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>{{ log.get_action_type_display }}</strong>
+                        <div class="text-muted">{{ log.timestamp|date:'M d, H:i' }}</div>
+                        <div>{{ log.description }}</div>
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <li class="list-group-item text-muted">No logs found.</li>
+        {% endfor %}
+    </ul>
+    <div class="mt-3">
+        {% if feed_items.has_previous %}
+            <a href="?page={{ feed_items.previous_page_number }}" class="btn btn-light">Previous</a>
+        {% endif %}
+        {% if feed_items.has_next %}
+            <a href="?page={{ feed_items.next_page_number }}" class="btn btn-primary">Next</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

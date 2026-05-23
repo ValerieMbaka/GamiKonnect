@@ -107,7 +107,7 @@ class NotificationAdmin(admin.ModelAdmin):
         if failed > 0:
             html += f" | ❌ {failed} failed"
         
-        return format_html(html)
+        return html
     delivery_status_summary.short_description = 'Delivery Status'
     
     def recipient_stats(self, obj):
@@ -205,7 +205,7 @@ class NotificationRecipientAdmin(admin.ModelAdmin):
                 '<small>{}</small>',
                 obj.read_at.strftime('%Y-%m-%d %H:%M') if obj.read_at else ''
             )
-        return format_html('<span style="color: gray;">○ Unread</span>')
+        return format_html('<span style="color: gray;">{}</span>', '○ Unread')
     read_status_badge.short_description = 'Read Status'
     
     def delivery_badge(self, obj):
@@ -349,9 +349,9 @@ class NotificationScheduleAdmin(admin.ModelAdmin):
         from django.utils import timezone
         delta = (obj.scheduled_at - timezone.now()).days
         if delta < 0:
-            return format_html('<span style="color: red;">Already passed</span>')
+            return format_html('<span style="color: red;">{}</span>', 'Already passed')
         elif delta == 0:
-            return format_html('<span style="color: orange;">Today</span>')
+            return format_html('<span style="color: orange;">{}</span>', 'Today')
         else:
             return f"In {delta} days"
     days_until.short_description = 'Days Until Send'

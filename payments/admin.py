@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import MpesaTransaction
+from core.admin_utils import SafeDateHierarchyAdmin
 
 
 @admin.register(MpesaTransaction)
-class MpesaTransactionAdmin(admin.ModelAdmin):
+class MpesaTransactionAdmin(SafeDateHierarchyAdmin):
     list_display = ('receipt_number_or_pending', 'gamer', 'phone_number', 'amount', 'status_badge', 'is_simulated', 'created_at')
     list_filter = ('status', 'is_simulated', 'created_at')
     search_fields = ('receipt_number', 'phone_number', 'gamer__email')

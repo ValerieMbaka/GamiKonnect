@@ -21,7 +21,7 @@ def notification_center(request):
     
     # Base queryset
     notifications = NotificationRecipient.objects.filter(
-        user=gamer
+        gamer=gamer
     ).select_related('notification').order_by('-created_at')
     
     # Apply filters
@@ -40,7 +40,7 @@ def notification_center(request):
     
     # Get stats
     total_unread = NotificationRecipient.objects.filter(
-        user=gamer, is_read=False
+        gamer=gamer, is_read=False
     ).count()
     
     context = {
@@ -62,13 +62,13 @@ def mark_notification_as_read(request, notification_id):
     notification_recipient = get_object_or_404(
         NotificationRecipient,
         id=notification_id,
-        user=gamer
+        gamer=gamer
     )
     notification_recipient.mark_as_read()
     
     # Return unread count
     unread_count = NotificationRecipient.objects.filter(
-        user=gamer, is_read=False
+        gamer=gamer, is_read=False
     ).count()
     
     return JsonResponse({
@@ -84,7 +84,7 @@ def mark_all_as_read(request):
     gamer = request.session.get('gamer_instance')
     
     NotificationRecipient.objects.filter(
-        user=gamer,
+        gamer=gamer,
         is_read=False
     ).update(is_read=True)
     
@@ -101,7 +101,7 @@ def get_unread_count(request):
     gamer = request.session.get('gamer_instance')
     
     unread_count = NotificationRecipient.objects.filter(
-        user=gamer, is_read=False
+        gamer=gamer, is_read=False
     ).count()
     
     return JsonResponse({
@@ -116,7 +116,7 @@ def get_recent_notifications(request):
     gamer = request.session.get('gamer_instance')
     
     notifications = NotificationRecipient.objects.filter(
-        user=gamer
+        gamer=gamer
     ).select_related('notification').order_by('-created_at')[:5]
     
     data = {

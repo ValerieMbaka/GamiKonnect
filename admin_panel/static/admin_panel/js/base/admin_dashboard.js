@@ -1,7 +1,22 @@
 class AdminDashboardController {
     constructor() {
+        this.chartData = this.getChartData();
         this.initThemeSettings();
         this.initCharts();
+    }
+
+    getChartData() {
+        const chartDataElement = document.getElementById('dashboard-chart-data');
+        if (!chartDataElement) {
+            return { activity_labels: [], activity_data: [], revenue_data: [] };
+        }
+
+        try {
+            return JSON.parse(chartDataElement.textContent || '{}');
+        } catch (error) {
+            console.error('Failed to parse dashboard chart data:', error);
+            return { activity_labels: [], activity_data: [], revenue_data: [] };
+        }
     }
 
     initThemeSettings() {
@@ -40,10 +55,10 @@ class AdminDashboardController {
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: DASHBOARD_CHART_DATA.activity_labels,
+                labels: this.chartData.activity_labels || [],
                 datasets: [{
                     label: 'Active Users',
-                    data: DASHBOARD_CHART_DATA.activity_data,
+                    data: this.chartData.activity_data || [],
                     borderColor: this.colors.primary,
                     backgroundColor: gradientFill,
                     borderWidth: 3,
@@ -115,7 +130,7 @@ class AdminDashboardController {
                 labels: ['Shop Fees', 'Tournaments', 'Subscriptions', 'Ads'],
                 datasets: [{
                     label: 'Revenue ($)',
-                    data: DASHBOARD_CHART_DATA.revenue_data,
+                    data: this.chartData.revenue_data || [],
                     backgroundColor: this.colors.primary,
                     borderRadius: 6,
                     barPercentage: 0.5
@@ -138,6 +153,32 @@ class AdminDashboardController {
                         grid: { display: false },
                         border: { display: false }
                     }
+                }
+            }
+        });
+    }
+
+    renderTrafficSourcesChart() {
+        const canvas = document.getElementById('trafficSourcesChart');
+        if (!canvas) return;
+
+        new Chart(canvas.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Direct', 'Search', 'Social', 'Referral'],
+                datasets: [{
+                    data: [38, 27, 21, 14],
+                    backgroundColor: [this.colors.primary, this.colors.success, this.colors.purple, this.colors.warning],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: this.getTooltipConfig()
                 }
             }
         });

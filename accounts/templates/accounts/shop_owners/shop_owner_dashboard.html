@@ -94,30 +94,11 @@
                             <i class="fas fa-list-ul text-primary fs-5"></i>
                             <h2 class="section-title">Recent Activity</h2>
                         </div>
-                        <a href="#" class="view-all-link">View All</a>
+                        <a href="{% url 'activities:actor_activity_logs' actor_id=shop_owner.id %}" class="view-all-link">View All</a>
                     </header>
 
                     <div class="timeline-hollow mt-2">
-                        {% if recent_activity_feed %}
-                            {% for activity in recent_activity_feed %}
-                            <div class="timeline-item d-flex gap-3 mb-4">
-                                <div class="timeline-indicator mt-1">
-                                    <div class="indicator-dot {% if activity.is_self %}border-green{% else %}border-blue{% endif %}"></div>
-                                    <div class="indicator-line"></div>
-                                </div>
-                                <div class="timeline-content w-100 pb-1">
-                                    <h4 class="timeline-title">{{ activity.title }}</h4>
-                                    <p class="timeline-meta">{{ activity.timestamp|timesince }} ago{% if activity.actor_name %} · {{ activity.actor_name }}{% endif %}</p>
-                                    <p class="timeline-meta text-muted mb-0">{{ activity.description }}</p>
-                                    {% if activity.meta %}
-                                        <small class="text-muted">{{ activity.meta }}</small>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted text-center py-4 mb-0">No recent activity found.</p>
-                        {% endif %}
+                        {% include 'accounts/includes/activity_feed.html' with activity_feed=recent_activity_feed %}
                     </div>
                 </div>
             </div>

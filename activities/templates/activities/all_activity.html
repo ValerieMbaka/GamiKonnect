@@ -1,0 +1,35 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}All Activity · {{ project_detail.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-3">All Activity</h1>
+    <div class="activity-list">
+        {% for item in feed_items %}
+            <div class="activity-row mb-3">
+                <div class="d-flex gap-3">
+                    <div class="activity-icon"><i class="{{ item.icon }}"></i></div>
+                    <div>
+                        <h4 class="m-0">{{ item.title }}</h4>
+                        <small class="text-muted">{{ item.timestamp|timesince }} ago{% if item.actor_name %} · {{ item.actor_name }}{% endif %}</small>
+                        <p class="mb-0">{{ item.description }}</p>
+                        {% if item.meta %}<small class="text-muted">{{ item.meta }}</small>{% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-muted">No activity found.</p>
+        {% endfor %}
+    </div>
+    <div class="mt-4">
+        {% if feed_items.has_previous %}
+            <a href="?page={{ feed_items.previous_page_number }}" class="btn btn-light">Previous</a>
+        {% endif %}
+        {% if feed_items.has_next %}
+            <a href="?page={{ feed_items.next_page_number }}" class="btn btn-primary">Next</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

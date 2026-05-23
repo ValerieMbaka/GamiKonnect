@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from django.utils import timezone
 from datetime import timedelta
 from django.core.paginator import Paginator
@@ -16,7 +16,20 @@ from django.db import transaction
 from core.email_service import EmailManager
 
 # Model imports
-from core.models import ProjectDetail, SiteStyle, Section, Slider, FeatureCard
+from core.models import (
+    About,
+    Event,
+    FeatureCard,
+    Footer,
+    FooterLink,
+    FooterSection,
+    NavigationLink,
+    ProjectDetail,
+    Section,
+    SectionHeading,
+    SiteStyle,
+    Slider,
+)
 from games.models import Game, Genre, Platform, PlatformCategory
 from accounts.models import Gamer, ShopOwner, Account
 from activities.models import ActivityLog, Activity, Level, Achievement
@@ -27,13 +40,32 @@ from competitions.forms import CompetitionApprovalForm, CompetitionRejectionForm
 from competitions.scheduler import schedule_competition_jobs
 from competitions.services import CompetitionService
 from activities.services import ActivityFeedService
-from notifications.models import NotificationRecipient
+from notifications.models import Notification, NotificationGroup, NotificationRecipient, NotificationSchedule
 
 # Imports for custom logic
 from .decorators import admin_required
 from .forms import (
-    AdminUserUpdateForm, AdminProfileUpdateForm, ProjectDetailForm, SiteStyleForm, 
-    GameForm, LevelForm, AchievementForm, ShopForm, SectionForm, SliderForm, FeatureCardForm
+    AboutForm,
+    AdminProfileUpdateForm,
+    AdminUserUpdateForm,
+    AchievementForm,
+    EventForm,
+    FeatureCardForm,
+    FooterForm,
+    FooterLinkForm,
+    FooterSectionForm,
+    GameForm,
+    LevelForm,
+    NavigationLinkForm,
+    NotificationForm,
+    NotificationGroupForm,
+    NotificationScheduleForm,
+    ProjectDetailForm,
+    SectionForm,
+    SectionHeadingForm,
+    ShopForm,
+    SiteStyleForm,
+    SliderForm,
 )
 
 
@@ -82,8 +114,8 @@ def admin_dashboard(request):
     # Revenue/Earnings
     total_earnings = MpesaTransaction.objects.filter(status='SUCCESS').aggregate(Sum('amount'))['amount__sum'] or 0
     
-    # Recent Activity (Last 5 logs)
-    recent_activity_feed = ActivityLog.objects.all().order_by('-timestamp')[:5]
+    # Recent Activity (normalized feed for dashboard rendering)
+    recent_activity_feed = ActivityFeedService.get_admin_feed(limit=5)
     
     # Upcoming Events (Competitions starting soon)
     upcoming_events = Competition.objects.filter(
@@ -138,17 +170,17 @@ def admin_dashboard(request):
         'top_players': top_players,
         'scheduled_jobs': scheduled_jobs,
         'today': timezone.now(),
-        'chart_data': {
+        'chart_data_json': json.dumps({
             'activity_labels': activity_labels,
             'activity_data': activity_data,
             'revenue_data': revenue_data,
-        },
+        }),
         'admin_unread_notifications_count': NotificationRecipient.objects.filter(
-            admin_user=request.user,
+            admin_user__email=request.user.email,
             is_read=False
         ).count(),
         'admin_recent_notifications': NotificationRecipient.objects.filter(
-            admin_user=request.user
+            admin_user__email=request.user.email
         ).select_related('notification').order_by('-created_at')[:5],
         # Pusher real-time notifications
         'pusher_key': os.environ.get('PUSHER_KEY', ''),
@@ -241,6 +273,323 @@ def admin_site_settings(request):
         'current_logo': project_detail.logo if project_detail.logo else None
     }
     return render(request, 'admin_panel/settings/site_settings.html', context)
+
+
+@admin_required
+def admin_content_library(request):
+    content_sections = [
+        {
+            'key': 'navigation_links',
+            'title': 'Navigation Links',
+            'icon': 'fas fa-compass',
+            'model': NavigationLink,
+            'form_class': NavigationLinkForm,
+            'queryset': lambda: NavigationLink.objects.all().order_by('order', 'id'),
+            'summary': lambda item: item.link_text,
+            'detail': lambda item: item.link or 'No destination set',
+        },
+        {
+            'key': 'footer_sections',
+            'title': 'Footer Sections',
+            'icon': 'fas fa-layer-group',
+            'model': FooterSection,
+            'form_class': FooterSectionForm,
+            'queryset': lambda: FooterSection.objects.all().order_by('order', 'id'),
+            'summary': lambda item: item.title,
+            'detail': lambda item: f'Order #{item.order}',
+        },
+        {
+            'key': 'footer_links',
+            'title': 'Footer Links',
+            'icon': 'fas fa-link',
+            'model': FooterLink,
+            'form_class': FooterLinkForm,
+            'queryset': lambda: FooterLink.objects.select_related('section').all().order_by('order', 'id'),
+            'summary': lambda item: item.link_text,
+            'detail': lambda item: item.section.title,
+        },
+        {
+            'key': 'sections',
+            'title': 'Content Sections',
+            'icon': 'fas fa-square-poll-horizontal',
+            'model': Section,
+            'form_class': SectionForm,
+            'queryset': lambda: Section.objects.all().order_by('order', 'name'),
+            'summary': lambda item: item.name,
+            'detail': lambda item: item.slug,
+        },
+        {
+            'key': 'section_headings',
+            'title': 'Section Headings',
+            'icon': 'fas fa-heading',
+            'model': SectionHeading,
+            'form_class': SectionHeadingForm,
+            'queryset': lambda: SectionHeading.objects.select_related('section').all().order_by('section__order'),
+            'summary': lambda item: item.heading,
+            'detail': lambda item: item.section.name,
+        },
+        {
+            'key': 'sliders',
+            'title': 'Hero Sliders',
+            'icon': 'fas fa-images',
+            'model': Slider,
+            'form_class': SliderForm,
+            'queryset': lambda: Slider.objects.all().order_by('order', 'id'),
+            'summary': lambda item: item.title,
+            'detail': lambda item: item.cta_text or 'No CTA',
+        },
+        {
+            'key': 'about',
+            'title': 'About Section',
+            'icon': 'fas fa-circle-info',
+            'model': About,
+            'form_class': AboutForm,
+            'queryset': lambda: About.objects.all().order_by('-id'),
+            'summary': lambda item: item.heading,
+            'detail': lambda item: item.badge_text,
+        },
+        {
+            'key': 'feature_cards',
+            'title': 'Feature Cards',
+            'icon': 'fas fa-star',
+            'model': FeatureCard,
+            'form_class': FeatureCardForm,
+            'queryset': lambda: FeatureCard.objects.all().order_by('order', 'id'),
+            'summary': lambda item: item.feature_name,
+            'detail': lambda item: f'Order #{item.order}',
+        },
+        {
+            'key': 'events',
+            'title': 'Events',
+            'icon': 'fas fa-calendar-days',
+            'model': Event,
+            'form_class': EventForm,
+            'queryset': lambda: Event.objects.all().order_by('-id'),
+            'summary': lambda item: item.title,
+            'detail': lambda item: 'Active' if item.is_active else 'Inactive',
+        },
+        {
+            'key': 'footer',
+            'title': 'Footer Copy',
+            'icon': 'fas fa-shield-heart',
+            'model': Footer,
+            'form_class': FooterForm,
+            'queryset': lambda: Footer.objects.all().order_by('-id'),
+            'summary': lambda item: item.copy_right_text,
+            'detail': lambda item: item.ownership_text,
+        },
+    ]
+
+    if request.method == 'POST':
+        form_key = request.POST.get('content_form_key')
+        selected_config = next((item for item in content_sections if item['key'] == form_key), None)
+        if selected_config:
+            object_id = request.POST.get('object_id')
+            instance = None
+            if object_id:
+                instance = selected_config['model'].objects.filter(pk=object_id).first()
+
+            form = selected_config['form_class'](request.POST, request.FILES, instance=instance, prefix=selected_config['key'])
+            if form.is_valid():
+                saved_object = form.save()
+                messages.success(request, f"{selected_config['title']} saved successfully.")
+                return redirect(f"{reverse('admin_panel:content_library')}?section={selected_config['key']}&object_id={saved_object.pk}")
+
+            messages.error(request, f"Please correct the errors in {selected_config['title']}.")
+
+    active_section = request.GET.get('section')
+    active_object_id = request.GET.get('object_id')
+    rendered_sections = []
+
+    for section_config in content_sections:
+        instance = None
+        if active_section == section_config['key'] and active_object_id:
+            instance = section_config['model'].objects.filter(pk=active_object_id).first()
+
+        form = section_config['form_class'](instance=instance, prefix=section_config['key'])
+        queryset = section_config['queryset']()
+        rendered_sections.append({
+            'key': section_config['key'],
+            'title': section_config['title'],
+            'icon': section_config['icon'],
+            'form': form,
+            'count': queryset.count(),
+            'items': [
+                {
+                    'id': item.pk,
+                    'summary': section_config['summary'](item),
+                    'detail': section_config['detail'](item),
+                    'is_active': getattr(item, 'is_active', True),
+                }
+                for item in queryset[:8]
+            ],
+        })
+
+    context = {
+        'content_sections': rendered_sections,
+        'active_section': active_section,
+        'active_object_id': active_object_id,
+        'content_counts': {
+            'navigation_links': NavigationLink.objects.count(),
+            'footer_sections': FooterSection.objects.count(),
+            'footer_links': FooterLink.objects.count(),
+            'sections': Section.objects.count(),
+            'sliders': Slider.objects.count(),
+            'feature_cards': FeatureCard.objects.count(),
+            'events': Event.objects.count(),
+        },
+    }
+    return render(request, 'admin_panel/content/admin_content_library.html', context)
+
+
+@admin_required
+def admin_notification_hub(request):
+    notification_sections = [
+        {
+            'key': 'notifications',
+            'title': 'Notifications',
+            'icon': 'fas fa-bell',
+            'model': Notification,
+            'form_class': NotificationForm,
+            'queryset': lambda: Notification.objects.all().order_by('-created_at'),
+            'summary': lambda item: item.title,
+            'detail': lambda item: f'{item.get_category_display()} · {item.get_importance_display()}',
+        },
+        {
+            'key': 'groups',
+            'title': 'Targeting Groups',
+            'icon': 'fas fa-object-group',
+            'model': NotificationGroup,
+            'form_class': NotificationGroupForm,
+            'queryset': lambda: NotificationGroup.objects.all().order_by('name'),
+            'summary': lambda item: item.name,
+            'detail': lambda item: item.get_criteria_type_display(),
+        },
+        {
+            'key': 'schedules',
+            'title': 'Schedules',
+            'icon': 'fas fa-calendar-check',
+            'model': NotificationSchedule,
+            'form_class': NotificationScheduleForm,
+            'queryset': lambda: NotificationSchedule.objects.select_related('notification').all().order_by('-scheduled_at'),
+            'summary': lambda item: item.notification.title,
+            'detail': lambda item: item.get_status_display(),
+        },
+    ]
+
+    if request.method == 'POST':
+        form_key = request.POST.get('notification_form_key')
+        selected_config = next((item for item in notification_sections if item['key'] == form_key), None)
+        if selected_config:
+            object_id = request.POST.get('object_id')
+            instance = None
+            if object_id:
+                instance = selected_config['model'].objects.filter(pk=object_id).first()
+
+            form = selected_config['form_class'](request.POST, request.FILES, instance=instance, prefix=selected_config['key'])
+            if form.is_valid():
+                saved_object = form.save()
+                if isinstance(saved_object, Notification) and not saved_object.expires_at:
+                    saved_object.set_expiry()
+                    saved_object.save(update_fields=['expires_at'])
+                messages.success(request, f"{selected_config['title']} saved successfully.")
+                return redirect(f"{reverse('admin_panel:notification_hub')}?section={selected_config['key']}&object_id={saved_object.pk}")
+
+            messages.error(request, f"Please correct the errors in {selected_config['title']}.")
+
+    active_section = request.GET.get('section')
+    active_object_id = request.GET.get('object_id')
+    rendered_sections = []
+
+    for section_config in notification_sections:
+        instance = None
+        if active_section == section_config['key'] and active_object_id:
+            instance = section_config['model'].objects.filter(pk=active_object_id).first()
+
+        form = section_config['form_class'](instance=instance, prefix=section_config['key'])
+        queryset = section_config['queryset']()
+        rendered_sections.append({
+            'key': section_config['key'],
+            'title': section_config['title'],
+            'icon': section_config['icon'],
+            'form': form,
+            'count': queryset.count(),
+            'items': [
+                {
+                    'id': item.pk,
+                    'summary': section_config['summary'](item),
+                    'detail': section_config['detail'](item),
+                    'is_active': getattr(item, 'is_active', True),
+                }
+                for item in queryset[:8]
+            ],
+        })
+
+    recent_recipients = NotificationRecipient.objects.select_related('notification').order_by('-created_at')[:8]
+
+    context = {
+        'notification_sections': rendered_sections,
+        'recent_recipients': recent_recipients,
+        'notification_counts': {
+            'notifications': Notification.objects.count(),
+            'groups': NotificationGroup.objects.count(),
+            'schedules': NotificationSchedule.objects.count(),
+            'unread_admin': NotificationRecipient.objects.filter(admin_user__email=request.user.email, is_read=False).count(),
+        },
+        'all_notification_groups': NotificationGroup.objects.filter(is_active=True).order_by('name'),
+    }
+    return render(request, 'admin_panel/notifications/admin_notification_hub.html', context)
+
+
+@admin_required
+def admin_send_notification(request):
+    """Handle sending a saved notification to a target audience (Send Now).
+
+    POST params:
+      - object_id: Notification id to send
+      - target_group: optional NotificationGroup id
+      - target_all: optional 'on' to send to all gamers
+      - send_email: optional 'on' to also send emails
+    """
+    from notifications.services import send_notification_to_users, get_group_users
+    from notifications.models import NotificationGroup, Notification
+    from accounts.models import Gamer
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    object_id = request.POST.get('object_id') or request.POST.get('notification_id')
+    if not object_id:
+        messages.error(request, 'No notification specified to send.')
+        return redirect(reverse('admin_panel:notification_hub'))
+
+    notification = Notification.objects.filter(pk=object_id).first()
+    if not notification:
+        messages.error(request, 'Notification not found.')
+        return redirect(reverse('admin_panel:notification_hub'))
+
+    send_email = True if request.POST.get('send_email') == 'on' else False
+    target_all = True if request.POST.get('target_all') == 'on' else False
+    target_group_id = request.POST.get('target_group')
+
+    # Determine recipients
+    if target_all:
+        users = Gamer.objects.all()
+    elif target_group_id:
+        group = NotificationGroup.objects.filter(pk=target_group_id, is_active=True).first()
+        if not group:
+            messages.error(request, 'Selected group not found or inactive.')
+            return redirect(f"{reverse('admin_panel:notification_hub')}?section=notifications&object_id={notification.pk}")
+        users = get_group_users(group)
+    else:
+        messages.error(request, 'No audience selected. Choose a group or "Send to all users".')
+        return redirect(f"{reverse('admin_panel:notification_hub')}?section=notifications&object_id={notification.pk}")
+
+    # Perform send (gamers only for now)
+    stats = send_notification_to_users(notification, users, send_email=send_email, user_type='gamer')
+
+    messages.success(request, f"Notification queued: {stats['created']} created, {stats['failed']} failed.")
+    return redirect(f"{reverse('admin_panel:notification_hub')}?section=notifications&object_id={notification.pk}")
 
 
 # Game Management Views
@@ -680,8 +1029,8 @@ def admin_user_detail(request, user_id):
         except Exception:
             pass
 
-    # Get recent activity
-    activities = ActivityLog.objects.filter(actor=user_obj).order_by('-timestamp')[:10]
+    # Get recent activity (limit to 5 most recent)
+    activities = ActivityLog.objects.filter(actor=user_obj).order_by('-timestamp')[:5]
     
     context = {
         'user_obj': user_obj,

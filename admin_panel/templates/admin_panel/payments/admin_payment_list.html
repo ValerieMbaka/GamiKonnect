@@ -4,78 +4,73 @@
 {% block title %}Payments | Admin Panel{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h3 mb-0 text-gray-800">Payments & Transactions</h2>
+<div class="admin-hub-shell">
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <h1 class="page-title m-0">Payments & Transactions</h1>
+            <p class="page-subtitle text-muted mt-1">Monitor M-Pesa activity and inspect individual payment records.</p>
+        </div>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">M-Pesa Transactions</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Receipt</th>
-                            <th>Gamer</th>
-                            <th>Phone</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tx in transactions %}
-                        <tr>
-                            <td><code>{{ tx.receipt_number|default:"PENDING" }}</code></td>
-                            <td>{{ tx.gamer.email }}</td>
-                            <td>{{ tx.phone_number }}</td>
-                            <td>KES {{ tx.amount }}</td>
-                            <td>
-                                {% if tx.status == 'SUCCESS' %}
-                                <span class="badge bg-success">Success</span>
-                                {% elif tx.status == 'PENDING' %}
-                                <span class="badge bg-warning text-dark">Pending</span>
-                                {% else %}
-                                <span class="badge bg-danger">Failed</span>
-                                {% endif %}
-                                {% if tx.is_simulated %}<small class="text-muted d-block">Simulated</small>{% endif %}
-                            </td>
-                            <td>{{ tx.created_at|date:"M d, Y H:i" }}</td>
-                            <td>
-                                <a href="{% url 'admin_panel:payment_detail' tx.id %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-search-dollar"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center py-4">No transactions recorded.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <section class="admin-card hub-section hub-table-shell">
+        <div class="hub-table-toolbar">
+            <div>
+                <h2>M-Pesa Transactions</h2>
+                <p>Recent payments captured by the platform.</p>
             </div>
-            
-            {% if transactions.has_other_pages %}
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    {% if transactions.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ transactions.previous_page_number }}">Previous</a></li>
-                    {% endif %}
-                    {% for i in transactions.paginator.page_range %}
-                    <li class="page-item {% if transactions.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
-                    {% endfor %}
-                    {% if transactions.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ transactions.next_page_number }}">Next</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
         </div>
-    </div>
+        <div class="hub-table-wrap">
+            <table class="hub-data-table">
+                <thead>
+                    <tr>
+                        <th>Receipt</th>
+                        <th>Gamer</th>
+                        <th>Phone</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in transactions %}
+                    <tr>
+                        <td><code>{{ tx.receipt_number|default:"PENDING" }}</code></td>
+                        <td>
+                            <div class="hub-payment-cell">
+                                <img src="{% static 'core/images/gamepad.jpeg' %}" class="hub-avatar" alt="Gamer avatar">
+                                <div>
+                                    <p class="hub-cell-title">{{ tx.gamer.first_name|default:tx.gamer.email }}</p>
+                                    <p class="hub-cell-subtitle">{{ tx.gamer.email }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ tx.phone_number }}</td>
+                        <td><strong>KES {{ tx.amount }}</strong></td>
+                        <td>
+                            {% if tx.status == 'SUCCESS' %}<span class="status-badge success">Success</span>
+                            {% elif tx.status == 'PENDING' %}<span class="status-badge warning">Pending</span>
+                            {% else %}<span class="status-badge danger">Failed</span>{% endif %}
+                            {% if tx.is_simulated %}<div class="hub-cell-subtitle mt-1">Simulated</div>{% endif %}
+                        </td>
+                        <td>{{ tx.created_at|date:"M d, Y H:i" }}</td>
+                        <td><a href="{% url 'admin_panel:payment_detail' tx.id %}" class="btn-link"><i class="fas fa-search-dollar me-1"></i> Open</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center py-4 text-muted">No transactions recorded.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if transactions.has_other_pages %}
+        <div class="hub-table-toolbar">
+            <p class="m-0 text-muted">Page {{ transactions.number }} of {{ transactions.paginator.num_pages }}</p>
+            <div class="d-flex gap-2">
+                {% if transactions.has_previous %}<a class="btn-secondary" href="?page={{ transactions.previous_page_number }}">Previous</a>{% endif %}
+                {% if transactions.has_next %}<a class="btn-secondary" href="?page={{ transactions.next_page_number }}">Next</a>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
 </div>
 {% endblock %}

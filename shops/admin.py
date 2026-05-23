@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from .models import Shop, Console, GamePricing
 from core.email_service import EmailManager
+from core.admin_utils import SafeDateHierarchyAdmin
 
 
 class ConsoleInline(admin.TabularInline):
@@ -26,7 +27,7 @@ class GamePricingInline(admin.TabularInline):
 
 
 @admin.register(Shop)
-class ShopAdmin(admin.ModelAdmin):
+class ShopAdmin(SafeDateHierarchyAdmin):
     list_display = ('name', 'location', 'approval_badge', 'is_active', 'base_price_display', 'created_at')
     list_filter = ('is_approved', 'is_active', 'created_at')
     search_fields = ('name', 'location', 'submitted_by_email', 'address')
@@ -145,7 +146,7 @@ class ShopAdmin(admin.ModelAdmin):
 
 
 @admin.register(Console)
-class ConsoleAdmin(admin.ModelAdmin):
+class ConsoleAdmin(SafeDateHierarchyAdmin):
     """
     Manage gaming consoles available in shops.
     """
@@ -208,7 +209,7 @@ class ConsoleAdmin(admin.ModelAdmin):
 
 
 @admin.register(GamePricing)
-class GamePricingAdmin(admin.ModelAdmin):
+class GamePricingAdmin(SafeDateHierarchyAdmin):
     """
     Manage game pricing across different shops.
     """
@@ -262,6 +263,9 @@ class GamePricingAdmin(admin.ModelAdmin):
     def premium_badge(self, obj):
         """Show if premium"""
         if obj.is_premium:
-            return format_html('<span style="background:#f59e0b;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;">PREMIUM</span>')
+            return format_html(
+                '<span style="background:#f59e0b;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;">{}</span>',
+                'PREMIUM'
+            )
         return '—'
     premium_badge.short_description = 'Premium'

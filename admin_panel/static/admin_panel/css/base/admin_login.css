@@ -6,12 +6,42 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #F8FAFC;
+    background:
+        radial-gradient(circle at top left, rgba(53, 168, 240, 0.18), transparent 38%),
+        radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.14), transparent 32%),
+        linear-gradient(135deg, #0B1120 0%, #0F172A 46%, #111827 100%);
     font-family: var(--font-sans), sans-serif;
     margin: 0;
     padding: var(--spacing-md);
     position: relative;
     overflow: hidden;
+}
+
+.admin-auth-body::before,
+.admin-auth-body::after {
+    content: '';
+    position: absolute;
+    inset: auto;
+    border-radius: 999px;
+    filter: blur(20px);
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.admin-auth-body::before {
+    width: 240px;
+    height: 240px;
+    background: rgba(53, 168, 240, 0.18);
+    top: -60px;
+    left: -40px;
+}
+
+.admin-auth-body::after {
+    width: 320px;
+    height: 320px;
+    background: rgba(16, 185, 129, 0.14);
+    bottom: -100px;
+    right: -80px;
 }
 
 /* Layout & Card Design */
@@ -24,11 +54,12 @@
 }
 
 .admin-login-card {
-    background: var(--bg-card);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: var(--spacing-md);
-    border: 1px solid var(--border-light);
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(18px);
+    border-radius: 28px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+    padding: 34px 30px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Header Styling */
@@ -38,23 +69,24 @@
 }
 
 .admin-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
     margin-bottom: var(--spacing-sm);
     animation: admin-logo-breathe 3.5s ease-in-out infinite;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 18px 45px rgba(53, 168, 240, 0.18);
 }
 
 .admin-title {
-    color: var(--text-primary);
-    font-size: var(--text-2xl);
+    color: #F8FAFC;
+    font-size: 2rem;
     font-weight: var(--font-bold);
     letter-spacing: -0.5px;
     margin-bottom: var(--spacing-xs);
 }
 
 .admin-subtitle {
-    color: var(--text-muted);
+    color: #94A3B8;
     font-size: var(--text-sm);
     font-weight: var(--font-medium);
 }
@@ -73,7 +105,7 @@
 }
 
 .form-label {
-    color: var(--text-secondary);
+    color: #CBD5E1;
     font-size: var(--text-sm);
     font-weight: var(--font-semibold);
 }
@@ -87,7 +119,7 @@
 .input-icon {
     position: absolute;
     left: 14px;
-    color: var(--text-muted);
+    color: #94A3B8;
     font-size: 14px;
     transition: var(--transition-fast);
 }
@@ -95,10 +127,10 @@
 .form-control {
     width: 100%;
     padding: 12px 14px 12px 40px;
-    background: var(--bg-primary);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    color: var(--text-primary);
+    background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 16px;
+    color: #F8FAFC;
     font-size: var(--text-sm);
     font-family: var(--font-sans), sans-serif;
     transition: var(--transition);
@@ -106,9 +138,9 @@
 
 .form-control:focus {
     outline: none;
-    border-color: var(--primary);
-    background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(53, 168, 240, 0.15);
+    border-color: rgba(53, 168, 240, 0.55);
+    background: rgba(15, 23, 42, 0.95);
+    box-shadow: 0 0 0 4px rgba(53, 168, 240, 0.15);
 }
 
 /* Change icon color when input is focused */
@@ -124,7 +156,7 @@
     background: none;
     border: none;
     padding: 0;
-    color: var(--text-muted);
+    color: #94A3B8;
     cursor: pointer;
     font-size: 14px;
     transition: var(--transition-fast);
@@ -134,7 +166,7 @@
 }
 
 .btn-icon:hover {
-    color: var(--primary);
+    color: #35A8F0;
 }
 
 /* Primary Action Button */
@@ -157,13 +189,13 @@
     font-weight: var(--font-semibold);
     cursor: pointer;
     transition: var(--transition);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 18px 40px rgba(53, 168, 240, 0.24);
 }
 
 .btn-admin-primary:hover {
-    background: var(--primary-dark);
+    background: #2793CC;
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 22px 48px rgba(53, 168, 240, 0.28);
 }
 
 .btn-admin-primary:active {
@@ -182,12 +214,12 @@
 .admin-login-footer {
     margin-top: var(--spacing-sm);
     text-align: center;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
     padding-top: var(--spacing-sm);
 }
 
 .admin-login-footer p {
-    color: var(--text-muted);
+    color: #94A3B8;
     font-size: 12px;
     margin: 0;
 }
@@ -206,7 +238,10 @@
 
 /* Dark Mode Workspace Override */
 [data-theme="dark"] .admin-auth-body {
-    background-color: #0B1120;
+    background:
+        radial-gradient(circle at top left, rgba(53, 168, 240, 0.18), transparent 38%),
+        radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.14), transparent 32%),
+        linear-gradient(135deg, #0B1120 0%, #0F172A 46%, #111827 100%);
 }
 
 /* Responsive Design */

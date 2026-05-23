@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Count
 from .models import Counter, PlatformCategory, Platform, Genre, Game
+from core.admin_utils import SafeDateHierarchyAdmin
 
 
 @admin.register(Counter)
@@ -20,7 +21,7 @@ class CounterAdmin(admin.ModelAdmin):
 
 
 @admin.register(PlatformCategory)
-class PlatformCategoryAdmin(admin.ModelAdmin):
+class PlatformCategoryAdmin(SafeDateHierarchyAdmin):
     list_display = ('integer_id', 'name', 'slug', 'platform_count_badge', 'game_count_badge')
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name', 'slug', 'description', 'integer_id')
@@ -75,7 +76,7 @@ class PlatformCategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Platform)
-class PlatformAdmin(admin.ModelAdmin):
+class PlatformAdmin(SafeDateHierarchyAdmin):
     list_display = (
         'integer_id', 'name', 'category_link',
         'slug', 'game_count_badge'
@@ -140,7 +141,7 @@ class PlatformAdmin(admin.ModelAdmin):
 
 
 @admin.register(Genre)
-class GenreAdmin(admin.ModelAdmin):
+class GenreAdmin(SafeDateHierarchyAdmin):
     list_display = (
         'integer_id', 'name', 'slug', 'game_count_badge',
         'created_at'
@@ -193,7 +194,7 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 @admin.register(Game)
-class GameAdmin(admin.ModelAdmin):
+class GameAdmin(SafeDateHierarchyAdmin):
     list_display = (
         'integer_id', 'name', 'genres_display', 'status_badge',
         'verification_badge', 'is_verified', 'is_active', 'created_at'

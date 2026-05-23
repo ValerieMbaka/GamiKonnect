@@ -8,6 +8,7 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Prefetch, Count
+from django.db import IntegrityError, transaction
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.utils import timezone
@@ -128,7 +129,7 @@ def feed_list(request):
     page_obj = get_optimized_feed_posts(page=page)
     
     # Prepare context
-    context = base_site_context(request)
+    context = base_site_context()
     context.update({
         'page_obj': page_obj,
         'posts': page_obj.object_list,
@@ -182,13 +183,13 @@ def create_post(request):
                         )
             
             messages.success(request, 'Post created successfully!')
-            return redirect('feed_list')
+            return redirect('feeds:feed_list')
         else:
             messages.error(request, 'Error creating post. Please check your input.')
     else:
         form = PostForm()
     
-    context = base_site_context(request)
+    context = base_site_context()
     context.update({
         'form': form,
         'title': 'Create a Post',
@@ -220,7 +221,7 @@ def post_detail(request, post_id):
     # Get comment form
     comment_form = CommentForm() if request.method == 'GET' else None
     
-    context = base_site_context(request)
+    context = base_site_context()
     context.update({
         'post': post,
         'current_gamer': current_gamer,
@@ -337,7 +338,7 @@ def add_comment(request, post_id):
             return JsonResponse({'error': 'Invalid comment'}, status=400)
         messages.error(request, 'Error adding comment.')
     
-    return redirect('post_detail', post_id=post_id)
+    return redirect('feeds:post_detail', post_id=post_id)
 
 
 @require_http_methods(["POST"])
@@ -389,69 +390,74 @@ def toggle_like(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     post_channel = f'feed-post-{post.id}'
     
-    # Check if gamer already liked this post
-    like = Like.objects.filter(post=post, gamer=gamer).first()
-    
-    if like:
-        # Unlike
-        like.delete()
-        liked = False
-    else:
-        # Like
-        Like.objects.create(post=post, gamer=gamer)
-        liked = True
+    with transaction.atomic():
+        # Check if gamer already liked this post
+        like = Like.objects.select_for_update().filter(post=post, gamer=gamer).first()
         
-        # Send notification to post author if they're different
-        if post.author != gamer:
-            gamer_name = gamer.custom_username or f"{gamer.first_name} {gamer.last_name}"
-            create_notification(
-                title=f"{gamer_name} liked your post",
-                message=f"{gamer_name} liked one of your posts",
-                category=NotificationCategory.GENERAL,
-                importance=NotificationImportance.LOW,
-                recipient_gamer=post.author,
-                related_post=post
-            )
+        if like:
+            # Unlike
+            like.delete()
+            liked = False
+        else:
+            # Like
+            try:
+                Like.objects.create(post=post, gamer=gamer)
+                liked = True
+            except IntegrityError:
+                # Another request created the like first; treat as liked.
+                liked = True
+        
+    # Send notification to post author if they're different
+    if liked and post.author != gamer:
+        gamer_name = gamer.custom_username or f"{gamer.first_name} {gamer.last_name}"
+        create_notification(
+            title=f"{gamer_name} liked your post",
+            message=f"{gamer_name} liked one of your posts",
+            category=NotificationCategory.GENERAL,
+            importance=NotificationImportance.LOW,
+            recipient_gamer=post.author,
+            related_post=post
+        )
 
-            broadcast_user_notification(
-                post.author.id,
-                'gamer',
-                {
-                    'title': f'{gamer_name} liked your post',
-                    'message': f'{gamer_name} liked one of your posts',
-                    'post_id': str(post.id),
-                    'like_count': post.like_count,
-                    'actor_name': gamer_name,
-                    'liked': liked,
-                    'timestamp': timezone.now().isoformat(),
-                }
-            )
-
-        broadcast_notification(
-            post_channel,
-            'feed-post-like-updated',
+        broadcast_user_notification(
+            post.author.id,
+            'gamer',
             {
+                'title': f'{gamer_name} liked your post',
+                'message': f'{gamer_name} liked one of your posts',
                 'post_id': str(post.id),
-                'liked': liked,
                 'like_count': post.like_count,
-                'actor_id': gamer.id,
-                'actor_name': gamer.custom_username or f"{gamer.first_name} {gamer.last_name}",
+                'actor_name': gamer_name,
+                'liked': liked,
                 'timestamp': timezone.now().isoformat(),
             }
         )
 
-        broadcast_notification(
-            'gamikonnect-global',
-            'feed-like-updated',
-            {
-                'post_id': str(post.id),
-                'liked': liked,
-                'like_count': post.like_count,
-                'actor_id': gamer.id,
-                'actor_name': gamer.custom_username or f"{gamer.first_name} {gamer.last_name}",
-                'timestamp': timezone.now().isoformat(),
-            }
-        )
+    broadcast_notification(
+        post_channel,
+        'feed-post-like-updated',
+        {
+            'post_id': str(post.id),
+            'liked': liked,
+            'like_count': post.like_count,
+            'actor_id': gamer.id,
+            'actor_name': gamer.custom_username or f"{gamer.first_name} {gamer.last_name}",
+            'timestamp': timezone.now().isoformat(),
+        }
+    )
+
+    broadcast_notification(
+        'gamikonnect-global',
+        'feed-like-updated',
+        {
+            'post_id': str(post.id),
+            'liked': liked,
+            'like_count': post.like_count,
+            'actor_id': gamer.id,
+            'actor_name': gamer.custom_username or f"{gamer.first_name} {gamer.last_name}",
+            'timestamp': timezone.now().isoformat(),
+        }
+    )
     
     # Update post's like count
     post.like_count = post.likes.count()
@@ -496,7 +502,7 @@ def gamer_feed(request, gamer_id):
     except (EmptyPage, PageNotAnInteger):
         page_obj = paginator.page(1)
     
-    context = base_site_context(request)
+    context = base_site_context()
     context.update({
         'target_gamer': target_gamer,
         'current_gamer': current_gamer,

@@ -3,10 +3,11 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 import json
 from .models import Activity, ActivityLog, Level, Achievement, GamerAchievement
+from core.admin_utils import SafeDateHierarchyAdmin
 
 
 @admin.register(Activity)
-class ActivityAdmin(admin.ModelAdmin):
+class ActivityAdmin(SafeDateHierarchyAdmin):
     """
     Gamer-centric activity tracking for progression, achievements, and gaming milestones.
     """
@@ -97,7 +98,7 @@ class ActivityAdmin(admin.ModelAdmin):
     def has_metadata_indicator(self, obj):
         """Show indicator if metadata exists"""
         if obj.metadata:
-            return format_html('<span style="color:#10b981;font-weight:bold;">✓ Has Data</span>')
+            return format_html('<span style="color:#10b981;font-weight:bold;">{}</span>', '✓ Has Data')
         return '—'
     has_metadata_indicator.short_description = 'Metadata'
     
@@ -125,7 +126,7 @@ class ActivityAdmin(admin.ModelAdmin):
 
 
 @admin.register(ActivityLog)
-class ActivityLogAdmin(admin.ModelAdmin):
+class ActivityLogAdmin(SafeDateHierarchyAdmin):
     """
     System-wide activity logging for audit trails and security events.
     """
@@ -190,7 +191,7 @@ class ActivityLogAdmin(admin.ModelAdmin):
                 '<a href="/admin/accounts/account/{}/change/">{}</a>',
                 obj.actor.id, obj.actor.email
             )
-        return format_html('<span style="color:#999;">System</span>')
+        return format_html('<span style="color:#999;">{}</span>', 'System')
     actor_link.short_description = 'Actor'
     
     def actor_link_display(self, obj):
@@ -277,7 +278,7 @@ class LevelAdmin(admin.ModelAdmin):
     def has_badge_indicator(self, obj):
         """Show indicator if badge exists"""
         if obj.badge_image:
-            return format_html('<span style="color:#10b981;font-weight:bold;">✓</span>')
+            return format_html('<span style="color:#10b981;font-weight:bold;">{}</span>', '✓')
         return '—'
     has_badge_indicator.short_description = 'Badge'
     
@@ -327,7 +328,7 @@ class AchievementAdmin(admin.ModelAdmin):
     def has_badge_indicator(self, obj):
         """Show indicator if badge exists"""
         if obj.badge_image:
-            return format_html('<span style="color:#10b981;font-weight:bold;">✓</span>')
+            return format_html('<span style="color:#10b981;font-weight:bold;">{}</span>', '✓')
         return '—'
     has_badge_indicator.short_description = 'Badge'
     
@@ -343,7 +344,7 @@ class AchievementAdmin(admin.ModelAdmin):
 
 
 @admin.register(GamerAchievement)
-class GamerAchievementAdmin(admin.ModelAdmin):
+class GamerAchievementAdmin(SafeDateHierarchyAdmin):
     """
     Track which achievements each gamer has unlocked.
     """

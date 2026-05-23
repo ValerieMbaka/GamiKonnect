@@ -4,59 +4,54 @@
 {% block title %}Admin Activity Logs | Admin Panel{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h3 mb-0 text-gray-800">Admin Activity Logs</h2>
+<div class="admin-hub-shell">
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <h1 class="page-title m-0">Admin Activity Logs</h1>
+            <p class="page-subtitle text-muted mt-1">Track system events, security actions, and maintenance activity.</p>
+        </div>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">System Audit Trail</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover table-sm">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Actor</th>
-                            <th>Action</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in logs %}
-                        <tr>
-                            <td>{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
-                            <td>{{ log.actor.email|default:"System" }}</td>
-                            <td><span class="badge {% if log.action_type == 'CREATE' %}bg-success{% elif log.action_type == 'DELETE' %}bg-danger{% else %}bg-info{% endif %}">{{ log.action_type }}</span></td>
-                            <td>{{ log.description }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4">No activity logs found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <section class="admin-card hub-section hub-table-shell">
+        <div class="hub-table-toolbar">
+            <div>
+                <h2>System Audit Trail</h2>
+                <p>All administrative and system-level events.</p>
             </div>
-            
-            {% if logs.has_other_pages %}
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    {% if logs.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ logs.previous_page_number }}">Previous</a></li>
-                    {% endif %}
-                    {% for i in logs.paginator.page_range %}
-                    <li class="page-item {% if logs.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
-                    {% endfor %}
-                    {% if logs.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ logs.next_page_number }}">Next</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
         </div>
-    </div>
+        <div class="hub-table-wrap">
+            <table class="hub-data-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Actor</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                        <td>{{ log.actor.email|default:"System" }}</td>
+                        <td><span class="status-badge {% if log.action_type == 'CREATE' %}success{% elif log.action_type == 'DELETE' %}danger{% else %}neutral{% endif %}">{{ log.action_type }}</span></td>
+                        <td>{{ log.description }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-4 text-muted">No activity logs found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if logs.has_other_pages %}
+        <div class="hub-table-toolbar">
+            <p class="m-0 text-muted">Page {{ logs.number }} of {{ logs.paginator.num_pages }}</p>
+            <div class="d-flex gap-2">
+                {% if logs.has_previous %}<a class="btn-secondary" href="?page={{ logs.previous_page_number }}">Previous</a>{% endif %}
+                {% if logs.has_next %}<a class="btn-secondary" href="?page={{ logs.next_page_number }}">Next</a>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
 </div>
 {% endblock %}

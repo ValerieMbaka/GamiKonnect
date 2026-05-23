@@ -724,9 +724,9 @@ def gamer_dashboard(request):
         # ---------------------------------------------------------------
         # Notifications
         # ---------------------------------------------------------------
-        unread_count = NotificationRecipient.objects.filter(user=gamer, is_read=False).count()
+        unread_count = NotificationRecipient.objects.filter(gamer=gamer, is_read=False).count()
         recent_notifications = NotificationRecipient.objects.filter(
-            user=gamer
+            gamer=gamer
         ).select_related('notification').order_by('-created_at')[:5]
 
         context = {

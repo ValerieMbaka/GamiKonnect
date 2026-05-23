@@ -8,44 +8,89 @@
 {% endblock %}
 
 {% block content %}
-<div class="profile-center-wrapper">
-    <div class="admin-card identity-card">
-        <div class="identity-header">
-            <div class="identity-avatar-wrapper">
-                <img src="{% if request.user.admin_profile.avatar %}{{ request.user.admin_profile.avatar.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}"
-                     alt="Admin Avatar" id="displayAvatar">
-            </div>
-            <h2 id="displayFullName">{{ request.user.first_name }} {{ request.user.last_name }}</h2>
-            <p class="identity-role" id="displayJobTitle">{{ request.user.admin_profile.job_title|default:"System Administrator" }}</p>
-            <span class="profile-badge">
-                <i class="fas fa-shield-alt"></i>
-                {% if request.user.is_superuser %} Superuser {% else %} Staff {% endif %}
-            </span>
+<div class="admin-hub-shell">
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <h1 class="page-title m-0">Admin Profile</h1>
+            <p class="page-subtitle text-muted mt-1">Update your account details and security settings.</p>
         </div>
+    </div>
 
-        <div class="identity-body">
-            <div class="info-row">
-                <span class="info-label"><i class="fas fa-user"></i> Username</span>
-                <span class="info-value">{{ request.user.username }}</span>
+    <div class="admin-detail-grid" style="grid-template-columns:minmax(0,1fr) minmax(320px,0.55fr);">
+        <section class="admin-card">
+            <div class="hub-section-header">
+                <div>
+                    <h2><i class="fas fa-id-badge"></i> Identity</h2>
+                    <p>Your account details and current role.</p>
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label"><i class="fas fa-envelope"></i> Email</span>
-                <span class="info-value" id="displayEmail">{{ request.user.email }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label"><i class="fas fa-globe"></i> Timezone</span>
-                <span class="info-value" id="displayTimezone">{{ request.user.admin_profile.timezone }}</span>
-            </div>
-        </div>
 
-        <div class="identity-actions">
-            <button class="btn-admin-primary" onclick="adminProfile.openModal('editProfileModal')">
-                <i class="fas fa-user-edit"></i> Edit Details
-            </button>
-            <button class="btn-admin-secondary" onclick="adminProfile.openModal('changePasswordModal')">
-                <i class="fas fa-key"></i> Change Password
-            </button>
-        </div>
+            <div class="admin-card-body">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="identity-avatar-wrapper" style="margin:0; width:96px; height:96px;">
+                        <img src="{% if request.user.admin_profile.avatar %}{{ request.user.admin_profile.avatar.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" alt="Admin Avatar" id="displayAvatar">
+                    </div>
+                    <div>
+                        <h2 id="displayFullName" class="page-title m-0" style="font-size:1.55rem;">{{ request.user.first_name }} {{ request.user.last_name }}</h2>
+                        <p class="identity-role mb-2" id="displayJobTitle">{{ request.user.admin_profile.job_title|default:"System Administrator" }}</p>
+                        <span class="status-badge success"><i class="fas fa-shield-alt me-1"></i>{% if request.user.is_superuser %}Superuser{% else %}Staff{% endif %}</span>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Username</span>
+                        <span class="detail-value">{{ request.user.username }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Email</span>
+                        <span class="detail-value" id="displayEmail">{{ request.user.email }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Timezone</span>
+                        <span class="detail-value" id="displayTimezone">{{ request.user.admin_profile.timezone }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Phone</span>
+                        <span class="detail-value">{{ request.user.admin_profile.phone_number|default:"N/A" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="identity-actions">
+                <button class="btn-admin-primary" onclick="adminProfile.openModal('editProfileModal')">
+                    <i class="fas fa-user-edit"></i> Edit Details
+                </button>
+                <button class="btn-admin-secondary" onclick="adminProfile.openModal('changePasswordModal')">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </div>
+        </section>
+
+        <section class="admin-card">
+            <div class="hub-section-header">
+                <div>
+                    <h2><i class="fas fa-shield-halved"></i> Security</h2>
+                    <p>Keep your admin account current and protected.</p>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="meta-list">
+                    <div class="meta-item">
+                        <span class="meta-label">Account Type</span>
+                        <span class="meta-value">{% if request.user.is_superuser %}Superuser{% else %}Staff{% endif %}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Avatar</span>
+                        <span class="meta-value">{% if request.user.admin_profile.avatar %}Custom image{% else %}Default icon{% endif %}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Password</span>
+                        <span class="meta-value">Rotate regularly for safety</span>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </div>
 

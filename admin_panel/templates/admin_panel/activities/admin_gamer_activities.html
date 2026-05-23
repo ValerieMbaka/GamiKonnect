@@ -4,59 +4,54 @@
 {% block title %}Gamer Activities | Admin Panel{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h3 mb-0 text-gray-800">Gamer Activity Feed</h2>
+<div class="admin-hub-shell">
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <h1 class="page-title m-0">Gamer Activity Feed</h1>
+            <p class="page-subtitle text-muted mt-1">Monitor player events, progression, and engagement signals.</p>
+        </div>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Live Activity Feed</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Gamer</th>
-                            <th>Type</th>
-                            <th>Activity</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for activity in activities %}
-                        <tr>
-                            <td>{{ activity.timestamp|date:"M d, H:i" }}</td>
-                            <td>{{ activity.gamer.email }}</td>
-                            <td><span class="badge bg-light text-dark">{{ activity.get_activity_type_display }}</span></td>
-                            <td>{{ activity.description }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4">No gamer activities recorded yet.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <section class="admin-card hub-section hub-table-shell">
+        <div class="hub-table-toolbar">
+            <div>
+                <h2>Live Activity Feed</h2>
+                <p>Recent gamer actions across the platform.</p>
             </div>
-            
-            {% if activities.has_other_pages %}
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    {% if activities.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ activities.previous_page_number }}">Previous</a></li>
-                    {% endif %}
-                    {% for i in activities.paginator.page_range %}
-                    <li class="page-item {% if activities.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
-                    {% endfor %}
-                    {% if activities.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ activities.next_page_number }}">Next</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
         </div>
-    </div>
+        <div class="hub-table-wrap">
+            <table class="hub-data-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Gamer</th>
+                        <th>Type</th>
+                        <th>Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activities %}
+                    <tr>
+                        <td>{{ activity.timestamp|date:"M d, H:i" }}</td>
+                        <td>{{ activity.gamer.email }}</td>
+                        <td><span class="status-badge neutral">{{ activity.get_activity_type_display }}</span></td>
+                        <td>{{ activity.description }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-4 text-muted">No gamer activities recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if activities.has_other_pages %}
+        <div class="hub-table-toolbar">
+            <p class="m-0 text-muted">Page {{ activities.number }} of {{ activities.paginator.num_pages }}</p>
+            <div class="d-flex gap-2">
+                {% if activities.has_previous %}<a class="btn-secondary" href="?page={{ activities.previous_page_number }}">Previous</a>{% endif %}
+                {% if activities.has_next %}<a class="btn-secondary" href="?page={{ activities.next_page_number }}">Next</a>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
 </div>
 {% endblock %}

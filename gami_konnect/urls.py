@@ -37,6 +37,7 @@ urlpatterns = [
     path('progression/', include('progression.urls')),
     path('feeds/', include('feeds.urls')),
     path('notifications/', include('notifications.urls', namespace='notifications')),
+    path('activities/', include('activities.urls', namespace='activities')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

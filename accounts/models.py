@@ -25,8 +25,11 @@ class Account(models.Model):
         verbose_name = 'Account'
         verbose_name_plural = 'Accounts'
     
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
+
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.get_full_name()
 
 
 class Gamer(Account):

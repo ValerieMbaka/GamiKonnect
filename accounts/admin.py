@@ -4,10 +4,11 @@ from django.db.models import Count, Q
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from .models import Account, Gamer, ShopOwner, PendingRegistration
+from core.admin_utils import SafeDateHierarchyAdmin
 
 
 @admin.register(Account)
-class AccountAdmin(admin.ModelAdmin):
+class AccountAdmin(SafeDateHierarchyAdmin):
     list_display = ('email', 'first_name', 'last_name', 'phone', 'created_at')
     list_filter = ('created_at', 'updated_at')
     search_fields = ('first_name', 'last_name', 'email', 'phone', 'uid')
@@ -28,7 +29,7 @@ class AccountAdmin(admin.ModelAdmin):
 
 
 @admin.register(Gamer)
-class GamerAdmin(admin.ModelAdmin):
+class GamerAdmin(SafeDateHierarchyAdmin):
     list_display = (
         'email', 'custom_username', 'profile_completed_badge',
         'points_display', 'games_count', 'level_display',
@@ -123,7 +124,7 @@ class GamerAdmin(admin.ModelAdmin):
                 '<a href="/admin/activities/level/{}/change/" style="color:#f59e0b;font-weight:600;">{}</a>',
                 obj.current_level.id, obj.current_level.name
             )
-        return format_html('<span style="color:#999;">—</span>')
+        return format_html('<span style="color:#999;">{}</span>', '—')
     level_display.short_description = 'Level'
     
     def activity_feed_link(self, obj):
@@ -144,7 +145,7 @@ class GamerAdmin(admin.ModelAdmin):
         ).order_by('-timestamp')[:5]
         
         if not recent_activities:
-            return format_html('<span style="color:#999;">No recent activities</span>')
+            return format_html('<span style="color:#999;">{}</span>', 'No recent activities')
         
         html = '<ul style="list-style:none;padding:0;margin:0;">'
         for activity in recent_activities:
@@ -152,7 +153,7 @@ class GamerAdmin(admin.ModelAdmin):
             html += f'<strong>{activity.get_activity_type_display()}</strong> - {activity.timestamp.strftime("%b %d, %H:%M")}'
             html += '</li>'
         html += '</ul>'
-        return format_html(html)
+        return mark_safe(html)
     points_history.short_description = 'Recent Activities'
     
     def platforms_display(self, obj):
@@ -167,7 +168,7 @@ class GamerAdmin(admin.ModelAdmin):
 
 
 @admin.register(ShopOwner)
-class ShopOwnerAdmin(admin.ModelAdmin):
+class ShopOwnerAdmin(SafeDateHierarchyAdmin):
     list_display = (
         'email', 'shop_count_badge', 'approval_status',
         'date_joined', 'created_at'
@@ -216,11 +217,12 @@ class ShopOwnerAdmin(admin.ModelAdmin):
         total = obj.shops.count()
         
         if total == 0:
-            return format_html('<span style="color:#999;">—</span>')
+            return format_html('<span style="color:#999;">{}</span>', '—')
         
         if approved == total:
             return format_html(
-                '<span style="background:#10b981;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">✓ All Approved</span>'
+                '<span style="background:#10b981;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}</span>',
+                '✓ All Approved'
             )
         return format_html(
             '<span style="background:#f59e0b;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}/{} Approved</span>',
@@ -241,12 +243,12 @@ class ShopOwnerAdmin(admin.ModelAdmin):
             html += f'<a href="/admin/shops/shop/{shop.id}/change/">{approval_badge} {shop.name}</a>'
             html += '</li>'
         html += '</ul>'
-        return format_html(html)
+        return mark_safe(html)
     shops_list_display.short_description = 'Managed Shops'
 
 
 @admin.register(PendingRegistration)
-class PendingRegistrationAdmin(admin.ModelAdmin):
+class PendingRegistrationAdmin(SafeDateHierarchyAdmin):
     list_display = (
         'email', 'first_name', 'last_name', 'role_badge',
         'created_at'

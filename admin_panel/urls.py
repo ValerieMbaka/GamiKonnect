@@ -13,6 +13,9 @@ urlpatterns = [
     # Dashboard & Settings
     path('', views.admin_dashboard, name='dashboard'),
     path('settings/', views.admin_site_settings, name='site_settings'),
+    path('content/', views.admin_content_library, name='content_library'),
+    path('notifications/', views.admin_notification_hub, name='notification_hub'),
+    path('notifications/send/', views.admin_send_notification, name='notification_send'),
     
     # Game Management & API Routes
     path('games/', views.admin_game_list, name='games'),

@@ -308,7 +308,11 @@
                                 
                                 <div>
                                     <a href="{% url 'feeds:gamer_feed' comment.author.id %}" class="comment-author-name">
-                                        {{ comment.author.custom_username|default:comment.author.get_full_name }}
+                                        {% if current_gamer and current_gamer.id == comment.author.id %}
+                                            You
+                                        {% else %}
+                                            {{ comment.author.custom_username|default:comment.author.get_full_name }}
+                                        {% endif %}
                                     </a>
                                     <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
                                 </div>
@@ -346,16 +350,23 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{% static 'feeds/js/feeds.js' %}"></script>
 <script>
     async function deleteComment(commentId) {
         if (confirm('Delete this comment?')) {
             try {
-                const response = await fetch(`{% url 'feeds:delete_comment' 'COMMENT_ID' %}`.replace('COMMENT_ID', commentId), {
+                const csrfCookie = document.cookie
+                    .split('; ')
+                    .find((row) => row.startsWith('csrftoken='));
+                const csrfToken = csrfCookie ? decodeURIComponent(csrfCookie.split('=')[1]) : '';
+
+                const response = await fetch(`/feeds/comment/${commentId}/delete/`, {
                     method: 'POST',
                     headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-CSRFToken': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest',
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 if (response.ok) {

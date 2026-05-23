@@ -220,18 +220,8 @@
 
         <section class="recent-activities section-spacing">
             <h3>Recent Activity</h3>
-            <ul class="activity-list">
-                {% for activity in recent_activities %}
-                    <li>
-                        <span class="activity-time">{{ activity.created_at|date:'M d, H:i' }}</span> —
-                        <span class="activity-type">{{ activity.get_activity_type_display }}</span>:
-                        <span class="activity-desc">{{ activity.description }}</span>
-                    </li>
-                {% empty %}
-                    <li>No recent activity.</li>
-                {% endfor %}
-            </ul>
-            <a href="" class="btn btn-link">View all activity</a>
+            {% include 'accounts/includes/activity_feed.html' %}
+            <a href="{% url 'activities:gamer_activity_list' gamer.id %}" class="btn btn-link">View all activity</a>
         </section>
 
         <div class="dashboard-two-column anim-fade-in">
@@ -241,29 +231,11 @@
                         <i class="fas fa-history"></i>
                         <span>Recent Activities</span>
                     </h2>
-                    <a href="#" class="view-all-link">View All</a>
+                    <a href="{% url 'activities:gamer_activity_list' gamer.id %}" class="view-all-link">View All</a>
                 </div>
                 <div class="card-body component-card-body">
-	                <div class="activity-feed">
-                        {% for activity in recent_activity_feed %}
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="{{ activity.icon }}"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <h3 class="activity-title">{{ activity.title }}</h3>
-                                    <p class="activity-meta">{{ activity.timestamp|timesince }} ago{% if activity.actor_name %} · {{ activity.actor_name }}{% endif %}</p>
-                                    <p class="activity-description">{{ activity.description }}</p>
-                                    {% if activity.meta %}
-                                        <div class="activity-stats">
-                                            <span class="activity-stat"><i class="fas fa-circle-info"></i><span>{{ activity.meta }}</span></span>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% empty %}
-                            <p class="text-muted text-center py-4 mb-0">No recent activity found.</p>
-                        {% endfor %}
+                    <div class="activity-feed">
+                        {% include 'accounts/includes/activity_feed.html' with activity_feed=recent_activity_feed %}
                     </div>
                 </div>
             </div>

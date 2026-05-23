@@ -5,9 +5,21 @@
 
 class FeedsManager {
     constructor() {
-        this.csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        this.csrfToken = this.getCsrfToken();
         this.activePostId = document.querySelector('[data-active-post-id]')?.dataset.activePostId || null;
         this.init();
+    }
+
+    getCsrfToken() {
+        const cookieValue = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('csrftoken='));
+
+        if (cookieValue) {
+            return decodeURIComponent(cookieValue.split('=')[1]);
+        }
+
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
     }
 
     init() {
@@ -66,6 +78,29 @@ class FeedsManager {
             }
         });
 
+        // Comment form submit guard
+        document.addEventListener('submit', (e) => {
+            const form = e.target;
+            if (!form || form.id !== 'commentForm') {
+                return;
+            }
+
+            const submitBtn = form.querySelector('.comment-submit-btn');
+            if (!submitBtn) {
+                return;
+            }
+
+            if (submitBtn.dataset.loading === 'true') {
+                e.preventDefault();
+                return;
+            }
+
+            submitBtn.dataset.loading = 'true';
+            submitBtn.disabled = true;
+            submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+        });
+
         // Comment deletion
         document.addEventListener('click', (e) => {
             if (e.target.closest('[data-delete-comment]')) {
@@ -84,14 +119,19 @@ class FeedsManager {
      * @param {HTMLElement} btn - Like button element
      */
     async toggleLike(postId, btn) {
+        if (btn.dataset.loading === 'true') {
+            return;
+        }
+
+        btn.dataset.loading = 'true';
         try {
             const response = await fetch(`/feeds/post/${postId}/like/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': this.csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json',
                 },
+                credentials: 'same-origin',
             });
 
             if (!response.ok) {
@@ -123,6 +163,8 @@ class FeedsManager {
         } catch (error) {
             console.error('Like error:', error);
             this.showToast('Failed to like post. Please try again.', 'error');
+        } finally {
+            btn.dataset.loading = 'false';
         }
     }
 
@@ -231,6 +273,7 @@ class FeedsManager {
                     'X-CSRFToken': this.csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
+                credentials: 'same-origin',
             });
 
             if (!response.ok) {

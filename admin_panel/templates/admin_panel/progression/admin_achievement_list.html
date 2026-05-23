@@ -4,46 +4,54 @@
 {% block title %}Achievements | Admin Panel{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h3 mb-0 text-gray-800">Progression: Achievements</h2>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#achievementModal" onclick="resetAchievementForm()">
+<div class="admin-hub-shell">
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <h1 class="page-title m-0">Achievements</h1>
+            <p class="page-subtitle text-muted mt-1">Define progression rewards and unlock conditions.</p>
+        </div>
+        <button type="button" class="btn-admin-primary" data-bs-toggle="modal" data-bs-target="#achievementModal" onclick="resetAchievementForm()">
             <i class="fas fa-plus"></i> Add Achievement
         </button>
     </div>
 
-    <div class="row">
-        {% for achievement in achievements %}
-        <div class="col-md-4 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        {% if achievement.badge_image %}
-                        <img src="{{ achievement.badge_image.url }}" alt="{{ achievement.name }}" class="me-3" style="width: 60px; height: 60px;">
-                        {% else %}
-                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
-                            <i class="fas fa-award fa-2x text-info"></i>
-                        </div>
-                        {% endif %}
-                        <div>
-                            <h5 class="mb-0">{{ achievement.name }}</h5>
-                            <small class="text-muted">{{ achievement.xp }} XP</small>
-                        </div>
-                    </div>
-                    <p class="card-text small text-muted">{{ achievement.description }}</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-light text-dark">Key: {{ achievement.condition_key }}</span>
-                        <button class="btn btn-sm btn-outline-primary" onclick="editAchievement({{ achievement.id }}, '{{ achievement.name|escapejs }}', '{{ achievement.description|escapejs }}', {{ achievement.xp }}, '{{ achievement.condition_key }}')">Edit</button>
-                    </div>
-                </div>
-            </div>
+    <section class="hub-summary-grid mb-4">
+        <div class="hub-summary-card"><div class="hub-summary-icon"><i class="fas fa-award"></i></div><div class="hub-summary-copy"><h3>{{ achievements|length }}</h3><p>Total achievements</p></div></div>
+        <div class="hub-summary-card"><div class="hub-summary-icon alt"><i class="fas fa-key"></i></div><div class="hub-summary-copy"><h3>Signals</h3><p>Unlock conditions</p></div></div>
+        <div class="hub-summary-card"><div class="hub-summary-icon success"><i class="fas fa-badge-check"></i></div><div class="hub-summary-copy"><h3>Live</h3><p>Available rewards</p></div></div>
+        <div class="hub-summary-card"><div class="hub-summary-icon warning"><i class="fas fa-star"></i></div><div class="hub-summary-copy"><h3>XP-based</h3><p>Rewarded by growth</p></div></div>
+    </section>
+
+    <section class="admin-card hub-section hub-table-shell">
+        <div class="hub-table-wrap">
+            <table class="hub-data-table">
+                <thead>
+                    <tr>
+                        <th>Badge</th>
+                        <th>Achievement</th>
+                        <th>XP</th>
+                        <th>Condition Key</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for achievement in achievements %}
+                    <tr>
+                        <td>{% if achievement.badge_image %}<img src="{{ achievement.badge_image.url }}" alt="{{ achievement.name }}" class="hub-avatar">{% else %}<span class="hub-summary-icon" style="width:40px;height:40px;"><i class="fas fa-award"></i></span>{% endif %}</td>
+                        <td><p class="hub-cell-title m-0">{{ achievement.name }}</p></td>
+                        <td><span class="status-badge success">{{ achievement.xp }} XP</span></td>
+                        <td><code>{{ achievement.condition_key }}</code></td>
+                        <td>{{ achievement.description|truncatechars:80 }}</td>
+                        <td><button class="btn-link" onclick="editAchievement({{ achievement.id }}, '{{ achievement.name|escapejs }}', '{{ achievement.description|escapejs }}', {{ achievement.xp }}, '{{ achievement.condition_key }}')"><i class="fas fa-pen me-1"></i> Edit</button></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-5 text-muted">No achievements yet. Create the first challenge!</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <p class="text-muted">No achievements yet. Create the first challenge!</p>
-        </div>
-        {% endfor %}
-    </div>
+    </section>
 </div>
 
 <!-- Achievement Modal -->

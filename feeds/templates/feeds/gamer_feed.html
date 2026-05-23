@@ -1,7 +1,7 @@
 {% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
 {% load static %}
 
-{% block title %}{{ target_gamer.custom_username }}'s Posts · {{ project_detail.title }}{% endblock %}
+{% block title %}{% if current_gamer and current_gamer.id == target_gamer.id %}Your Posts{% else %}{{ target_gamer.custom_username|default:target_gamer.get_full_name }}'s Posts{% endif %} · {{ project_detail.title }}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'feeds/css/feeds.css' %}">
@@ -196,7 +196,7 @@
 
             {# Gamer Info #}
             <div class="gamer-info">
-                <h1>{{ target_gamer.custom_username|default:target_gamer.get_full_name }}</h1>
+                <h1>{% if current_gamer and current_gamer.id == target_gamer.id %}You{% else %}{{ target_gamer.custom_username|default:target_gamer.get_full_name }}{% endif %}</h1>
                 
                 {% if target_gamer.bio %}
                     <p><i class="fas fa-quote-left"></i> {{ target_gamer.bio }}</p>

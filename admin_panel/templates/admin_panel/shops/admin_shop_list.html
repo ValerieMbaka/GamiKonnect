@@ -4,67 +4,61 @@
 {% block title %}Shop Management | Admin Panel{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h3 mb-0 text-gray-800">Shop Management</h2>
+<div class="admin-hub-shell">
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <h1 class="page-title m-0">Shop Management</h1>
+            <p class="page-subtitle text-muted mt-1">Manage approvals, operating status, and location records for all shops.</p>
+        </div>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">All Shops</h6>
-            <form class="d-flex" method="GET">
-                <input class="form-control me-2" type="search" name="q" placeholder="Search shops..." value="{{ query }}">
-                <button class="btn btn-outline-primary" type="submit">Search</button>
+    <section class="admin-card hub-section hub-table-shell">
+        <div class="hub-table-toolbar">
+            <div>
+                <h2>All Shops</h2>
+                <p>Search and review shop approvals.</p>
+            </div>
+            <form class="hub-filter-form" method="GET">
+                <input type="search" name="q" placeholder="Search shops..." value="{{ query }}">
+                <button class="btn-secondary" type="submit">Search</button>
             </form>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Shop Name</th>
-                            <th>Location</th>
-                            <th>Status</th>
-                            <th>Approved</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for shop in shops %}
-                        <tr>
-                            <td>{{ shop.name }}</td>
-                            <td>{{ shop.city }}, {{ shop.location }}</td>
-                            <td>
-                                {% if shop.is_active %}
-                                <span class="badge bg-success">Active</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Inactive</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if shop.is_approved %}
-                                <span class="badge bg-primary">Approved</span>
-                                {% else %}
-                                <span class="badge bg-warning text-dark">Pending</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ shop.created_at|date:"M d, Y" }}</td>
-                            <td>
-                                <a href="{% url 'admin_panel:shop_detail' shop.id %}" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center py-4">No shops found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="hub-table-wrap">
+            <table class="hub-data-table">
+                <thead>
+                    <tr>
+                        <th>Shop</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Approved</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for shop in shops %}
+                    <tr>
+                        <td>
+                            <div class="hub-shop-cell">
+                                <img src="{% if shop.logo %}{{ shop.logo.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" class="hub-avatar" alt="Shop logo">
+                                <div>
+                                    <p class="hub-cell-title">{{ shop.name }}</p>
+                                    <p class="hub-cell-subtitle">{{ shop.owner_names|default:"No owner linked" }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ shop.city }}, {{ shop.location }}</td>
+                        <td>{% if shop.is_active %}<span class="status-badge success">Active</span>{% else %}<span class="status-badge danger">Inactive</span>{% endif %}</td>
+                        <td>{% if shop.is_approved %}<span class="status-badge success">Approved</span>{% else %}<span class="status-badge warning">Pending</span>{% endif %}</td>
+                        <td>{{ shop.created_at|date:"M d, Y" }}</td>
+                        <td><a href="{% url 'admin_panel:shop_detail' shop.id %}" class="btn-link"><i class="fas fa-eye me-1"></i> View</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-4 text-muted">No shops found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </div>
+    </section>
 </div>
 {% endblock %}

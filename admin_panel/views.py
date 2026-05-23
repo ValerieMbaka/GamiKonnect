@@ -7,10 +7,12 @@ from django.http import HttpResponse, JsonResponse, Http404
 from django.utils import timezone
 from datetime import timedelta
 from django.core.paginator import Paginator
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum, Count, F
+from django.core.management import call_command
 import json
 import logging
 import os
+from io import StringIO
 from django.db import transaction
 
 from core.email_service import EmailManager
@@ -32,7 +34,8 @@ from core.models import (
 )
 from games.models import Game, Genre, Platform, PlatformCategory
 from accounts.models import Gamer, ShopOwner, Account
-from activities.models import ActivityLog, Activity, Level, Achievement
+from activities.models import ActivityLog, Activity
+from progression.models import Level, Achievement, GamerStats
 from shops.models import Shop
 from payments.models import MpesaTransaction
 from competitions.models import Competition, CompetitionAuditLog, CompetitionRegistration, CompetitionResult
@@ -1132,8 +1135,12 @@ def admin_level_save(request):
 
 @admin_required
 def admin_achievement_list(request):
-    achievements = Achievement.objects.all()
-    return render(request, 'admin_panel/progression/admin_achievement_list.html', {'achievements': achievements})
+    achievements = Achievement.objects.all().order_by('category', 'target_value', 'name')
+    context = {
+        'achievements': achievements,
+        'category_choices': Achievement.CATEGORY_CHOICES,
+    }
+    return render(request, 'admin_panel/progression/admin_achievement_list.html', context)
 
 @admin_required
 def admin_achievement_save(request):
@@ -1148,8 +1155,134 @@ def admin_achievement_save(request):
         form.save()
         messages.success(request, "Achievement saved successfully.")
     else:
+        logger.warning(f"Achievement form errors: {form.errors.as_json()}")
         messages.error(request, "Error saving achievement.")
     return redirect('admin_panel:achievement_list')
+
+
+@admin_required
+def admin_progression_stats(request):
+    query = request.GET.get('q', '').strip()
+
+    stats_qs = GamerStats.objects.select_related('gamer').order_by('-updated_at')
+    if query:
+        stats_qs = stats_qs.filter(
+            Q(gamer__custom_username__icontains=query)
+            | Q(gamer__first_name__icontains=query)
+            | Q(gamer__last_name__icontains=query)
+            | Q(gamer__email__icontains=query)
+        )
+
+    paginator = Paginator(stats_qs, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'stats': page_obj,
+        'query': query,
+        'total_gamers_with_stats': stats_qs.count(),
+    }
+    return render(request, 'admin_panel/progression/admin_progression_stats.html', context)
+
+
+@admin_required
+def admin_progression_seed(request):
+    if request.method != 'POST':
+        raise Http404
+
+    action = request.POST.get('seed_action', '').strip()
+    command_map = {
+        'levels': ['seed_levels'],
+        'achievements': ['seed_achievements'],
+        'all': ['seed_levels', 'seed_achievements'],
+    }
+
+    commands = command_map.get(action)
+    if not commands:
+        messages.error(request, 'Invalid seed action selected.')
+        return redirect('admin_panel:progression_stats')
+
+    buffer = StringIO()
+    try:
+        for command_name in commands:
+            call_command(command_name, stdout=buffer)
+        messages.success(request, f"Seed completed for: {', '.join(commands)}")
+    except Exception as exc:
+        logger.exception('Progression seed failed.')
+        messages.error(request, f"Seeding failed: {exc}")
+
+    output_lines = [line for line in buffer.getvalue().splitlines() if line.strip()]
+    if output_lines:
+        preview = ' | '.join(output_lines[-3:])
+        messages.info(request, f"Seeder output: {preview}")
+
+    return redirect('admin_panel:progression_stats')
+
+
+@admin_required
+def admin_progression_stats_action(request, stats_id):
+    if request.method != 'POST':
+        raise Http404
+
+    stats = get_object_or_404(GamerStats, id=stats_id)
+    metric = request.POST.get('metric', '').strip()
+    operation = request.POST.get('operation', '').strip()
+    amount_raw = request.POST.get('amount', '1').strip()
+
+    editable_metrics = {
+        'communities_joined',
+        'gamers_invited',
+        'comments_made',
+        'posts_made',
+        'posts_with_10_likes',
+        'posts_with_25_likes',
+        'posts_with_75_likes',
+        'competitions_joined',
+        'competitions_won',
+        'leagues_joined',
+        'leagues_won',
+        'login_streak_days',
+    }
+
+    if metric not in editable_metrics:
+        messages.error(request, 'Invalid metric selected.')
+        return redirect('admin_panel:progression_stats')
+
+    try:
+        amount = int(amount_raw)
+    except ValueError:
+        amount = 1
+
+    if amount < 1:
+        amount = 1
+
+    if operation == 'increment':
+        GamerStats.objects.filter(id=stats.id).update(**{metric: F(metric) + amount})
+        messages.success(request, f"Incremented {metric} by {amount} for {stats.gamer}.")
+    elif operation == 'decrement':
+        current_value = getattr(stats, metric)
+        new_value = max(current_value - amount, 0)
+        setattr(stats, metric, new_value)
+        stats.save(update_fields=[metric])
+        messages.success(request, f"Decremented {metric} by {amount} for {stats.gamer}.")
+    elif operation == 'reset':
+        setattr(stats, metric, 0)
+        stats.save(update_fields=[metric])
+        messages.success(request, f"Reset {metric} for {stats.gamer}.")
+    else:
+        messages.error(request, 'Invalid operation selected.')
+
+    query = request.POST.get('q', '').strip()
+    page = request.POST.get('page', '').strip()
+    params = []
+    if query:
+        params.append(f"q={query}")
+    if page:
+        params.append(f"page={page}")
+
+    if params:
+        return redirect(f"{reverse('admin_panel:progression_stats')}?{'&'.join(params)}")
+    return redirect('admin_panel:progression_stats')
 
 @admin_required
 def admin_activity_logs(request):

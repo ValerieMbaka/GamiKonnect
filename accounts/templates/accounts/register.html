@@ -52,6 +52,26 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required>
+                        <option value="" selected disabled>Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-container" for="is_pwa">
+                        <input type="checkbox" id="is_pwa" name="is_pwa">
+                        <span class="checkmark"></span>
+                        I am a PWA gamer
+                    </label>
+                    <p class="auth-helper-text">This helps us tailor support and accessibility features.</p>
+                </div>
+
                 <div class="form-group password-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required>

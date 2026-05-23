@@ -60,6 +60,49 @@ class Level(models.Model):
         return cls.objects.filter(order__gt=current_level.order).order_by('order').first()
 
 
+class GamerStats(models.Model):
+    """
+    Hyper-optimized tracker for player progression.
+    These counters let the progression engine evaluate unlock rules
+    without running expensive aggregate queries on every profile load.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    gamer = models.OneToOneField(Gamer, on_delete=models.CASCADE, related_name='progression_stats')
+
+    # Community & Social
+    communities_joined = models.PositiveIntegerField(default=0)
+    gamers_invited = models.PositiveIntegerField(default=0)
+    comments_made = models.PositiveIntegerField(default=0)
+
+    # Content Quality (Anti-Spam Metrics)
+    posts_made = models.PositiveIntegerField(default=0)
+    posts_with_10_likes = models.PositiveIntegerField(default=0)
+    posts_with_25_likes = models.PositiveIntegerField(default=0)
+    posts_with_75_likes = models.PositiveIntegerField(default=0)
+
+    # Competitions (Single-Day)
+    competitions_joined = models.PositiveIntegerField(default=0)
+    competitions_won = models.PositiveIntegerField(default=0)
+
+    # Leagues (Community Tournaments)
+    leagues_joined = models.PositiveIntegerField(default=0)
+    leagues_won = models.PositiveIntegerField(default=0)
+
+    # Loyalty
+    login_streak_days = models.PositiveIntegerField(default=0)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Gamer Stat'
+        verbose_name_plural = 'Gamer Stats'
+
+    def __str__(self):
+        display_name = self.gamer.custom_username or self.gamer.get_full_name() or self.gamer.email
+        return f"Stats for {display_name}"
+
+
 class Achievement(models.Model):
     """
     Catalogue of all possible achievements on GamiKonnect.
@@ -67,53 +110,84 @@ class Achievement(models.Model):
     a gamer meets the defined condition.
     """
 
-    ACHIEVEMENT_TYPE_CHOICES = [
-        ('first_registration',   'First Competition Registered'),
-        ('first_completion',     'First Competition Completed'),
-        ('first_win',            'First Win (Top 3 Finish)'),
-        ('competition_count',    'Compete N Times'),
-        ('xp_milestone',         'Reach XP Milestone'),
-        ('level_reached',        'Reach a Level'),
-        ('participation_hours',  'Participate for N Hours'),
+    CATEGORY_CHOICES = [
+        ('ONBOARDING', 'Onboarding & Setup'),
+        ('COMMUNITY', 'Community & Networking'),
+        ('CONTENT', 'Content Creation'),
+        ('SOCIAL', 'Social Interaction'),
+        ('COMPETITION', 'Competitions'),
+        ('LEAGUE', 'Community Leagues'),
+        ('PROGRESSION', 'Level & XP Progression'),
+        ('LOYALTY', 'Loyalty & Streaks'),
+        ('HIDDEN', 'Hidden / Secret'),
+        ('SEASONAL', 'Seasonal Events'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(help_text="Shown to the gamer when they earn this achievement.")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='ONBOARDING')
+    metric_key = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="The exact field name in GamerStats (e.g. 'competitions_won')",
+    )
+    target_value = models.PositiveIntegerField(
+        default=1,
+        help_text="The number required to unlock this achievement",
+    )
+    xp_reward = models.PositiveIntegerField(
+        default=50,
+        help_text="XP awarded to the gamer when unlocked",
+    )
     badge_image = models.ImageField(
         upload_to='progression/achievement_badges/',
         blank=True, null=True
-    )
-    achievement_type = models.CharField(
-        max_length=30,
-        choices=ACHIEVEMENT_TYPE_CHOICES,
-        db_index=True
-    )
-    threshold = models.PositiveIntegerField(
-        default=1,
-        help_text=(
-            "The value that triggers this achievement. "
-            "For first_registration/first_completion/first_win: always 1. "
-            "For competition_count: number of competitions. "
-            "For xp_milestone: XP amount. "
-            "For level_reached: level order number. "
-            "For participation_hours: total hours."
-        )
     )
     is_active = models.BooleanField(
         default=True,
         help_text="Inactive achievements will not be awarded to gamers."
     )
+    is_hidden = models.BooleanField(
+        default=False,
+        help_text="Hide from users until unlocked?",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    achievement_type = models.CharField(
+        max_length=30,
+        choices=[
+            ('first_registration', 'First Competition Registered'),
+            ('first_completion', 'First Competition Completed'),
+            ('first_win', 'First Win (Top 3 Finish)'),
+            ('competition_count', 'Compete N Times'),
+            ('xp_milestone', 'Reach XP Milestone'),
+            ('level_reached', 'Reach a Level'),
+            ('participation_hours', 'Participate for N Hours'),
+        ],
+        db_index=True,
+        blank=True,
+        null=True,
+    )
+    threshold = models.PositiveIntegerField(default=1)
 
     class Meta:
         verbose_name = 'Achievement'
         verbose_name_plural = 'Achievements'
-        ordering = ['achievement_type', 'threshold']
+        ordering = ['category', 'target_value']
 
     def __str__(self):
-        return self.name
+        return f"[{self.get_category_display()}] {self.name}"
+
+    @property
+    def xp(self):
+        return self.xp_reward
+
+    @property
+    def condition_key(self):
+        return self.metric_key or self.achievement_type
 
 
 class GamerAchievement(models.Model):

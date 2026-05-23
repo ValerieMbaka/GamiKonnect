@@ -1,71 +1,81 @@
-import requests
-import base64
-from datetime import datetime
-from django.conf import settings
-from requests.auth import HTTPBasicAuth
 import uuid
+from decimal import Decimal, InvalidOperation
+
+import requests
+from django.conf import settings
 
 
-class MpesaService:
+class PaystackService:
+    """Server-side helpers for Paystack transaction initialization and verification."""
+
+    BASE_URL = "https://api.paystack.co"
+
     def __init__(self):
-        self.env = settings.MPESA_ENVIRONMENT
-        self.base_url = "https://sandbox.safaricom.co.ke" if self.env == "sandbox" else "https://api.safaricom.co.ke"
+        self.secret_key = settings.PAYSTACK_SECRET_KEY
 
-    def get_access_token(self):
-        """Requests the temporary OAuth access token from Safaricom."""
-        api_url = f"{self.base_url}/oauth/v1/generate?grant_type=client_credentials"
+    @staticmethod
+    def _amount_to_subunits(amount):
+        """Convert amount in major currency units to Paystack subunits (x100)."""
         try:
-            response = requests.get(
-                api_url,
-                auth=HTTPBasicAuth(settings.MPESA_CONSUMER_KEY, settings.MPESA_CONSUMER_SECRET)
-            )
-            response.raise_for_status()
-            return response.json()['access_token']
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to get M-Pesa Access Token: {e}")
+            decimal_amount = Decimal(str(amount))
+        except (InvalidOperation, TypeError, ValueError):
             return None
+        return int(decimal_amount * 100)
 
-    def initiate_stk_push(self, phone_number, amount, reference, description):
-        """Fires the STK Push request to Safaricom."""
-        access_token = self.get_access_token()
-        if not access_token:
-            return {"error": "Failed to authenticate with M-Pesa"}
+    def _headers(self):
+        if not self.secret_key:
+            raise ValueError("PAYSTACK_SECRET_KEY is not configured.")
+        return {
+            "Authorization": f"Bearer {self.secret_key}",
+            "Content-Type": "application/json",
+        }
 
-        api_url = f"{self.base_url}/mpesa/stkpush/v1/processrequest"
-        headers = {"Authorization": f"Bearer {access_token}"}
-
-        # Generate the timestamp and encrypted password Safaricom requires
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        password_str = f"{settings.MPESA_SHORTCODE}{settings.MPESA_PASSKEY}{timestamp}"
-        password = base64.b64encode(password_str.encode('utf-8')).decode('utf-8')
-
-        # Ensure phone number is formatted correctly (e.g., 2547XXXXXXXX)
-        formatted_phone = str(phone_number).replace('+', '')
-        if formatted_phone.startswith('0'):
-            formatted_phone = '254' + formatted_phone[1:]
+    def initialize_transaction(
+        self,
+        email,
+        amount,
+        reference,
+        callback_url,
+        currency="KES",
+        metadata=None,
+    ):
+        subunit_amount = self._amount_to_subunits(amount)
+        if subunit_amount is None or subunit_amount <= 0:
+            return {"status": False, "message": "Invalid payment amount."}
 
         payload = {
-            "BusinessShortCode": settings.MPESA_SHORTCODE,
-            "Password": password,
-            "Timestamp": timestamp,
-            "TransactionType": "CustomerPayBillOnline",
-            "Amount": int(amount),
-            "PartyA": formatted_phone,
-            "PartyB": settings.MPESA_SHORTCODE,
-            "PhoneNumber": formatted_phone,
-            # THIS CALLBACK URL IS CRITICAL. It must be your live Render URL.
-            "CallBackURL": "https://gamikonnect.onrender.com/api/payments/callback/",
-            "AccountReference": reference,
-            "TransactionDesc": description
+            "email": email,
+            "amount": subunit_amount,
+            "reference": reference,
+            "callback_url": callback_url,
+            "currency": currency,
+            "metadata": metadata or {},
+            "channels": ["mobile_money", "card", "bank_transfer", "ussd"],
         }
 
         try:
-            response = requests.post(api_url, json=payload, headers=headers)
+            response = requests.post(
+                f"{self.BASE_URL}/transaction/initialize",
+                json=payload,
+                headers=self._headers(),
+                timeout=20,
+            )
             response.raise_for_status()
-            return response.json() # Returns the CheckoutRequestID
-        except requests.exceptions.RequestException as e:
-            print(f"STK Push Failed: {e}")
-            return {"error": str(e)}
+            return response.json()
+        except requests.exceptions.RequestException as exc:
+            return {"status": False, "message": str(exc)}
+
+    def verify_transaction(self, reference):
+        try:
+            response = requests.get(
+                f"{self.BASE_URL}/transaction/verify/{reference}",
+                headers=self._headers(),
+                timeout=20,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as exc:
+            return {"status": False, "message": str(exc)}
 
 
 class PaymentSimulationService:

@@ -65,10 +65,14 @@ class CompetitionRegistration {
     async openRegistrationModal(competitionId) {
         try {
             // Check if user is already registered
-            const isRegistered = await this.checkRegistrationStatus(competitionId);
-            if (isRegistered) {
+            const status = await this.checkRegistrationStatus(competitionId);
+            if (status.already_registered) {
                 Toast.info('Already Registered', 'You are already registered for this competition!');
                 return;
+            }
+
+            if (status.pending_payment) {
+                Toast.info('Payment Pending', 'You already started registration. Complete payment to finalize your entry.');
             }
 
             // Load registration form
@@ -87,10 +91,18 @@ class CompetitionRegistration {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            return data.already_registered;
+            return {
+                already_registered: Boolean(data.already_registered),
+                pending_payment: Boolean(data.pending_payment),
+                payment_status: data.payment_status || null,
+            };
         } catch (error) {
             console.error('Error checking registration status:', error);
-            return false;
+            return {
+                already_registered: false,
+                pending_payment: false,
+                payment_status: null,
+            };
         }
     }
 
@@ -218,6 +230,11 @@ class CompetitionRegistration {
     }
 
     handleRegistrationSuccess(result) {
+        if (result.payment_required) {
+            this.initializePaystackPayment(result);
+            return;
+        }
+
         this.hideLoading();
         this.closeRegistrationModal();
         
@@ -247,6 +264,33 @@ class CompetitionRegistration {
             setTimeout(() => {
                 window.location.href = `/competitions/${result.competition_id}/`;
             }, 3000);
+        }
+    }
+
+    async initializePaystackPayment(result) {
+        try {
+            const response = await fetch('/payments/api/initiate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    registration_id: result.registration?.id,
+                    phone_number: document.querySelector('#phoneNumber')?.value || ''
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success || !data.authorization_url) {
+                throw new Error(data.error || 'Could not initialize Paystack payment.');
+            }
+
+            window.location.href = data.authorization_url;
+        } catch (error) {
+            console.error('Paystack initialization error:', error);
+            this.handleRegistrationError(error.message || 'Unable to start payment. Please try again.');
         }
     }
 

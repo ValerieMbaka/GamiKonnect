@@ -67,9 +67,16 @@
         {# ================================================================== #}
         <div class="reg-main">
             <div class="reg-main-header">
-                <h2>Complete Registration</h2>
-                <p>Verify your details and finalize your entry.</p>
+                <h2>{% if pending_payment %}Resume Checkout{% else %}Complete Registration{% endif %}</h2>
+                <p>{% if pending_payment %}Your registration is saved. Continue to Paystack to finish payment verification.{% else %}Verify your details and finalize your entry.{% endif %}</p>
             </div>
+
+            {% if pending_payment %}
+                <div class="info-alert mb-3">
+                    <i class="fas fa-credit-card"></i>
+                    <div>Your registration is pending payment confirmation. Submitting again will take you to secure checkout.</div>
+                </div>
+            {% endif %}
 
             <form class="reg-form" id="registrationForm" data-competition-id="{{ competition.slug }}">
                 {% csrf_token %}
@@ -96,8 +103,8 @@
                         </div>
 
                         <div class="form-group full-width mt-2">
-                            <label class="form-label">M-Pesa Phone Number <span class="text-danger">*</span></label>
-                            <span class="input-help">Required for payment and contact updates.</span>
+                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <span class="input-help">Used for payment verification and contact updates.</span>
                             <div class="input-icon-wrapper">
                                 <i class="fas fa-phone-alt"></i>
                                 <input type="text" class="premium-input" id="phoneNumber" name="phone_number" value="{{ gamer.phone }}" placeholder="e.g. 0712345678" required>
@@ -162,7 +169,7 @@
                     </button>
                     <button type="submit" class="btn-wizard btn-wizard-primary" id="payNowBtn">
                         {% if competition.entry_fee > 0 %}
-                            <i class="fas fa-lock"></i> Pay & Join
+                            <i class="fas fa-lock"></i> {% if pending_payment %}Continue to Paystack{% else %}Pay & Join{% endif %}
                         {% else %}
                             <i class="fas fa-check-circle"></i> Complete Entry
                         {% endif %}
@@ -183,8 +190,8 @@
             <i class="fas fa-circle-notch fa-spin"></i>
         </div>
         <div class="loading-text">
-            <h3>Awaiting M-Pesa</h3>
-            <p>Please check your phone for the payment prompt...</p>
+            <h3>Redirecting to Checkout</h3>
+            <p>Please wait while we open the secure Paystack payment page...</p>
         </div>
     </div>
 </div>
@@ -197,7 +204,7 @@
         </div>
         <div class="confirmation-body">
             {% if competition.entry_fee > 0 %}
-                <p>Authorize payment of <strong class="text-primary">KES {{ competition.entry_fee }}</strong> to enter <strong>"{{ competition.name }}"</strong>?</p>
+                <p>{% if pending_payment %}Continue payment of{% else %}Authorize payment of{% endif %} <strong class="text-primary">KES {{ competition.entry_fee }}</strong> to enter <strong>"{{ competition.name }}"</strong>?</p>
             {% else %}
                 <p>Are you ready to officially join <strong>"{{ competition.name }}"</strong>?</p>
             {% endif %}
@@ -206,7 +213,7 @@
             <button class="btn-wizard btn-wizard-outline" data-action="cancel-payment">Go Back</button>
             <button class="btn-wizard btn-wizard-primary" id="confirmPaymentBtn" data-competition-id="{{ competition.slug }}">
                 {% if competition.entry_fee > 0 %}
-                    Yes, Pay Now
+                    {% if pending_payment %}Yes, Continue{% else %}Yes, Pay Now{% endif %}
                 {% else %}
                     Yes, Join Now
                 {% endif %}

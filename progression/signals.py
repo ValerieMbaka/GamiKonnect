@@ -47,6 +47,14 @@ def on_gamer_points_updated(sender, instance, created, **kwargs):
     'points' is explicitly in the update_fields list.
     """
     if created:
+        try:
+            from .models import GamerStats
+            GamerStats.objects.get_or_create(gamer=instance)
+        except Exception as e:
+            logger.error(
+                f"[Progression Signal] Error creating stats row for new gamer {instance.id}: {e}"
+            )
+
         # New gamer — assign initial level if levels are defined
         try:
             from .services import check_and_update_level

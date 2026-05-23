@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db import transaction
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q
 
@@ -100,18 +101,24 @@ def competition_list(request):
     page = paginator.get_page(page_number)
     
     registered_ids = set()
+    pending_payment_ids = set()
     gamer = get_gamer(request)
     if gamer:
-        registered_ids = set(
-            CompetitionRegistration.objects.filter(
-                gamer=gamer, is_cancelled=False
-            ).values_list('competition_id', flat=True)
-        )
+        gamer_registrations = CompetitionRegistration.objects.filter(
+            gamer=gamer, is_cancelled=False
+        ).values('competition_id', 'payment_status')
+        for item in gamer_registrations:
+            competition_id = item['competition_id']
+            if item['payment_status'] == 'completed':
+                registered_ids.add(competition_id)
+            else:
+                pending_payment_ids.add(competition_id)
     
     context = {
         **base_site_context(),
         'competitions': page,
         'registered_ids': registered_ids,
+        'pending_payment_ids': pending_payment_ids,
         'all_games': Game.objects.filter(is_active=True, is_verified=True).order_by('name'),
         'all_platforms': Platform.objects.all().order_by('name'),
         'gamer': gamer,
@@ -225,12 +232,14 @@ def competition_register(request, slug):
             is_cancelled=False
         ).first()
         
-        if existing_registration:
+        if existing_registration and existing_registration.payment_status == 'completed':
             return JsonResponse({'success': False, 'message': 'Already registered'}, status=400)
         
         context = {
             'competition': competition,
             'gamer': gamer,
+            'existing_registration': existing_registration,
+            'pending_payment': bool(existing_registration and existing_registration.payment_status != 'completed'),
         }
         return render(request, 'competitions/competition_registration.html', context)
     
@@ -253,15 +262,66 @@ def competition_register(request, slug):
                         'success': False,
                         'message': 'Sorry, this competition is already full.'
                     }, status=400)
+
+                existing_registration = CompetitionRegistration.objects.filter(
+                    competition=competition,
+                    gamer=gamer,
+                    is_cancelled=False,
+                ).first()
+
+                if existing_registration:
+                    if existing_registration.payment_status == 'completed':
+                        return JsonResponse({
+                            'success': False,
+                            'message': 'You are already registered for this competition.'
+                        }, status=400)
+
+                    if competition.entry_fee > 0:
+                        phone_number = request.POST.get('phone_number')
+                        if phone_number:
+                            existing_registration.payment_phone_number = phone_number
+                            existing_registration.save(update_fields=['payment_phone_number'])
+
+                        return JsonResponse({
+                            'success': True,
+                            'message': 'Registration is pending payment. Continue to secure checkout.',
+                            'competition_id': competition.integer_id,
+                            'competition_slug': competition.slug,
+                            'competition_title': competition.name,
+                            'payment_required': True,
+                            'registration': {
+                                'id': str(existing_registration.id),
+                                'unique_code': existing_registration.unique_code,
+                            }
+                        })
+
+                    # Safety fallback for free competitions.
+                    existing_registration.payment_status = 'completed'
+                    existing_registration.paid_at = timezone.now()
+                    existing_registration.save(update_fields=['payment_status', 'paid_at'])
+
+                    return JsonResponse({
+                        'success': True,
+                        'message': f'Registration successful! Your unique access code has been sent to {gamer.email}.',
+                        'competition_id': competition.integer_id,
+                        'competition_slug': competition.slug,
+                        'competition_title': competition.name,
+                        'access_code': existing_registration.unique_code,
+                        'redirect_url': reverse('competitions:detail', args=[competition.slug]),
+                        'registration': {
+                            'id': str(existing_registration.id),
+                            'unique_code': existing_registration.unique_code,
+                        }
+                    })
                 
                 form = CompetitionRegistrationForm(request.POST, competition=competition, gamer=gamer)
                 
                 if form.is_valid():
-                    # Create the registration with pending payment status
+                    # Create registration and leave paid competitions pending until gateway verification.
                     registration = form.save(commit=False)
-                    # If entry fee is > 0, set status to pending, otherwise completed
                     if competition.entry_fee > 0:
-                        registration.payment_status = 'processing' # Simulate processing
+                        registration.payment_status = 'pending'
+                        registration.payment_phone_number = request.POST.get('phone_number')
                     else:
                         registration.payment_status = 'completed'
                         registration.paid_at = timezone.now()
@@ -286,30 +346,27 @@ def competition_register(request, slug):
                         )
                     except Exception:
                         logger.exception('Failed to log competition registration activity')
-                    
-                    # Simulation: Mark as completed if it was processing
-                    if registration.payment_status == 'processing':
-                        import time
-                        # In a real scenario we wouldn't sleep in a view, but for simulation...
-                        # Actually better to just set it to completed in this "simulated" environment
-                        registration.payment_status = 'completed'
-                        registration.paid_at = timezone.now()
-                        registration.save()
 
-                    # Send registration confirmation email with unique code
-                    try:
-                        EmailManager.send_competition_registration(gamer, competition, registration)
-                    except Exception:
-                        logger.exception('Failed to send competition registration email')
+                    # Send registration confirmation only for completed (free) entries.
+                    if registration.payment_status == 'completed':
+                        try:
+                            EmailManager.send_competition_registration(gamer, competition, registration)
+                        except Exception:
+                            logger.exception('Failed to send competition registration email')
                     
                     # Return registration data with all necessary information for frontend
                     return JsonResponse({
                         'success': True,
-                        'message': f'Registration successful! Your unique access code has been sent to {gamer.email}.',
+                        'message': (
+                            'Registration created. Continue to secure payment to complete your entry.'
+                            if competition.entry_fee > 0
+                            else f'Registration successful! Your unique access code has been sent to {gamer.email}.'
+                        ),
                         'competition_id': competition.integer_id,
                         'competition_slug': competition.slug,
                         'competition_title': competition.name,
-                        'access_code': registration.unique_code,
+                        'access_code': registration.unique_code if competition.entry_fee <= 0 else None,
+                        'payment_required': competition.entry_fee > 0,
                         'redirect_url': reverse('competitions:detail', args=[competition.slug]),
                         'registration': {
                             'id': str(registration.id),
@@ -361,15 +418,19 @@ def check_registration_status(request, competition_id):
                 except (Competition.DoesNotExist, ValueError):
                     return JsonResponse({'already_registered': False})
         
-        # Check if gamer is registered
-        is_registered = CompetitionRegistration.objects.filter(
+        existing_registration = CompetitionRegistration.objects.filter(
             competition=competition,
             gamer=gamer,
             is_cancelled=False
-        ).exists()
+        ).first()
+
+        is_registered = bool(existing_registration and existing_registration.payment_status == 'completed')
+        pending_payment = bool(existing_registration and existing_registration.payment_status != 'completed')
         
         return JsonResponse({
             'already_registered': is_registered,
+            'pending_payment': pending_payment,
+            'payment_status': existing_registration.payment_status if existing_registration else None,
             'competition_id': str(competition.id),
             'integer_id': competition.integer_id,
             'slug': competition.slug,

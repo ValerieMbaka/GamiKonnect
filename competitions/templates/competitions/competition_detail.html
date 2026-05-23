@@ -89,11 +89,23 @@
                 {% else %}
                     {# Gamer Actions #}
                     {% if registration %}
-                        {# Sleek, minimal entry ticket for registered users #}
-                        <div class="registered-ticket-box">
-                            <h4><i class="fas fa-check-circle text-success pulse-icon"></i> Entry Secured</h4>
-                            <p>You are on the official tournament roster.</p>
-                        </div>
+                        {% if registration.payment_status == 'completed' %}
+                            {# Sleek, minimal entry ticket for registered users #}
+                            <div class="registered-ticket-box">
+                                <h4><i class="fas fa-check-circle text-success pulse-icon"></i> Entry Secured</h4>
+                                <p>You are on the official tournament roster.</p>
+                            </div>
+                        {% else %}
+                            <div class="join-box">
+                                <div class="join-price">
+                                    KES {{ competition.entry_fee }}
+                                </div>
+                                <button class="btn-primary-action w-100 detail-register-btn" data-competition-id="{{ competition.slug }}">
+                                    <i class="fas fa-credit-card"></i> Complete Payment
+                                </button>
+                                <p class="text-muted small mt-2">Your registration is pending payment verification.</p>
+                            </div>
+                        {% endif %}
                     {% elif competition.status == 'registration_open' %}
                         {% if not competition.is_registration_full %}
                             <div class="join-box">

@@ -95,6 +95,7 @@ class PendingRegistration(models.Model):
     last_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=15, unique=True)
     gender = models.CharField(max_length=20, choices=Account.GENDER_CHOICES, blank=True, null=True)
+    is_pwa = models.BooleanField(default=False)
     role = models.CharField(max_length=20, choices=(('gamer', 'Gamer'), ('shop_owner', 'Shop Owner')))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

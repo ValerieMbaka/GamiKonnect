@@ -4,12 +4,16 @@ from . import views
 app_name = 'payments'
 
 urlpatterns = [
-    # The URL your frontend calls to start the payment
+    # Frontend initialization endpoint (returns Paystack authorization URL)
     path('api/initiate/', views.initiate_payment, name='initiate_payment'),
-    
-    # The CRITICAL URL Safaricom calls in the background to confirm payment
+
+    # Paystack redirects the gamer here after checkout; backend verifies transaction.
+    path('api/paystack/callback/', views.paystack_callback, name='paystack_callback'),
+
+    # Paystack webhook endpoint for browser-free confirmation.
+    path('api/paystack/webhook/', views.paystack_webhook, name='paystack_webhook'),
+
+    # Legacy endpoints retained for backward compatibility.
     path('api/callback/', views.mpesa_callback, name='mpesa_callback'),
-    
-    # Test endpoint to manually confirm simulated payments (development only)
     path('api/confirm-simulated/<str:checkout_request_id>/', views.confirm_simulated_payment, name='confirm_simulated_payment'),
 ]

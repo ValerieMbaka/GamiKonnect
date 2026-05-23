@@ -53,6 +53,9 @@ urlpatterns = [
     path('progression/levels/save/', views.admin_level_save, name='level_save'),
     path('progression/achievements/', views.admin_achievement_list, name='achievement_list'),
     path('progression/achievements/save/', views.admin_achievement_save, name='achievement_save'),
+    path('progression/stats/', views.admin_progression_stats, name='progression_stats'),
+    path('progression/seed/', views.admin_progression_seed, name='progression_seed'),
+    path('progression/stats/<uuid:stats_id>/action/', views.admin_progression_stats_action, name='progression_stats_action'),
 
     # Activities
     path('activities/', views.admin_activity_logs, name='activity_logs'),

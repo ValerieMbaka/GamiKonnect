@@ -107,7 +107,7 @@
     {% if competitions %}
     <div class="comp-grid" id="compGrid">
         {% for competition in competitions %}
-        <div class="comp-card hoverable anim-fade-in {% if competition.id in registered_ids %}comp-card--registered{% endif %}">
+        <div class="comp-card hoverable anim-fade-in {% if competition.id in registered_ids %}comp-card--registered{% elif competition.id in pending_payment_ids %}comp-card--pending{% endif %}">
 
             {# Card Header #}
             <div class="comp-card-header">
@@ -164,6 +164,10 @@
             <div class="comp-card-footer">
                 {% if competition.id in registered_ids %}
                     <a href="{% url 'competitions:detail' competition.slug %}" class="comp-btn comp-btn--registered"><i class="fas fa-check-circle"></i> Registered - View</a>
+                {% elif competition.id in pending_payment_ids %}
+                    <button class="comp-btn comp-btn--register" data-competition-id="{{ competition.slug }}" data-competition-name="{{ competition.name }}" onclick="competitionList.openRegisterModal(this)">
+                        <i class="fas fa-credit-card"></i> Complete Payment
+                    </button>
                 {% elif competition.status == 'registration_open' and not competition.is_registration_full %}
                     {% if gamer %}
                         <button class="comp-btn comp-btn--register" data-competition-id="{{ competition.slug }}" data-competition-name="{{ competition.name }}" onclick="competitionList.openRegisterModal(this)">

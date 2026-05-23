@@ -99,10 +99,19 @@ def _qualifies_for_achievement(gamer, achievement):
     """
     from competitions.models import CompetitionRegistration, CompetitionResult
 
-    atype = achievement.achievement_type
-    threshold = achievement.threshold
-
     try:
+        metric_key = getattr(achievement, 'metric_key', None)
+        target_value = getattr(achievement, 'target_value', None)
+
+        if metric_key:
+            stats = _get_gamer_stats(gamer)
+            stat_value = getattr(stats, metric_key, None)
+            if stat_value is not None:
+                return stat_value >= (target_value or 0)
+
+        atype = achievement.achievement_type
+        threshold = achievement.threshold
+
         if atype == 'first_registration':
             return CompetitionRegistration.objects.filter(
                 gamer=gamer, is_cancelled=False
@@ -144,6 +153,16 @@ def _qualifies_for_achievement(gamer, achievement):
         return False
 
     return False
+
+
+def _get_gamer_stats(gamer):
+    """
+    Returns the gamer's progression stats row, creating it on demand.
+    """
+    from .models import GamerStats
+
+    stats, _ = GamerStats.objects.get_or_create(gamer=gamer)
+    return stats
 
 
 def _get_total_participation_hours(gamer):
@@ -239,7 +258,11 @@ def _notify_achievement(gamer, achievement):
             description=f"You earned the '{achievement.name}' achievement! {achievement.description}",
             metadata={
                 'achievement_name': achievement.name,
-                'achievement_type': achievement.achievement_type,
+                'achievement_category': getattr(achievement, 'category', None),
+                'metric_key': getattr(achievement, 'metric_key', None),
+                'target_value': getattr(achievement, 'target_value', None),
+                'xp_reward': getattr(achievement, 'xp_reward', None),
+                'achievement_type': getattr(achievement, 'achievement_type', None),
                 'badge_image': achievement.badge_image.url if achievement.badge_image else None,
             }
         )

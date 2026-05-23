@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Level, Achievement, GamerAchievement, GamerLevel
+from .models import Level, GamerStats, Achievement, GamerAchievement, GamerLevel
 
 
 # ---------------------------------------------------------------------------
@@ -44,27 +44,27 @@ class LevelAdmin(admin.ModelAdmin):
 
 @admin.register(Achievement)
 class AchievementAdmin(admin.ModelAdmin):
-    list_display = ['name', 'achievement_type', 'threshold', 'is_active', 'earned_count']
-    list_filter = ['achievement_type', 'is_active']
-    list_editable = ['is_active']
+    list_display = ['name', 'category', 'metric_key', 'target_value', 'xp_reward', 'is_active', 'is_hidden', 'earned_count']
+    list_filter = ['category', 'is_active', 'is_hidden']
+    list_editable = ['is_active', 'is_hidden']
     search_fields = ['name', 'description']
-    ordering = ['achievement_type', 'threshold']
+    ordering = ['category', 'target_value']
     readonly_fields = ['created_at', 'updated_at']
 
     fieldsets = (
         ('Achievement Details', {
-            'fields': ('name', 'description', 'badge_image'),
+            'fields': ('name', 'description', 'category', 'badge_image'),
         }),
-        ('Trigger Condition', {
-            'fields': ('achievement_type', 'threshold', 'is_active'),
-            'description': (
-                'The threshold meaning depends on the type: '
-                'competition_count = number of competitions; '
-                'xp_milestone = XP amount; '
-                'level_reached = level order number; '
-                'participation_hours = total hours. '
-                'For first_* types, threshold is always 1.'
-            ),
+        ('Rules Engine', {
+            'fields': ('metric_key', 'target_value', 'xp_reward'),
+            'description': 'metric_key must match a field on GamerStats such as communities_joined or competitions_won.',
+        }),
+        ('Legacy Compatibility', {
+            'fields': ('achievement_type', 'threshold'),
+            'classes': ('collapse',),
+        }),
+        ('Visibility', {
+            'fields': ('is_active', 'is_hidden'),
         }),
         ('Timestamps', {
             'classes': ('collapse',),
@@ -75,6 +75,51 @@ class AchievementAdmin(admin.ModelAdmin):
     @admin.display(description='Times Earned')
     def earned_count(self, obj):
         return obj.earned_by.count()
+
+
+# ---------------------------------------------------------------------------
+# GamerStats Admin
+# ---------------------------------------------------------------------------
+
+@admin.register(GamerStats)
+class GamerStatsAdmin(admin.ModelAdmin):
+    list_display = [
+        'gamer',
+        'communities_joined',
+        'comments_made',
+        'posts_made',
+        'competitions_joined',
+        'competitions_won',
+        'leagues_joined',
+        'leagues_won',
+        'login_streak_days',
+        'updated_at',
+    ]
+    search_fields = ['gamer__first_name', 'gamer__last_name', 'gamer__custom_username', 'gamer__email']
+    readonly_fields = ['updated_at']
+    ordering = ['-updated_at']
+
+    fieldsets = (
+        ('Gamer', {
+            'fields': ('gamer',),
+        }),
+        ('Community & Social', {
+            'fields': ('communities_joined', 'gamers_invited', 'comments_made'),
+        }),
+        ('Content Quality', {
+            'fields': ('posts_made', 'posts_with_10_likes', 'posts_with_25_likes', 'posts_with_75_likes'),
+        }),
+        ('Competition', {
+            'fields': ('competitions_joined', 'competitions_won'),
+        }),
+        ('Leagues & Loyalty', {
+            'fields': ('leagues_joined', 'leagues_won', 'login_streak_days'),
+        }),
+        ('Timestamps', {
+            'classes': ('collapse',),
+            'fields': ('updated_at',),
+        }),
+    )
 
 
 # ---------------------------------------------------------------------------

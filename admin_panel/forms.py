@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from activities.models import Achievement, Level
+from progression.models import Achievement, Level
 from core.models import (
     About,
     Event,
@@ -190,13 +190,26 @@ class GameForm(AdminStyledModelForm):
 class LevelForm(AdminStyledModelForm):
     class Meta:
         model = Level
-        fields = ['name', 'required_points', 'badge_image', 'order']
+        fields = ['name', 'min_xp', 'color_hex', 'badge_image', 'order']
+        widgets = {
+            'color_hex': forms.TextInput(attrs={'type': 'color'}),
+        }
 
 
 class AchievementForm(AdminStyledModelForm):
     class Meta:
         model = Achievement
-        fields = ['name', 'description', 'badge_image', 'xp', 'condition_key']
+        fields = [
+            'name',
+            'description',
+            'category',
+            'metric_key',
+            'target_value',
+            'xp_reward',
+            'is_active',
+            'is_hidden',
+            'badge_image',
+        ]
 
 
 class ShopForm(AdminStyledModelForm):

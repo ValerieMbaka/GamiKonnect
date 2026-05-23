@@ -229,6 +229,12 @@
                                 <span>Achievements</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="{% url 'admin_panel:progression_stats' %}" class="nav-link {% if 'progression/stats' in request.path %}active{% endif %}">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Gamer Stats</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
 

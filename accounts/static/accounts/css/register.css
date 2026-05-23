@@ -5,6 +5,26 @@
     gap: var(--spacing-md);
 }
 
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+    color: var(--text-secondary);
+    user-select: none;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.auth-helper-text {
+    margin-top: var(--spacing-xs);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
 .password-group {
     position: relative;
 }

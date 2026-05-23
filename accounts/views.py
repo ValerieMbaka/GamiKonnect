@@ -10,6 +10,7 @@ import json
 import logging
 import re
 import os
+from django.utils.dateparse import parse_date
 
 from activities.signals import security_event_triggered
 from activities.models import ActivityLog, Activity
@@ -51,6 +52,10 @@ from .view_utils import (
 logger = logging.getLogger(__name__)
 
 
+class ProvisioningError(Exception):
+    """Raised when pending registration cannot be safely converted to an account."""
+
+
 def is_valid_uuid(val):
     if not val:
         return False
@@ -67,25 +72,88 @@ firebase_app = initialize_firebase()
 
 
 # Account provisioning helpers
+def get_conflicting_account(pending):
+    """Return an account that conflicts with pending email/phone for a different Firebase UID."""
+    if not pending:
+        return None
+
+    return Account.objects.filter(
+        models.Q(email__iexact=pending.email) | models.Q(phone=pending.phone)
+    ).exclude(uid=pending.uid).first()
+
+
+def get_request_payload(request):
+    """Return form data or parsed JSON payload depending on request content type."""
+    content_type = request.headers.get('Content-Type', '') if hasattr(request, 'headers') else ''
+    if content_type.startswith('application/json'):
+        try:
+            return json.loads(request.body.decode('utf-8') or '{}')
+        except json.JSONDecodeError:
+            return {}
+
+    return request.POST
+
+
 def provision_account_from_pending(pending):
     if not pending:
         return None
     
     with transaction.atomic():
         try:
-            if pending.role == 'gamer':
-                gamer = Gamer.objects.create(
-                    uid=pending.uid,
-                    email=pending.email,
-                    first_name=pending.first_name,
-                    last_name=pending.last_name,
-                    phone=pending.phone,
-                    gender=pending.gender,
-                    custom_username=f"user{pending.uid[:8]}",
-                    bio="Bio",
-                    about="About",
-                    location="Unknown"
+            existing_gamer = Gamer.objects.filter(uid=pending.uid).first()
+            if existing_gamer:
+                pending.delete()
+                return existing_gamer
+
+            existing_shop_owner = ShopOwner.objects.filter(uid=pending.uid).first()
+            if existing_shop_owner and pending.role == 'shop_owner':
+                pending.delete()
+                return existing_shop_owner
+
+            conflicting_account = get_conflicting_account(pending)
+            if conflicting_account:
+                conflict_field = 'phone number' if conflicting_account.phone == pending.phone else 'email'
+                raise ProvisioningError(
+                    f"This {conflict_field} is already linked to another account. "
+                    "Please use a different one or login with the existing account."
                 )
+
+            if pending.role == 'gamer':
+                existing_account = Account.objects.filter(uid=pending.uid).first()
+
+                if existing_account:
+                    existing_account.email = pending.email
+                    existing_account.first_name = pending.first_name
+                    existing_account.last_name = pending.last_name
+                    existing_account.phone = pending.phone
+                    existing_account.gender = pending.gender
+                    existing_account.save(update_fields=['email', 'first_name', 'last_name', 'phone', 'gender'])
+
+                    gamer = Gamer.objects.filter(account_ptr_id=existing_account.id).first()
+                    if not gamer:
+                        gamer = Gamer(
+                            account_ptr_id=existing_account.id,
+                            is_pwa=pending.is_pwa,
+                            custom_username=f"user{pending.uid[:8]}",
+                            bio="Bio",
+                            about="About",
+                            location="Unknown"
+                        )
+                        gamer.save(force_insert=True)
+                else:
+                    gamer = Gamer.objects.create(
+                        uid=pending.uid,
+                        email=pending.email,
+                        first_name=pending.first_name,
+                        last_name=pending.last_name,
+                        phone=pending.phone,
+                        gender=pending.gender,
+                        is_pwa=pending.is_pwa,
+                        custom_username=f"user{pending.uid[:8]}",
+                        bio="Bio",
+                        about="About",
+                        location="Unknown"
+                    )
                 account = gamer
                 logger.info(f"Successfully created Gamer account: {gamer.email}")
             
@@ -111,6 +179,8 @@ def provision_account_from_pending(pending):
             
             pending.delete()
             return account
+        except ProvisioningError:
+            raise
         
         except Exception as e:
             logger.error(f"Failed to provision account from pending: {e}")
@@ -171,16 +241,26 @@ def register_view(request):
 def register_submit(request):
     if request.method == 'POST':
         try:
-            uid = request.POST.get('uid')
-            email = request.POST.get('email')
-            first_name = request.POST.get('first_name')
-            last_name = request.POST.get('last_name')
-            phone = request.POST.get('phone_number')
+            uid = (request.POST.get('uid') or '').strip()
+            email = (request.POST.get('email') or '').strip().lower()
+            first_name = (request.POST.get('first_name') or '').strip()
+            last_name = (request.POST.get('last_name') or '').strip()
+            phone = (request.POST.get('phone_number') or '').strip()
             gender = request.POST.get('gender')
+            is_pwa = request.POST.get('is_pwa') == 'on'
             role = 'gamer'
+
+            if not uid or not email or not first_name or not last_name or not phone:
+                return JsonResponse({'success': False, 'message': 'All required fields must be provided'})
+
+            if Account.objects.filter(uid=uid).exists():
+                return JsonResponse({'success': False, 'message': 'Account already exists. Please login.'})
             
             if Account.objects.filter(email=email).exists():
                 return JsonResponse({'success': False, 'message': 'Email already registered'})
+
+            if Account.objects.filter(phone=phone).exists():
+                return JsonResponse({'success': False, 'message': 'Phone number already in use'})
             
             pending = PendingRegistration.objects.filter(uid=uid).first()
             
@@ -191,6 +271,12 @@ def register_submit(request):
                 if PendingRegistration.objects.filter(phone=phone).exists():
                     return JsonResponse(
                         {'success': False, 'message': 'Phone number already in use'})
+
+            conflicting_pending_account = Account.objects.filter(
+                models.Q(email__iexact=email) | models.Q(phone=phone)
+            ).exclude(uid=uid).first()
+            if conflicting_pending_account:
+                return JsonResponse({'success': False, 'message': 'Email or phone is already linked to an existing account'})
             
             if pending:
                 pending.email = email
@@ -198,12 +284,14 @@ def register_submit(request):
                 pending.last_name = last_name
                 pending.phone = phone
                 pending.gender = gender
+                pending.is_pwa = is_pwa
                 pending.role = role
                 pending.save()
             else:
                 pending = PendingRegistration.objects.create(
                     uid=uid, email=email, first_name=first_name,
-                    last_name=last_name, phone=phone, gender=gender, role=role,
+                    last_name=last_name, phone=phone, gender=gender,
+                    is_pwa=is_pwa, role=role,
                 )
 
             try:
@@ -284,8 +372,12 @@ def session_login(request):
                             request.session['show_resend'] = pending.email
                             return JsonResponse(
                                 {'success': False, 'message': 'Please verify your account first to login'})
-                        
-                        account = provision_account_from_pending(pending)
+
+                        try:
+                            account = provision_account_from_pending(pending)
+                        except ProvisioningError as pe:
+                            return JsonResponse({'success': False, 'message': str(pe)})
+
                         if account:
                             if isinstance(account, Gamer):
                                 role = 'gamer'
@@ -384,7 +476,11 @@ def verify_email(request, uid):
                 pending = PendingRegistration.objects.filter(email=firebase_user.email).first()
             
             if pending:
-                provision_account_from_pending(pending)
+                try:
+                    provision_account_from_pending(pending)
+                except ProvisioningError as pe:
+                    messages.error(request, str(pe))
+                    return redirect('accounts:login')
             else:
                 messages.error(request, 'Verification record not found. Please register again.')
                 return redirect('accounts:register')
@@ -775,11 +871,12 @@ def gamer_profile_completion(request):
         try:
             with transaction.atomic():
                 gamer = Gamer.objects.get(id=request.session['user_id'])
+                payload = get_request_payload(request)
                 
                 if 'profile_picture' in request.FILES:
                     gamer.profile_picture = request.FILES['profile_picture']
                 
-                get_val = lambda k, default=None: request.POST.get(k, default)
+                get_val = lambda k, default=None: payload.get(k, default)
                 errors = {}
                 
                 username = get_val('custom_username', '').strip()
@@ -798,6 +895,11 @@ def gamer_profile_completion(request):
                 location = get_val('location', '').strip()
                 if not location:
                     errors['location'] = 'Location is required'
+
+                date_of_birth_raw = get_val('date_of_birth', '')
+                date_of_birth = parse_date(date_of_birth_raw) if date_of_birth_raw else None
+                if not date_of_birth:
+                    errors['date_of_birth'] = 'Date of birth is required'
                 
                 platforms_raw = get_val('platforms', '[]') or '[]'
                 platforms_list = json.loads(platforms_raw) if not isinstance(platforms_raw, list) else platforms_raw
@@ -816,6 +918,7 @@ def gamer_profile_completion(request):
                 gamer.bio = bio
                 gamer.about = get_val('about', '').strip()
                 gamer.location = location
+                gamer.date_of_birth = date_of_birth
                 gamer.platforms = platforms_list
                 
                 attached_games = []

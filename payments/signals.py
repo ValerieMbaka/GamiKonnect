@@ -14,7 +14,7 @@ def on_payment_completed(sender, instance, created, update_fields, **kwargs):
     if not created and update_fields and 'status' not in update_fields:
         return
     
-    if instance.status not in ['completed', 'failed']:
+    if instance.status not in ['SUCCESS', 'FAILED']:
         return
     
     try:
@@ -23,7 +23,7 @@ def on_payment_completed(sender, instance, created, update_fields, **kwargs):
         
         gamer = instance.gamer
         
-        if instance.status == 'completed':
+        if instance.status == 'SUCCESS':
             notification_text = (
                 f"Payment of Ksh {instance.amount} received successfully! "
                 f"Your competition registration is confirmed."

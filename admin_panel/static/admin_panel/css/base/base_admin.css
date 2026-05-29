@@ -1,6 +1,4 @@
 /* Admin Panel Base Styles */
-@import "../../../core/css/variables.css";
-
 /* Global Reset */
 *, *::before, *::after {
     box-sizing: border-box;

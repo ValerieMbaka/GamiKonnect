@@ -36,8 +36,16 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['*']
+# 1. Grab the raw string from Render's environment (or default to empty string)
+raw_hosts = os.environ.get('ALLOWED_HOSTS', '')
 
+# 2. If Render provided the string, safely split it into a list
+if raw_hosts:
+    # This splits by comma and automatically removes any accidental spaces
+    ALLOWED_HOSTS = [host.strip() for host in raw_hosts.split(',')]
+else:
+    # 3. If nothing is found (like on your local laptop), use these safe defaults
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 

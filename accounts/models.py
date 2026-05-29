@@ -56,10 +56,10 @@ class Gamer(Account):
         on_delete=models.SET_NULL,
         help_text="The gamer's current progression level."
     )
-    is_pwa = models.BooleanField(
+    is_pwd = models.BooleanField(
         default=False,
-        verbose_name="Is PWA",
-        help_text="If True, indicates the gamer has PWA (Persons With Albinism) or other specified status."
+        verbose_name="Is PWD",
+        help_text="If True, indicates the gamer is a Person With Disability."
     )
     
     class Meta:
@@ -95,7 +95,7 @@ class PendingRegistration(models.Model):
     last_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=15, unique=True)
     gender = models.CharField(max_length=20, choices=Account.GENDER_CHOICES, blank=True, null=True)
-    is_pwa = models.BooleanField(default=False)
+    is_pwd = models.BooleanField(default=False)
     role = models.CharField(max_length=20, choices=(('gamer', 'Gamer'), ('shop_owner', 'Shop Owner')))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -55,6 +55,28 @@
                 </div>
 
                 <div class="form-section">
+                    <label>Gender <span class="required">*</span></label>
+                    <small class="form-text">Select your gender</small>
+                    <select id="id_gender" name="gender" required>
+                        <option value="" selected disabled>Select gender</option>
+                        <option value="male" {% if gamer.gender == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if gamer.gender == 'female' %}selected{% endif %}>Female</option>
+                        <option value="other" {% if gamer.gender == 'other' %}selected{% endif %}>Other</option>
+                        <option value="prefer_not_to_say" {% if gamer.gender == 'prefer_not_to_say' %}selected{% endif %}>Prefer not to say</option>
+                    </select>
+                    <div id="gender-error" class="error-message"></div>
+                </div>
+
+                <div class="form-section">
+                    <label class="checkbox-container" for="id_is_pwd">
+                        <input type="checkbox" id="id_is_pwd" name="is_pwd" {% if gamer.is_pwd %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        I am a Person With Disability (PWD)
+                    </label>
+                    <p class="auth-helper-text">This helps us tailor support and accessibility features.</p>
+                </div>
+
+                <div class="form-section">
                     <label>Date of Birth <span class="required">*</span></label>
                     <div class="date-picker-container">
                         <div class="date-input-group">

@@ -126,14 +126,13 @@ def provision_account_from_pending(pending):
                     existing_account.first_name = pending.first_name
                     existing_account.last_name = pending.last_name
                     existing_account.phone = pending.phone
-                    existing_account.gender = pending.gender
-                    existing_account.save(update_fields=['email', 'first_name', 'last_name', 'phone', 'gender'])
+                    existing_account.save(update_fields=['email', 'first_name', 'last_name', 'phone'])
 
                     gamer = Gamer.objects.filter(account_ptr_id=existing_account.id).first()
                     if not gamer:
                         gamer = Gamer(
                             account_ptr_id=existing_account.id,
-                            is_pwa=pending.is_pwa,
+                            is_pwd=False,
                             custom_username=f"user{pending.uid[:8]}",
                             bio="Bio",
                             about="About",
@@ -147,8 +146,7 @@ def provision_account_from_pending(pending):
                         first_name=pending.first_name,
                         last_name=pending.last_name,
                         phone=pending.phone,
-                        gender=pending.gender,
-                        is_pwa=pending.is_pwa,
+                        is_pwd=False,
                         custom_username=f"user{pending.uid[:8]}",
                         bio="Bio",
                         about="About",
@@ -161,18 +159,13 @@ def provision_account_from_pending(pending):
                 account = Account.objects.filter(uid=pending.uid).first()
                 if account:
                     shop_owner = promote_account_to_shop_owner(account)
-                    # Update gender if provided
-                    if pending.gender:
-                        account.gender = pending.gender
-                        account.save()
                 else:
                     shop_owner = ShopOwner.objects.create(
                         uid=pending.uid,
                         email=pending.email,
                         first_name=pending.first_name,
                         last_name=pending.last_name,
-                        phone=pending.phone,
-                        gender=pending.gender
+                        phone=pending.phone
                     )
                 account = shop_owner
                 logger.info(f"Successfully created ShopOwner account: {account.email}")
@@ -246,8 +239,6 @@ def register_submit(request):
             first_name = (request.POST.get('first_name') or '').strip()
             last_name = (request.POST.get('last_name') or '').strip()
             phone = (request.POST.get('phone_number') or '').strip()
-            gender = request.POST.get('gender')
-            is_pwa = request.POST.get('is_pwa') == 'on'
             role = 'gamer'
 
             if not uid or not email or not first_name or not last_name or not phone:
@@ -283,15 +274,12 @@ def register_submit(request):
                 pending.first_name = first_name
                 pending.last_name = last_name
                 pending.phone = phone
-                pending.gender = gender
-                pending.is_pwa = is_pwa
                 pending.role = role
                 pending.save()
             else:
                 pending = PendingRegistration.objects.create(
                     uid=uid, email=email, first_name=first_name,
-                    last_name=last_name, phone=phone, gender=gender,
-                    is_pwa=is_pwa, role=role,
+                    last_name=last_name, phone=phone, role=role,
                 )
 
             try:
@@ -896,6 +884,14 @@ def gamer_profile_completion(request):
                 if not location:
                     errors['location'] = 'Location is required'
 
+                gender = get_val('gender', '').strip()
+                if not gender:
+                    errors['gender'] = 'Gender is required'
+                elif gender not in dict(Account.GENDER_CHOICES):
+                    errors['gender'] = 'Invalid gender selection'
+                
+                is_pwd = get_val('is_pwd') == True or get_val('is_pwd') == 'true' or get_val('is_pwd') == 'on'
+
                 date_of_birth_raw = get_val('date_of_birth', '')
                 date_of_birth = parse_date(date_of_birth_raw) if date_of_birth_raw else None
                 if not date_of_birth:
@@ -918,6 +914,8 @@ def gamer_profile_completion(request):
                 gamer.bio = bio
                 gamer.about = get_val('about', '').strip()
                 gamer.location = location
+                gamer.gender = gender
+                gamer.is_pwd = is_pwd
                 gamer.date_of_birth = date_of_birth
                 gamer.platforms = platforms_list
                 

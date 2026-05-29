@@ -1,0 +1,328 @@
+{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% load static %}
+
+{% block title %} Gaming Feeds - Stay Updated with Your Community {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'feeds/css/feeds.css' %}">
+    <link rel="stylesheet" href="{% static 'feeds/css/modals.css' %}">
+{% endblock %}
+
+{% block content %}
+	<!-- Feeds Header -->
+	<section class="feeds-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="feeds-title">Gaming Feeds</h1>
+                    <p class="feeds-subtitle">Stay connected with your gaming community</p>
+                </div>
+            </div>
+        </div>
+	</section>
+
+	<!-- Feeds Tabs -->
+	<nav class="feeds-tabs-container">
+        <div class="feeds-tabs-inner d-flex justify-content-between">
+            <button class="feeds-tab active" data-tab="feeds">
+                <i class="fas fa-newspaper"></i>
+                <span>Feeds</span>
+            </button>
+            <button class="feeds-tab" data-tab="members">
+                <i class="fas fa-users"></i>
+                <span>Members</span>
+            </button>
+        </div>
+	</nav>
+
+	<!-- Feeds Content -->
+	<section class="feeds-content">
+        <div class="container">
+            <!-- Feeds Tab Content -->
+            <div class="feeds-tab-content active" id="feeds">
+                <div class="row">
+                    <!-- Main Feed -->
+                    <div class="col-lg-7">
+                        <div class="feeds-main">
+                            <!-- Create Post -->
+                            <div class="post-card start-post-card" id="startPostCard">
+                                <div class="start-post-header d-flex align-items-center gap-2">
+                                    <div class="user-avatar">
+                                        {% if current_gamer and current_gamer.profile_picture %}
+                                            <img src="{{ current_gamer.profile_picture.url }}" alt="{{ current_gamer.display_name }}">
+                                        {% else %}
+                                            <img src="{% static 'core/images/player.jpeg' %}" alt="User Avatar">
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" class="start-post-input w-100 text-start" data-bs-toggle="modal" data-bs-target="#createPostModal">Start a post</button>
+                                </div>
+                                <div class="start-post-actions d-flex gap-2 mt-2">
+                                    <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-image"></i> Photo</button>
+                                    <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-video"></i> Video</button>
+                                    <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-pen"></i> Write</button>
+                                </div>
+                            </div>
+
+                            <!-- Feed Posts -->
+							<div class="feed-posts" id="feedPosts">
+                                <div class="text-center py-4 text-muted" id="feedLoading">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading feed...
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="load-more-section">
+                            <button class="btn btn-outline-primary load-more-btn">
+                                <i class="fas fa-spinner me-2"></i>Load More Posts
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard & Events -->
+                    <div class="col-lg-5">
+                        <div class="feeds-sidebar">
+                            <!-- Leaderboard -->
+                            <div class="leaderboard-aside">
+                                <h4 class="leaderboard-title d-flex align-items-center justify-content-between">
+                                    <span><i class="fas fa-crown me-2 text-warning"></i>Global Leaderboard</span>
+                                </h4>
+                                <div id="globalLeaderboard" class="lb-rows">
+                                    <!-- Dummy leaderboard data -->
+                                    <div class="lb-row">
+                                        <div class="rank">1</div>
+	                                    <img src="{% static 'core/images/player2.jpeg' %}" alt="FIFA_Master" class="avatar-sm">
+	                                    <div class="user-col">
+		                                    <div class="name">FIFA_Master</div>
+		                                    <div class="meta">FIFA 25</div>
+	                                    </div>
+	                                    <div class="points ms-auto"><i class="fas fa-star text-warning me-1"></i>3120 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">2</div>
+                                        <img src="{% static 'core/images/player1.jpeg' %}" alt="GoalMachine" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">GoalMachine</div>
+                                            <div class="meta">FIFA 25</div>
+                                        </div>
+                                        <div class="points ms-auto">3005 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">3</div>
+	                                    <img src="{% static 'core/images/player3.jpeg' %}" alt="COD_Elite" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">COD_Elite</div>
+                                            <div class="meta">Call of Duty</div>
+                                        </div>
+                                        <div class="points ms-auto">2950 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">4</div>
+                                        <img src="{% static 'core/images/player3.jpeg' %}" alt="SkillMovesPro" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">SkillMovesPro</div>
+                                            <div class="meta">FIFA 25</div>
+                                        </div>
+                                        <div class="points ms-auto">2875 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">5</div>
+                                        <img src="{% static 'core/images/player1.jpeg' %}" alt="WarzoneAce" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">WarzoneAce</div>
+                                            <div class="meta">Call of Duty</div>
+                                        </div>
+                                        <div class="points ms-auto">2830 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">6</div>
+                                        <img src="{% static 'core/images/player2.jpeg' %}" alt="SniperWolf" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">SniperWolf</div>
+                                            <div class="meta">Call of Duty</div>
+                                        </div>
+                                        <div class="points ms-auto">2795 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">7</div>
+                                        <img src="{% static 'core/images/player1.jpeg' %}" alt="ValorantQueen" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">ValorantQueen</div>
+                                            <div class="meta">Valorant</div>
+                                        </div>
+                                        <div class="points ms-auto">2680 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">8</div>
+                                        <img src="{% static 'core/images/player2.jpeg' %}" alt="AgentSharp" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">AgentSharp</div>
+                                            <div class="meta">Valorant</div>
+                                        </div>
+                                        <div class="points ms-auto">2540 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">9</div>
+                                        <img src="{% static 'core/images/player3.jpeg' %}" alt="SpikeMaster" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">SpikeMaster</div>
+                                            <div class="meta">Valorant</div>
+                                        </div>
+                                        <div class="points ms-auto">2410 pts</div>
+                                    </div>
+                                    <div class="lb-row">
+                                        <div class="rank">10</div>
+                                        <img src="{% static 'core/images/player.jpeg' %}" alt="You" class="avatar-sm">
+                                        <div class="user-col">
+                                            <div class="name">You</div>
+                                            <div class="meta">Valorant</div>
+                                        </div>
+                                        <div class="points ms-auto">1200 pts</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Upcoming Events -->
+                            <div class="upcoming-events">
+                                <h4 class="events-title">Upcoming Events</h4>
+                                <div class="event-list">
+                                    <div class="event-item">
+                                        <div class="event-icon">
+                                            <i class="fas fa-trophy"></i>
+                                        </div>
+                                        <div class="event-info">
+                                            <h6 class="event-title">Valorant Championship</h6>
+                                            <small class="event-time">Tomorrow, 8:00 PM</small>
+                                        </div>
+                                    </div>
+                                    <div class="event-item">
+                                        <div class="event-icon">
+                                            <i class="fas fa-gamepad"></i>
+                                        </div>
+                                        <div class="event-info">
+                                            <h6 class="event-title">FIFA 25 Tournament</h6>
+                                            <small class="event-time">Saturday, 2:00 PM</small>
+                                        </div>
+                                    </div>
+                                    <div class="event-item">
+                                        <div class="event-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="event-info">
+                                            <h6 class="event-title">Community Meetup</h6>
+                                            <small class="event-time">Sunday, 6:00 PM</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+			<!-- Members Tab Content -->
+			<div class="feeds-tab-content" id="members">
+                <div class="members-panel-full">
+                    <div class="members-header d-flex align-items-center justify-content-between">
+                        <h3><i class="fas fa-users me-2"></i> Members</h3>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="members-search-full">
+                                <i class="fas fa-search"></i>
+	                            <input type="text" id="membersSearchFull" placeholder="Search members...">
+                            </div>
+                            <div class="members-filters d-flex gap-2">
+                                <button class="chip chip-sm active" data-community="all">All</button>
+                                <button class="chip chip-sm" data-community="valorant">Valorant</button>
+                                <button class="chip chip-sm" data-community="fifa25">FIFA 25</button>
+                                <button class="chip chip-sm" data-community="cod">Call of Duty</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="members-list-view" id="membersListView">
+                        <div class="members-horizontal-list" id="membersHorizontalList">
+                            <!-- Members will load here automatically -->
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Loading members...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+			</div>
+
+        </div>
+	</section>
+
+    <!-- Create Post Modal -->
+	<div class="modal fade" id="createPostModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content create-post-modal">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title"><i class="fas fa-pen me-2"></i>Create a Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="modalPostForm">
+                    {% csrf_token %}
+	                <div class="modal-body">
+                        <!-- User Info -->
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="user-avatar">
+                                {% if current_gamer and current_gamer.profile_picture %}
+                                    <img src="{{ current_gamer.profile_picture.url }}" alt="{{ current_gamer.display_name }}" class="user-avatar">
+                                {% else %}
+                                    <img src="{% static 'core/images/player.jpeg' %}" alt="User Avatar" class="user-avatar">
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <textarea
+                                    class="form-control post-textarea"
+                                    id="modalPostContent"
+                                    name="content"
+                                    rows="3"
+                                    placeholder="What's on your mind?"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Media Upload -->
+                        <div class="d-flex gap-2 mb-3">
+                            <label class="upload-btn">
+                                <i class="fas fa-image me-1"></i> Photo
+                                <input type="file" accept="image/*" id="modalPhotoInput" name="image" hidden>
+                            </label>
+                            <label class="upload-btn">
+                                <i class="fas fa-video me-1"></i> Video (max 5MB)
+                                <input type="file" accept="video/*" id="modalVideoInput" name="video" hidden>
+                            </label>
+                        </div>
+
+                        <!-- Media Preview -->
+                        <div class="media-preview mt-3 mb-3" id="modalMediaPreview" style="display:none;">
+                            <div class="preview-container">
+                                <img id="modalImagePreview" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 8px;">
+                                <video id="modalVideoPreview" controls style="max-width: 100%; max-height: 300px; border-radius: 8px; display:none;">
+                                    <source src="" type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+	</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'feeds/js/feeds.js' %}"></script>
+            </div>
+        </div>
+	</div>
+
+{% endblock %}

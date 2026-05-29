@@ -137,7 +137,7 @@ def feed_list(request):
         'is_feed': True,
     })
     
-    return render(request, 'feeds/feed_list.html', context)
+    return render(request, 'feeds/feeds.html', context)
 
 
 # ---------------------------------------------------------------------------
@@ -512,3 +512,431 @@ def gamer_feed(request, gamer_id):
     })
     
     return render(request, 'feeds/gamer_feed.html', context)
+
+
+# ---------------------------------------------------------------------------
+# AJAX API Endpoints for Modal-Based UI
+# ---------------------------------------------------------------------------
+
+@require_http_methods(["POST"])
+def api_create_post(request):
+    """
+    API endpoint for creating posts via AJAX (modal form).
+    Returns JSON response with success status.
+    """
+    gamer = get_gamer(request)
+    if not gamer:
+        return JsonResponse({'success': False, 'message': 'Not authenticated'}, status=401)
+    
+    content = request.POST.get('content', '').strip()
+    image_file = request.FILES.get('image')
+    video_file = request.FILES.get('video')
+    
+    if not content and not image_file and not video_file:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Please write something or add media to post.'
+        }, status=400)
+    
+    try:
+        # Create the post
+        post = Post.objects.create(
+            author=gamer,
+            content=content,
+        )
+        
+        # Handle media files (image and video uploaded separately)
+        order = 0
+        if image_file:
+            PostMedia.objects.create(
+                post=post,
+                file=image_file,
+                media_type='image',
+                order=order
+            )
+            order += 1
+        
+        if video_file:
+            PostMedia.objects.create(
+                post=post,
+                file=video_file,
+                media_type='video',
+                order=order
+            )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Post created successfully!',
+            'post_id': str(post.id)
+        })
+    
+    except Exception as e:
+        logger.error(f"Error creating post: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Failed to create post. Please try again.'
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def api_get_post_comments(request, post_id):
+    """
+    API endpoint to fetch comments for a post (modal comments list).
+    Returns JSON with list of comments.
+    """
+    try:
+        post = get_object_or_404(Post, id=post_id)
+    except:
+        return JsonResponse({'success': False, 'message': 'Post not found'}, status=404)
+    
+    comments = Comment.objects.filter(post=post).select_related('author').order_by('created_at')
+    
+    comments_data = [
+        {
+            'id': str(comment.id),
+            'author_id': str(comment.author.id),
+            'author_name': comment.author.get_full_name() or comment.author.username,
+            'content': comment.content,
+            'created_at': comment.created_at.isoformat(),
+        }
+        for comment in comments
+    ]
+    
+    return JsonResponse({
+        'success': True,
+        'post_id': str(post_id),
+        'comments': comments_data,
+        'comment_count': len(comments_data)
+    })
+
+
+@require_http_methods(["POST"])
+def api_add_comment(request, post_id):
+    """
+    API endpoint for adding comments via modal.
+    Returns JSON response with new comment data.
+    """
+    gamer = get_gamer(request)
+    if not gamer:
+        return JsonResponse({'success': False, 'message': 'Not authenticated'}, status=401)
+    
+    post = get_object_or_404(Post, id=post_id)
+    content = request.POST.get('content', '').strip()
+    
+    if not content:
+        return JsonResponse({
+            'success': False,
+            'message': 'Comment cannot be empty.'
+        }, status=400)
+    
+    try:
+        comment = Comment.objects.create(
+            post=post,
+            author=gamer,
+            content=content
+        )
+        
+        # Update post comment count
+        post.comment_count = post.comments.count()
+        post.save(update_fields=['comment_count'])
+        
+        # Broadcast via Pusher
+        broadcast_user_notification(
+            f'feed-post-{post.id}',
+            'feed-post-comment-created',
+            {
+                'post_id': str(post.id),
+                'comment_id': str(comment.id),
+                'author_id': str(gamer.id),
+                'author_name': gamer.get_full_name() or gamer.username,
+                'content': comment.content,
+                'created_at': comment.created_at.isoformat(),
+                'comment_count': post.comment_count,
+            }
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Comment posted!',
+            'comment_id': str(comment.id),
+            'comment': {
+                'id': str(comment.id),
+                'author_name': gamer.get_full_name() or gamer.username,
+                'content': comment.content,
+                'created_at': comment.created_at.isoformat(),
+            }
+        })
+    
+    except Exception as e:
+        logger.error(f"Error adding comment: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Failed to post comment. Please try again.'
+        }, status=500)
+
+
+# ---------------------------------------------------------------------------
+# API Endpoints for New Feeds Architecture
+# ---------------------------------------------------------------------------
+
+@require_http_methods(["GET"])
+def api_posts_list(request):
+    """
+    API endpoint to list posts with pagination.
+    Query params: page, page_size, category
+    """
+    page = request.GET.get('page', 1)
+    page_size = request.GET.get('page_size', 10)
+    category = request.GET.get('category', 'all')
+    
+    try:
+        page_size = min(int(page_size), 50)  # Cap at 50
+    except (ValueError, TypeError):
+        page_size = 10
+    
+    # Get posts with optimization
+    comments_prefetch = Prefetch(
+        'comments',
+        Comment.objects.select_related('author').order_by('-created_at')
+    )
+    likes_prefetch = Prefetch(
+        'likes',
+        Like.objects.select_related('gamer')
+    )
+    media_prefetch = Prefetch(
+        'media',
+        PostMedia.objects.order_by('order')
+    )
+    
+    posts_qs = Post.objects.select_related('author').prefetch_related(
+        comments_prefetch,
+        likes_prefetch,
+        media_prefetch
+    ).order_by('-created_at')
+    
+    current_gamer = get_gamer(request)
+    
+    # Paginate
+    paginator = Paginator(posts_qs, page_size)
+    try:
+        page_obj = paginator.page(page)
+    except (EmptyPage, PageNotAnInteger):
+        page_obj = paginator.page(1)
+    
+    # Serialize posts
+    posts_data = []
+    for post in page_obj.object_list:
+        post_dict = {
+            'id': str(post.id),
+            'content': post.content,
+            'created_at': post.created_at.isoformat(),
+            'category': post.category if hasattr(post, 'category') else 'all',
+            'author': {
+                'id': post.author.id,
+                'name': post.author.get_full_name() or post.author.username,
+                'avatar': post.author.profile_picture.url if post.author.profile_picture else '/static/core/images/player.jpeg',
+                'is_current_user': current_gamer and current_gamer.id == post.author.id,
+            },
+            'image': post.media.filter(media_type='image').first().file.url if post.media.filter(media_type='image').exists() else None,
+            'video': None,
+            'likes': post.likes.count(),
+            'comments': post.comments.count(),
+            'shares': 0,
+            'liked_by_me': current_gamer and post.likes.filter(gamer=current_gamer).exists(),
+        }
+        posts_data.append(post_dict)
+    
+    return JsonResponse({
+        'results': posts_data,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+        'current_page': page_obj.number,
+        'total_pages': page_obj.paginator.num_pages,
+    })
+
+
+@require_http_methods(["GET"])
+def api_post_comments_list(request, post_id):
+    """
+    API endpoint to list comments for a post with pagination.
+    """
+    post = get_object_or_404(Post, id=post_id)
+    page = request.GET.get('page', 1)
+    page_size = request.GET.get('page_size', 50)
+    
+    try:
+        page_size = min(int(page_size), 100)
+    except (ValueError, TypeError):
+        page_size = 50
+    
+    comments_qs = Comment.objects.filter(post=post).select_related('author').order_by('-created_at')
+    
+    paginator = Paginator(comments_qs, page_size)
+    try:
+        page_obj = paginator.page(page)
+    except (EmptyPage, PageNotAnInteger):
+        page_obj = paginator.page(1)
+    
+    # Serialize comments
+    comments_data = [
+        {
+            'id': str(c.id),
+            'author_id': c.author.id,
+            'author_name': c.author.get_full_name() or c.author.username,
+            'author_avatar': c.author.profile_picture.url if c.author.profile_picture else '/static/core/images/player.jpeg',
+            'content': c.content,
+            'created_at': c.created_at.isoformat(),
+        }
+        for c in page_obj.object_list
+    ]
+    
+    return JsonResponse({
+        'results': comments_data,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+        'current_page': page_obj.number,
+        'total_pages': page_obj.paginator.num_pages,
+    })
+
+
+@require_http_methods(["POST"])
+def api_create_comment(request, post_id):
+    """
+    API endpoint to create a comment.
+    """
+    gamer = get_gamer(request)
+    if not gamer:
+        return JsonResponse({'success': False, 'message': 'Not authenticated'}, status=401)
+    
+    post = get_object_or_404(Post, id=post_id)
+    content = request.POST.get('content', '').strip()
+    
+    if not content:
+        return JsonResponse({'success': False, 'message': 'Comment cannot be empty'}, status=400)
+    
+    try:
+        comment = Comment.objects.create(
+            post=post,
+            author=gamer,
+            content=content
+        )
+        
+        # Update post comment count
+        post.comment_count = post.comments.count()
+        post.save(update_fields=['comment_count'])
+        
+        return JsonResponse({
+            'success': True,
+            'comment': {
+                'id': str(comment.id),
+                'author_id': gamer.id,
+                'author_name': gamer.get_full_name() or gamer.username,
+                'author_avatar': gamer.profile_picture.url if gamer.profile_picture else '/static/core/images/player.jpeg',
+                'content': comment.content,
+                'created_at': comment.created_at.isoformat(),
+            },
+            'comment_count': post.comment_count,
+        })
+    except Exception as e:
+        logger.error(f"Error creating comment: {e}")
+        return JsonResponse({'success': False, 'message': 'Failed to create comment'}, status=500)
+
+
+@require_http_methods(["POST"])
+def api_like_post(request, post_id):
+    """
+    API endpoint to toggle like on a post.
+    """
+    gamer = get_gamer(request)
+    if not gamer:
+        return JsonResponse({'success': False, 'message': 'Not authenticated'}, status=401)
+    
+    post = get_object_or_404(Post, id=post_id)
+    
+    try:
+        like = Like.objects.filter(post=post, gamer=gamer).first()
+        
+        if like:
+            like.delete()
+            is_liked = False
+        else:
+            Like.objects.create(post=post, gamer=gamer)
+            is_liked = True
+        
+        # Update count
+        post.like_count = post.likes.count()
+        post.save(update_fields=['like_count'])
+        
+        return JsonResponse({
+            'success': True,
+            'liked': is_liked,
+            'likes': post.like_count,
+        })
+    except Exception as e:
+        logger.error(f"Error toggling like: {e}")
+        return JsonResponse({'success': False, 'message': 'Failed to like post'}, status=500)
+
+
+@require_http_methods(["POST"])
+def api_delete_post(request, post_id):
+    """
+    API endpoint to delete a post.
+    """
+    gamer = get_gamer(request)
+    if not gamer:
+        return JsonResponse({'success': False, 'message': 'Not authenticated'}, status=401)
+    
+    post = get_object_or_404(Post, id=post_id)
+    
+    # Check ownership
+    if post.author.id != gamer.id:
+        return JsonResponse({'success': False, 'message': 'Permission denied'}, status=403)
+    
+    try:
+        post.delete()
+        return JsonResponse({'success': True, 'message': 'Post deleted'})
+    except Exception as e:
+        logger.error(f"Error deleting post: {e}")
+        return JsonResponse({'success': False, 'message': 'Failed to delete post'}, status=500)
+
+
+@require_http_methods(["GET"])
+def api_members_list(request):
+    """
+    API endpoint to list members with search and filtering.
+    """
+    search_query = request.GET.get('q', '').strip()
+    community = request.GET.get('community', 'all').strip()
+    
+    # Base query
+    members_qs = Gamer.objects.all()
+    
+    # Search filter
+    if search_query:
+        from django.db.models import Q
+        members_qs = members_qs.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(username__icontains=search_query) |
+            Q(custom_username__icontains=search_query)
+        )
+    
+    # Community filter (if implemented in your Gamer model)
+    # if community != 'all' and hasattr(Gamer, 'community'):
+    #     members_qs = members_qs.filter(community=community)
+    
+    # Limit results
+    members_qs = members_qs[:20]
+    
+    members_data = [
+        {
+            'id': m.id,
+            'name': m.get_full_name() or m.username,
+            'username': m.custom_username or m.username,
+            'avatar': m.profile_picture.url if m.profile_picture else '/static/core/images/player.jpeg',
+            'date_joined': m.date_joined.strftime('%B %Y') if hasattr(m, 'date_joined') else 'Unknown',
+        }
+        for m in members_qs
+    ]
+    
+    return JsonResponse({'results': members_data})

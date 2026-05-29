@@ -3,9 +3,6 @@
  * Consolidated modal styling for all modals across the application
  * Replaces: modals/change_password.css, modals/delete_account.css
  */
-
-@import "../../../core/static/core/css/variables.css";
-
 /* ============================================================================
    Modal Overlay & Container
    ============================================================================ */

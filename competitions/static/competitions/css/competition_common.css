@@ -3,9 +3,6 @@
  * Shared styling for all competition pages
  * Imported into: competition_list.css, competition_detail.css, competition_results.css
  */
-
-@import "../../core/static/core/css/variables.css";
-
 /* ============================================================================
    Status Pills & Badges
    ============================================================================ */

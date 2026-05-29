@@ -1,6 +1,3 @@
-/* Import variables */
-@import url('../../../core/static/core/css/variables.css');
-
 /* Feeds Header */
 .feeds-header {
     background: var(--gradient-primary);

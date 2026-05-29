@@ -1,6 +1,3 @@
-/* Import variables */
-@import url('variables.css');
-
 /* Base Elements */
 html, body {
     font-family: var(--site-font, 'Poppins', 'Segoe UI', sans-serif), sans-serif;

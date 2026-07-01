@@ -65,7 +65,7 @@ const adminComp = (() => {
 
             if (data.success) {
                 closeApproveModal();
-                showToast('success', data.message || 'Competition approved and is now live!');
+                showToast('success', data.message || 'Competition approved and is now in registration!');
                 setTimeout(() => window.location.reload(), 2000);
             } else {
                 if (data.errors) displayErrors(data.errors, 'ap-err-');
@@ -131,7 +131,7 @@ const adminComp = (() => {
 
             if (data.success) {
                 closeRejectModal();
-                showToast('success', data.message || 'Competition rejected. Shop owner has been notified.');
+                showToast('success', data.message || 'Competition rejected. Arena owner has been notified.');
                 setTimeout(() => window.location.reload(), 2000);
             } else {
                 if (data.errors) displayErrors(data.errors, 'rej-err-');
@@ -150,7 +150,7 @@ const adminComp = (() => {
     // ------------------------------------------------------------------
 
     async function confirmCheckins() {
-        if (!confirm('Confirm the check-in list? The shop owner will be notified to submit results.')) return;
+        if (!confirm('Confirm the check-in list? The arena owner will be notified to submit results.')) return;
 
         try {
             const formData = new FormData();
@@ -164,7 +164,7 @@ const adminComp = (() => {
             const data = await response.json();
 
             if (data.success) {
-                showToast('success', data.message || 'Check-ins confirmed. Shop owner notified.');
+                showToast('success', data.message || 'Check-ins confirmed. Arena owner notified.');
                 setTimeout(() => window.location.reload(), 2000);
             } else {
                 showToast('error', data.message || 'Failed to confirm check-ins.');

@@ -38,7 +38,7 @@ urlpatterns = [
     path('users/<int:user_id>/', views.admin_user_detail, name='user_detail'),
     path('users/<int:user_id>/toggle-status/', views.admin_user_toggle_status, name='user_toggle_status'),
 
-    # Shop Management
+    # Arena Management
     path('shops/', views.admin_shop_list, name='shop_list'),
     path('shops/<int:shop_id>/', views.admin_shop_detail, name='shop_detail'),
     path('shops/<int:shop_id>/approve/', views.admin_shop_approve, name='shop_approve'),

@@ -6,7 +6,7 @@
 {% block header_subtitle %}Welcome to {{ project_name }}!{% endblock %}
 
 {% block content %}
-    <p class="text-primary" style="font-weight: 600; font-size: 18px;">🎉 Congratulations, {{ shop_owner_name or 'Shop Owner' }}!</p>
+    <p class="text-primary" style="font-weight: 600; font-size: 18px;">🎉 Congratulations, {{ shop_owner_name or 'Arena Owner' }}!</p>
     <p class="text-secondary">Your gaming shop <strong>"{{ shop_name }}"</strong> has been approved and is now live on {{ project_name }}! Welcome to the network!</p>
 
     <div class="success-box">
@@ -16,9 +16,9 @@
     </div>
 
     <div class="info-box">
-        <p class="text-primary" style="margin: 5px 0; font-weight: 600;">📍 Shop Details Approved:</p>
+        <p class="text-primary" style="margin: 5px 0; font-weight: 600;">📍 Arena Details Approved:</p>
         <ul class="text-secondary" style="margin: 8px 0 0 0; padding-left: 20px;">
-            <li><strong>Shop Name:</strong> {{ shop_name }}</li>
+            <li><strong>Arena Name:</strong> {{ shop_name }}</li>
             <li><strong>Location:</strong> {{ shop_location }}</li>
             <li><strong>Gaming Screens:</strong> {{ screen_count }}</li>
         </ul>
@@ -36,7 +36,7 @@
 
     <div style="text-align: center; margin-top: 25px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
         <a href="{{ dashboard_link }}" class="btn" style="background-color: #10B981; margin: 5px;">
-            Go to Shop Dashboard
+            Go to Arena Dashboard
         </a>
         <a href="{{ onboarding_link }}" class="btn" style="background-color: #35A8F0; margin: 5px;">
             View Setup Guide

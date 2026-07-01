@@ -39,11 +39,10 @@
                 <button class="btn-danger" onclick="adminComp.openRejectModal()">
                     <i class="fas fa-times"></i> Reject
                 </button>
-            {% elif competition.status == 'checkin_submitted' %}
+            {% elif competition.status == 'ongoing' %}
                 <button class="btn-primary" onclick="adminComp.confirmCheckins()">
                     <i class="fas fa-user-check"></i> Confirm Check-ins
                 </button>
-            {% elif competition.status == 'pending_prize_verification' %}
                 <button class="btn-success" onclick="adminComp.verifyResults()">
                     <i class="fas fa-check-double"></i> Verify & Publish Results
                 </button>
@@ -345,7 +344,7 @@
                     <span>Check-in List Submitted</span>
                 </div>
                 <div class="action-card-body">
-                    <p class="action-card-desc">The shop owner has submitted the check-in list. Review the attendance above and confirm to allow results submission.</p>
+                    <p class="action-card-desc">The arena owner has submitted the check-in list. Review the attendance above and confirm to allow results submission.</p>
                     <div class="checkin-summary">
                         <div class="checkin-stat">
                             <span class="checkin-num">{{ checked_in_count }}</span>
@@ -562,7 +561,7 @@
                 <div class="form-group mb-3">
                     <label>Rejection Reason <span style="color:#F0354B;">*</span></label>
                     <textarea name="rejection_reason" id="rejectionReason" class="form-control" rows="4"
-                              placeholder="Provide a clear reason so the shop owner knows what to fix..." required></textarea>
+                              placeholder="Provide a clear reason so the arena owner knows what to fix..." required></textarea>
                     <div class="error-msg" id="rej-err-rejection_reason"></div>
                 </div>
                 <div class="modal-footer mt-4">

@@ -148,7 +148,7 @@ def broadcast_activity(sender, instance, created, **kwargs):
         'title': 'Activity Update',
         'message': instance.description,
         'activity_type': instance.action_type,
-        'timestamp': instance.created_at.isoformat(),
+        'timestamp': instance.timestamp.isoformat(),
     }
     
     # Add actor (who performed the action) if available

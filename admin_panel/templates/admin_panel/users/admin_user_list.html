@@ -24,7 +24,7 @@
                     <option value="">All Roles</option>
                     <option value="staff" {% if user_type == 'staff' %}selected{% endif %}>Staff</option>
                     <option value="gamer" {% if user_type == 'gamer' %}selected{% endif %}>Gamers</option>
-                    <option value="shop_owner" {% if user_type == 'shop_owner' %}selected{% endif %}>Shop Owners</option>
+                    <option value="shop_owner" {% if user_type == 'shop_owner' %}selected{% endif %}>Arena Owners</option>
                 </select>
                 <button class="btn-secondary" type="submit">Search</button>
             </form>
@@ -58,7 +58,7 @@
                             {% if user.is_superuser %}<span class="status-badge danger">Superuser</span>
                             {% elif user.is_staff %}<span class="status-badge warning">Staff</span>
                             {% elif user.gamer %}<span class="status-badge success">Gamer</span>
-                            {% elif user.shopowner %}<span class="status-badge">Shop Owner</span>
+                            {% elif user.shopowner %}<span class="status-badge">Arena Owner</span>
                             {% else %}<span class="status-badge neutral">Account</span>{% endif %}
                         </td>
                         <td>{% if user.is_active %}<span class="status-badge success">Active</span>{% else %}<span class="status-badge danger">Inactive</span>{% endif %}</td>

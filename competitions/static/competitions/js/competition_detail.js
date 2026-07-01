@@ -147,7 +147,7 @@ class CompetitionDetail {
         });
     }
 
-    // Shop Owner — Verify Gamer
+    // Arena Owner — Verify Gamer
     async verifyGamer() {
         const code = this.codeInput?.value.trim() || '';
         if (!code) {
@@ -230,7 +230,7 @@ class CompetitionDetail {
         list.prepend(item);
     }
 
-    // Shop Owner — Submit Check-ins
+    // Arena Owner — Submit Check-ins
     async submitCheckins() {
         if (!confirm('Submit the check-in list to the admin for review? Make sure all gamers have been verified before proceeding.')) return;
 
@@ -253,7 +253,7 @@ class CompetitionDetail {
         }
     }
 
-    // Shop Owner — Submit Results
+    // Arena Owner — Submit Results
     async submitResults() {
         const entries = document.querySelectorAll('.comp-result-entry');
         const results = [];

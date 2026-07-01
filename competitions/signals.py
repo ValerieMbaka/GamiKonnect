@@ -116,8 +116,8 @@ def on_competition_registration_opened(sender, instance, created, update_fields,
     if update_fields and 'status' not in update_fields:
         return
     
-    # Only notify when status changes to 'registration_open'
-    if instance.status != 'registration_open':
+    # Only notify when status changes to the active registration state.
+    if instance.status != 'registration':
         return
     
     try:

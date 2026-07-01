@@ -17,16 +17,18 @@
 }
 
 .status-badge.draft                     { background: rgba(108,117,125,0.12); color: #6c757d; }
+.status-badge.pending,
 .status-badge.pending_review            { background: rgba(253,126,20,0.12);  color: #fd7e14; }
 .status-badge.rejected                  { background: rgba(240,53,75,0.12);   color: #F0354B; }
-.status-badge.approved                  { background: rgba(53,168,240,0.12);  color: var(--primary); }
-.status-badge.registration_open         { background: rgba(16,185,129,0.12);  color: #10B981; }
-.status-badge.registration_closed       { background: rgba(102,16,242,0.12); color: #6610f2; }
-.status-badge.ongoing                   { background: rgba(240,53,75,0.12);   color: #F0354B; }
-.status-badge.checkin_submitted         { background: rgba(253,126,20,0.12);  color: #fd7e14; }
-.status-badge.results_pending           { background: rgba(253,126,20,0.12);  color: #fd7e14; }
-.status-badge.results_submitted         { background: rgba(102,16,242,0.12); color: #6610f2; }
-.status-badge.pending_prize_verification{ background: rgba(240,53,75,0.12);   color: #F0354B; }
+.status-badge.registration,
+.status-badge.approved,
+.status-badge.registration_open,
+.status-badge.registration_closed { background: rgba(53,168,240,0.12);  color: var(--primary); }
+.status-badge.ongoing,
+.status-badge.checkin_submitted,
+.status-badge.results_pending,
+.status-badge.results_submitted,
+.status-badge.pending_prize_verification { background: rgba(240,53,75,0.12);   color: #F0354B; }
 .status-badge.completed                 { background: rgba(16,185,129,0.12);  color: #10B981; }
 
 /* ------------------------------------------------------------------
@@ -55,7 +57,9 @@
     font-size: 11px;
     font-weight: 600;
 }
+.detail-status-badge.pending,
 .detail-status-badge.pending_review { background: rgba(253,126,20,0.12); color: #fd7e14; }
+.detail-status-badge.registration,
 .detail-status-badge.approved { background: rgba(53,168,240,0.12); color: var(--primary); }
 /* ... other statuses mapping to .status-badge styles ... */
 

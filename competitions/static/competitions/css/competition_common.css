@@ -25,6 +25,7 @@
     color: #666;
 }
 
+.comp-status-pill.pending,
 .comp-status-pill.pending_review {
     background-color: #fff3cd;
     color: #856404;
@@ -35,23 +36,20 @@
     color: #721c24;
 }
 
+.comp-status-pill.registration,
 .comp-status-pill.approved,
-.comp-status-pill.live {
+.comp-status-pill.live,
+.comp-status-pill.registration_open,
+.comp-status-pill.registration_closed {
     background-color: #d4edda;
     color: #155724;
 }
 
-.comp-status-pill.registration_open {
-    background-color: #cfe2ff;
-    color: #084298;
-}
-
-.comp-status-pill.registration_closed {
-    background-color: #e7d4f5;
-    color: #5a189a;
-}
-
-.comp-status-pill.ongoing {
+.comp-status-pill.ongoing,
+.comp-status-pill.checkin_submitted,
+.comp-status-pill.results_pending,
+.comp-status-pill.results_submitted,
+.comp-status-pill.pending_prize_verification {
     background-color: #fff3cd;
     color: #997404;
 }

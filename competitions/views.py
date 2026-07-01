@@ -72,7 +72,7 @@ def get_shop_owner(request):
 
 def competition_list(request):
     competitions = Competition.objects.filter(
-        status__in=['live', 'registration_open', 'registration_closed', 'ongoing']
+        status__in=['registration', 'ongoing']
     ).select_related('game', 'platform', 'shop').order_by('-scheduled_time')
     
     query = request.GET.get('q')
@@ -137,16 +137,14 @@ def competition_detail(request, slug):
             raise Http404("Competition not found.")
 
     if competition.status not in [
-        'live', 'registration_open', 'registration_closed',
-        'ongoing', 'checkin_submitted', 'results_pending',
-        'results_submitted', 'pending_prize_verification', 'completed'
+        'registration', 'ongoing', 'completed'
     ]:
         raise Http404("Competition not accessible.")
     
     gamer = get_gamer(request)
     shop_owner = get_shop_owner(request)
     
-    # Access control: Only registered gamers or the shop owner or admin can view detail page
+    # Access control: Only registered gamers or the arena owner or admin can view detail page
     is_shop_owner_of_competition = False
     if shop_owner:
         is_shop_owner_of_competition = competition.shop.owners.filter(pk=shop_owner.pk).exists()
@@ -212,7 +210,7 @@ def competition_register(request, slug):
     """
     try:
         competition = Competition.objects.select_related('game', 'platform', 'shop').get(slug=slug)
-        if competition.status not in ['live', 'registration_open']:
+        if competition.status != 'registration':
             raise Competition.DoesNotExist
     except Competition.DoesNotExist:
         if request.method == 'GET':
@@ -506,7 +504,7 @@ def gamer_competition_result(request, slug):
 
 
 # ---------------------------------------------------------------------------
-# Shop Owner — Competition Management Views
+# Arena Owner — Competition Management Views
 # ---------------------------------------------------------------------------
 
 def shop_owner_competitions(request):
@@ -516,7 +514,7 @@ def shop_owner_competitions(request):
     
     shop_owner = get_shop_owner(request)
     if not shop_owner:
-        messages.error(request, 'Shop owner profile not found.')
+        messages.error(request, 'Arena owner profile not found.')
         return redirect('core:home')
     
     competitions = Competition.objects.filter(
@@ -533,7 +531,8 @@ def shop_owner_competitions(request):
         'ongoing_competitions': ongoing_competitions,
         'total': competitions.count(),
         'pending': competitions.filter(status='pending').count(),
-        'live': competitions.filter(status__in=['live', 'registration_open']).count(),
+        'registration': competitions.filter(status='registration').count(),
+        'live': competitions.filter(status='ongoing').count(),
         'completed': competitions.filter(status='completed').count(),
         'all_games': Game.objects.filter(
             is_active=True, is_verified=True
@@ -549,7 +548,7 @@ def shop_owner_competition_create(request):
     
     shop_owner = get_shop_owner(request)
     if not shop_owner:
-        return JsonResponse({'success': False, 'message': 'Shop owner profile not found.'}, status=403)
+        return JsonResponse({'success': False, 'message': 'Arena owner profile not found.'}, status=403)
 
     approved_shops = shop_owner.shops.filter(is_approved=True).prefetch_related(
         'games_available__supported_platforms',
@@ -599,7 +598,7 @@ def shop_owner_competition_create(request):
                 with transaction.atomic():
                     competition = form.save(commit=False)
                     competition.created_by = shop_owner
-                    competition.status = 'pending_review'
+                    competition.status = 'pending'
                     
                     # Log the submitted data if it fails validation for debugging
                     logger.debug(f"Competition creation form data: {request.POST}")
@@ -652,7 +651,7 @@ def shop_owner_competition_edit(request, slug):
     
     shop_owner = get_shop_owner(request)
     if not shop_owner:
-        return JsonResponse({'success': False, 'message': 'Shop owner profile not found.'}, status=403)
+        return JsonResponse({'success': False, 'message': 'Arena owner profile not found.'}, status=403)
     
     competition = get_object_or_404(
         Competition,
@@ -691,7 +690,7 @@ def shop_owner_competition_edit(request, slug):
             try:
                 with transaction.atomic():
                     competition = form.save(commit=False)
-                    competition.status = 'pending_review'
+                    competition.status = 'pending'
                     competition.rejection_reason = ''
                     competition.save()
 
@@ -737,7 +736,7 @@ def shop_owner_competition_detail(request, slug):
     
     shop_owner = get_shop_owner(request)
     if not shop_owner:
-        messages.error(request, 'Shop owner profile not found.')
+        messages.error(request, 'Arena owner profile not found.')
         return redirect('core:home')
     
     competition = get_object_or_404(
@@ -868,7 +867,6 @@ def shop_owner_submit_checkins(request, slug):
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                competition.status = 'checkin_submitted'
                 competition.save()
                 
                 checked_in_count = competition.registrations.filter(checked_in=True).count()
@@ -914,7 +912,7 @@ def shop_owner_submit_results(request, slug):
         Competition,
         slug=slug,
         shop__in=shop_owner.shops.all(),
-        status='results_pending'
+        status='ongoing'
     )
     
     if request.method == 'POST':
@@ -996,7 +994,7 @@ def admin_competition_approve(request, integer_id):
     if not (request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)):
         return JsonResponse({'success': False, 'message': 'Access denied.'}, status=403)
     
-    competition = get_object_or_404(Competition, integer_id=integer_id, status='pending_review')
+    competition = get_object_or_404(Competition, integer_id=integer_id, status='pending')
     
     if request.method == 'POST':
         form = CompetitionApprovalForm(request.POST, instance=competition)
@@ -1009,7 +1007,7 @@ def admin_competition_approve(request, integer_id):
                 )
                 return JsonResponse({
                     'success': True,
-                    'message': f"'{competition.name}' has been approved and is now live.",
+                    'message': f"'{competition.name}' has been approved and is now in registration.",
                 })
             except Exception as e:
                 logger.error(f"Competition approval error: {e}")
@@ -1025,7 +1023,7 @@ def admin_competition_reject(request, integer_id):
     if not (request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)):
         return JsonResponse({'success': False, 'message': 'Access denied.'}, status=403)
     
-    competition = get_object_or_404(Competition, integer_id=integer_id, status='pending_review')
+    competition = get_object_or_404(Competition, integer_id=integer_id, status='pending')
     
     if request.method == 'POST':
         form = CompetitionRejectionForm(request.POST, instance=competition)
@@ -1038,7 +1036,7 @@ def admin_competition_reject(request, integer_id):
                 )
                 return JsonResponse({
                     'success': True,
-                    'message': f"'{competition.name}' has been rejected. Shop owner has been notified.",
+                    'message': f"'{competition.name}' has been rejected. Arena owner has been notified.",
                 })
             except Exception as e:
                 logger.error(f"Competition rejection error: {e}")
@@ -1054,7 +1052,7 @@ def admin_confirm_checkins(request, integer_id):
     if not (request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)):
         return JsonResponse({'success': False, 'message': 'Access denied.'}, status=403)
     
-    competition = get_object_or_404(Competition, integer_id=integer_id, status='checkin_submitted')
+    competition = get_object_or_404(Competition, integer_id=integer_id, status='ongoing')
     
     if request.method == 'POST':
         try:
@@ -1064,7 +1062,7 @@ def admin_confirm_checkins(request, integer_id):
             )
             return JsonResponse({
                 'success': True,
-                'message': 'Check-ins confirmed. Shop owner notified to submit results.',
+                'message': 'Check-ins confirmed. Arena owner notified to submit results.',
             })
         except Exception as e:
             logger.error(f"Check-in confirmation error: {e}")
@@ -1081,7 +1079,7 @@ def admin_verify_results(request, integer_id):
     competition = get_object_or_404(
         Competition,
         integer_id=integer_id,
-        status__in=['pending_prize_verification', 'completed']
+        status='ongoing'
     )
     
     if request.method == 'POST':

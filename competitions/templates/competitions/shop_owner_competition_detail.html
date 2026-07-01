@@ -26,18 +26,12 @@
             <i class="fas fa-arrow-left"></i> Back to My Competitions
         </a>
         <span class="comp-status-pill comp-status--{{ competition.status }}">
-            {% if competition.status == 'registration_open' %}
-                <i class="fas fa-circle pulse-dot"></i> Registration Open
-            {% elif competition.status == 'approved' %}
-                <i class="fas fa-clock"></i> Coming Soon
-            {% elif competition.status == 'registration_closed' %}
-                <i class="fas fa-lock"></i> Registration Closed
+            {% if competition.status == 'registration' %}
+                <i class="fas fa-circle pulse-dot"></i> Registration
             {% elif competition.status == 'ongoing' %}
                 <i class="fas fa-play-circle pulse-dot"></i> Live Now
             {% elif competition.status == 'completed' %}
                 <i class="fas fa-check-circle"></i> Completed
-            {% elif competition.status == 'checkin_submitted' or competition.status == 'results_pending' or competition.status == 'results_submitted' %}
-                <i class="fas fa-hourglass-half"></i> Processing Results
             {% endif %}
         </span>
     </div>
@@ -180,7 +174,7 @@
                         <div class="timeline-event">
                             <div class="event-time">{{ timeline.results_submit_min|date:"M d, Y · g:i A" }} - {{ timeline.results_submit_max|date:"M d, Y · g:i A" }}</div>
                             <div class="event-label"><i class="fas fa-file-upload"></i> Results Submission Window</div>
-                            <div class="event-detail">Shop owner must submit results within this timeframe</div>
+                            <div class="event-detail">Arena owner must submit results within this timeframe</div>
                         </div>
                         
                         <div class="timeline-event">

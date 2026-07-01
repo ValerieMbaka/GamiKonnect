@@ -108,16 +108,10 @@ class CompetitionAdmin(admin.ModelAdmin):
     def status_badge(self, obj):
         colours = {
             'draft':                    '#6c757d',  # grey
-            'pending_review':           '#fd7e14',  # orange
+            'pending':                  '#fd7e14',  # orange
             'rejected':                 '#dc3545',  # red
-            'approved':                 '#0d6efd',  # blue
-            'registration_open':        '#20c997',  # teal
-            'registration_closed':      '#6610f2',  # purple
+            'registration':             '#0d6efd',  # blue
             'ongoing':                  '#0dcaf0',  # cyan
-            'checkin_submitted':        '#ffc107',  # yellow
-            'results_pending':          '#fd7e14',  # orange
-            'results_submitted':        '#6610f2',  # purple
-            'pending_prize_verification': '#dc3545', # red
             'completed':                '#198754',  # green
         }
         colour = colours.get(obj.status, '#6c757d')
@@ -141,8 +135,8 @@ class CompetitionAdmin(admin.ModelAdmin):
     # Admin Actions
     @admin.action(description='Approve selected competitions')
     def approve_competitions(self, request, queryset):
-        updated = queryset.filter(status='pending_review').update(
-            status='approved',
+        updated = queryset.filter(status='pending').update(
+            status='registration',
             approved_at=timezone.now()
         )
         self.message_user(request, f'{updated} competition(s) approved.')

@@ -3,11 +3,11 @@
 {% block title %}Check-ins Confirmed — {{ project_name }}{% endblock %}
 {% block header_bg %}background: linear-gradient(135deg, #10B981 0%, #059669 100%);{% endblock %}
 {% block header_title %}✅ CHECK-INS CONFIRMED{% endblock %}
-{% block header_subtitle %}Submit your competition results{% endblock %}
+{% block header_subtitle %}Submit your ongoing competition results{% endblock %}
 
 {% block content %}
     <p class="text-primary" style="font-weight: 600; font-size: 18px;">Hi {{ shop_owner_name }},</p>
-    <p class="text-secondary">The admin has confirmed the check-in list for <strong>"{{ competition.name }}"</strong>. You can now submit the final ranked results.</p>
+    <p class="text-secondary">The admin has confirmed the check-in list for <strong>"{{ competition.name }}"</strong>. You can now submit the final ranked results while the competition remains ongoing.</p>
 
     <div class="status-success">
         <p class="text-secondary">

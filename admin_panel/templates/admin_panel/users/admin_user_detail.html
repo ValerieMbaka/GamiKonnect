@@ -36,7 +36,7 @@
                         <img src="{% static 'core/images/gamepad.jpeg' %}" class="hub-avatar" style="width:88px;height:88px;" alt="Avatar">
                         <div>
                             <p class="hub-cell-title mb-1">{{ user_obj.first_name|default:user_obj.email }} {{ user_obj.last_name }}</p>
-                            <p class="hub-cell-subtitle mb-1">{% if user_obj.is_superuser %}Superuser{% elif user_obj.is_staff %}Staff{% elif profile %}{% if profile.custom_username %}Gamer{% else %}Shop Owner{% endif %}{% else %}Account{% endif %}</p>
+                            <p class="hub-cell-subtitle mb-1">{% if user_obj.is_superuser %}Superuser{% elif user_obj.is_staff %}Staff{% elif profile %}{% if profile.custom_username %}Gamer{% else %}Arena Owner{% endif %}{% else %}Account{% endif %}</p>
                             <span class="status-badge {% if user_obj.is_active %}success{% else %}danger{% endif %}">{% if user_obj.is_active %}Active{% else %}Inactive{% endif %}</span>
                         </div>
                     </div>

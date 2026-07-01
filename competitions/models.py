@@ -12,30 +12,29 @@ class Competition(models.Model):
         ('draft', 'Draft'),
         ('pending', 'Pending'),
         ('rejected', 'Rejected'),
-        ('live', 'Live'),
-        ('registration_open', 'Registration Open'),
-        ('registration_closed', 'Registration Closed'),
+        ('registration', 'Registration'),
         ('ongoing', 'Ongoing'),
-        ('checkin_submitted', 'Check-in Submitted'),
-        ('results_pending', 'Results Pending'),
-        ('results_submitted', 'Results Submitted'),
-        ('pending_prize_verification', 'Pending Prize Verification'),
         ('completed', 'Completed'),
     ]
+
+    LEGACY_STATUS_MAP = {
+        'pending_review': 'pending',
+        'approved': 'registration',
+        'registration_open': 'registration',
+        'registration_closed': 'registration',
+        'checkin_submitted': 'ongoing',
+        'results_pending': 'ongoing',
+        'results_submitted': 'ongoing',
+        'pending_prize_verification': 'ongoing',
+    }
     
     # Gamer-facing status display labels
     GAMER_STATUS_DISPLAY = {
         'draft': None,
         'pending': None,
         'rejected': None,
-        'live': 'Coming Soon',
-        'registration_open': 'Open',
-        'registration_closed': 'Closed',
+        'registration': 'Open',
         'ongoing': 'Live',
-        'checkin_submitted': 'Live',
-        'results_pending': 'Completed',
-        'results_submitted': 'Completed',
-        'pending_prize_verification': 'Completed',
         'completed': 'Completed',
     }
 
@@ -84,8 +83,8 @@ class Competition(models.Model):
     )
     is_pwa_only = models.BooleanField(
         default=False,
-        verbose_name="PWA Only",
-        help_text="If True, the competition is only for PWA."
+        verbose_name="PWD Only",
+        help_text="If True, the competition is only for PWD."
     )
     rules = models.TextField(
         blank=True,
@@ -198,6 +197,8 @@ class Competition(models.Model):
     def save(self, *args, **kwargs):
         from games.models import Counter
         from django.utils.text import slugify
+
+        self.status = self.normalize_status(self.status)
 
         if not self.integer_id:
             self.integer_id = Counter.get_next_id('Competition')
@@ -351,6 +352,10 @@ class Competition(models.Model):
         Returns None if the status shouldn't be displayed to gamers.
         """
         return self.GAMER_STATUS_DISPLAY.get(self.status, self.status)
+
+    @classmethod
+    def normalize_status(cls, status):
+        return cls.LEGACY_STATUS_MAP.get(status, status)
 
     def __str__(self):
         return self.name

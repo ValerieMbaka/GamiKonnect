@@ -1,7 +1,7 @@
 {% extends 'admin_panel/base/includes/admin_base.html' %}
 {% load static %}
 
-{% block title %}Shop Management · Admin{% endblock %}
+{% block title %}Arena Management · Admin{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'admin_panel/css/management.css' %}">
@@ -12,7 +12,7 @@
     
     <div class="management-header">
         <div>
-            <h1 class="h3 fw-bold mb-1">Venue & Shop Management</h1>
+            <h1 class="h3 fw-bold mb-1">Venue & Arena Management</h1>
             <p class="text-muted mb-0">Review pending applications and manage active gaming hubs.</p>
         </div>
         <div>
@@ -25,7 +25,7 @@
     <div class="filter-bar">
         <div class="search-wrapper">
             <i class="fas fa-search"></i>
-            <input type="text" id="shopSearch" placeholder="Search by shop name, owner, or location...">
+            <input type="text" id="shopSearch" placeholder="Search by arena name, owner, or location...">
         </div>
         <select id="statusFilter" class="filter-select">
             <option value="all">All Statuses</option>
@@ -40,7 +40,7 @@
             <table class="table-modern">
                 <thead>
                     <tr>
-                        <th>Shop Details</th>
+                        <th>Arena Details</th>
                         <th>Owner</th>
                         <th>Hardware/Games</th>
                         <th>Submitted</th>

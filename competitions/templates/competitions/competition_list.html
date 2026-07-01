@@ -64,10 +64,10 @@
                 <div class="filter-select-wrap">
                     <select name="status" class="filter-select-pill" onchange="this.form.submit()">
                         <option value="">All Statuses</option>
-                        <option value="live" {% if request.GET.status == 'live' %}selected{% endif %}>Coming Soon</option>
-                        <option value="registration_open" {% if request.GET.status == 'registration_open' %}selected{% endif %}>Registration Open</option>
-                        <option value="registration_closed" {% if request.GET.status == 'registration_closed' %}selected{% endif %}>Registration Closed</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="registration" {% if request.GET.status == 'registration' %}selected{% endif %}>Registration</option>
                         <option value="ongoing" {% if request.GET.status == 'ongoing' %}selected{% endif %}>Ongoing</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
                     </select>
                     <i class="fas fa-chevron-down filter-icon"></i>
                 </div>
@@ -118,10 +118,9 @@
                 {% endif %}
 
                 <div class="comp-status-badge comp-status--{{ competition.status }}">
-                    {% if competition.status == 'registration_open' %}<i class="fas fa-circle pulse-dot"></i> Open
-                    {% elif competition.status == 'live' %}<i class="fas fa-clock"></i> Soon
-                    {% elif competition.status == 'registration_closed' %}<i class="fas fa-lock"></i> Closed
+                    {% if competition.status == 'registration' %}<i class="fas fa-circle pulse-dot"></i> Registration
                     {% elif competition.status == 'ongoing' %}<i class="fas fa-play-circle pulse-dot"></i> Live
+                    {% elif competition.status == 'completed' %}<i class="fas fa-flag-checkered"></i> Completed
                     {% else %}<i class="fas fa-hourglass-half"></i> TBA
                     {% endif %}
                 </div>
@@ -168,7 +167,7 @@
                     <button class="comp-btn comp-btn--register" data-competition-id="{{ competition.slug }}" data-competition-name="{{ competition.name }}" onclick="competitionList.openRegisterModal(this)">
                         <i class="fas fa-credit-card"></i> Complete Payment
                     </button>
-                {% elif competition.status == 'registration_open' and not competition.is_registration_full %}
+                {% elif competition.status == 'registration' and not competition.is_registration_full %}
                     {% if gamer %}
                         <button class="comp-btn comp-btn--register" data-competition-id="{{ competition.slug }}" data-competition-name="{{ competition.name }}" onclick="competitionList.openRegisterModal(this)">
                             <i class="fas fa-plus-circle"></i> Join for {% if competition.entry_fee %}KES {{ competition.entry_fee }}{% else %}Free{% endif %}
@@ -176,7 +175,7 @@
                     {% else %}
                         <a href="{% url 'accounts:login' %}?next={% url 'competitions:list' %}" class="comp-btn comp-btn--register"><i class="fas fa-sign-in-alt"></i> Login to Register</a>
                     {% endif %}
-                {% elif competition.status == 'registration_open' and competition.is_registration_full %}
+                {% elif competition.status == 'registration' and competition.is_registration_full %}
                     <button class="comp-btn comp-btn--full" disabled><i class="fas fa-ban"></i> Roster Full</button>
                 {% else %}
                     <a href="{% url 'competitions:detail' competition.slug %}" class="comp-btn comp-btn--view"><i class="fas fa-info-circle"></i> View Details</a>

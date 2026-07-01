@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (row) {
                         const statusBadge = row.querySelector('.status-badge');
                         if (statusBadge) {
-                            statusBadge.className = 'status-badge approved';
-                            statusBadge.textContent = 'Live';
+                            statusBadge.className = 'status-badge registration';
+                            statusBadge.textContent = 'Registration';
                         }
                         const actions = row.querySelector('.action-buttons');
                         if (actions) actions.innerHTML = `<a href="/admin_panel/competitions/${compId}/" class="btn-action view" data-tooltip="View & Manage"><i class="fas fa-arrow-right"></i></a>`;

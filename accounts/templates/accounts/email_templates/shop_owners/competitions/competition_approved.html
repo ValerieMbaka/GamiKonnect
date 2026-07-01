@@ -3,15 +3,15 @@
 {% block title %}Competition Approved — {{ project_name }}{% endblock %}
 {% block header_bg %}background: linear-gradient(135deg, #10B981 0%, #059669 100%);{% endblock %}
 {% block header_title %}✅ COMPETITION APPROVED{% endblock %}
-{% block header_subtitle %}Your competition is now live!{% endblock %}
+{% block header_subtitle %}Your competition is now in registration{% endblock %}
 
 {% block content %}
     <p class="text-primary" style="font-weight: 600; font-size: 18px;">🎉 Great news, {{ shop_owner_name }}!</p>
-    <p class="text-secondary">Your competition <strong>"{{ competition.name }}"</strong> has been approved and is now live on {{ project_name }}. Gamers can start registering once the registration window opens.</p>
+    <p class="text-secondary">Your competition <strong>"{{ competition.name }}"</strong> has been approved and is now in the registration phase on {{ project_name }}. Gamers can register once the registration window opens.</p>
 
     <div class="status-success">
         <p class="text-secondary">
-            <strong>✓ Your competition is approved and scheduled.</strong> Registration will open and close automatically as configured.
+            <strong>✓ Your competition is approved and scheduled.</strong> Registration will open automatically and the competition will move into ongoing play when the start time is reached.
         </p>
     </div>
 
@@ -55,7 +55,7 @@
 
     <div class="status-warning">
         <p class="text-secondary">
-            <strong>📌 On Competition Day:</strong> Use your shop dashboard to verify gamers using their unique registration codes before the competition begins.
+            <strong>📌 On Competition Day:</strong> Use your shop dashboard to verify gamers using their unique registration codes once the competition is ongoing.
         </p>
     </div>
 

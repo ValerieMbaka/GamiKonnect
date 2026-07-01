@@ -8,9 +8,7 @@ Scheduler Strategy:
 
 Job naming convention:
     competition_<integer_id>_<action>
-    e.g. competition_42_open_registration
-         competition_42_close_registration
-         competition_42_start
+    e.g. competition_42_start
          competition_42_end
 
 Setup:
@@ -94,28 +92,14 @@ def schedule_competition_jobs(competition):
     Called from the admin approval view.
 
     Jobs scheduled:
-        1. open_registration  — at registration_opens_at
-        2. close_registration — at registration_closes_at
-        3. start_competition  — at scheduled_time
-        4. end_competition    — at competition_end_time (if set)
+        1. start_competition  — at scheduled_time
+        2. end_competition    — at competition_end_time (if set)
     """
     sched = get_scheduler()
     cid = competition.integer_id
     now = timezone.now()
 
     job_definitions = [
-        {
-            'id': f'competition_{cid}_open_registration',
-            'name': f'[#{cid}] Open Registration — {competition.name}',
-            'func': open_registration,
-            'run_at': competition.registration_opens_at,
-        },
-        {
-            'id': f'competition_{cid}_close_registration',
-            'name': f'[#{cid}] Close Registration — {competition.name}',
-            'func': close_registration,
-            'run_at': competition.registration_closes_at,
-        },
         {
             'id': f'competition_{cid}_start',
             'name': f'[#{cid}] Start Competition — {competition.name}',
@@ -166,8 +150,6 @@ def remove_competition_jobs(competition):
     sched = get_scheduler()
     cid = competition.integer_id
     job_ids = [
-        f'competition_{cid}_open_registration',
-        f'competition_{cid}_close_registration',
         f'competition_{cid}_start',
         f'competition_{cid}_end',
     ]
@@ -182,8 +164,8 @@ def remove_competition_jobs(competition):
 # Job Functions — Status Transitions
 def open_registration(competition_id):
     """
-    Transitions competition from 'approved' → 'registration_open'.
-    Notifies shop owner that registration is now open.
+    Transitions competition from 'registration' to the active registration period.
+    Notifies arena owner that registration is now open.
     """
     from .models import Competition
     from core.email_service import EmailManager
@@ -191,10 +173,8 @@ def open_registration(competition_id):
     try:
         competition = Competition.objects.get(
             integer_id=competition_id,
-            status='approved'
+            status='registration'
         )
-        competition.status = 'registration_open'
-        competition.save(update_fields=['status', 'updated_at'])
 
         EmailManager.send_competition_registration_opened(competition)
         # Audit
@@ -213,7 +193,7 @@ def open_registration(competition_id):
     except Competition.DoesNotExist:
         logger.warning(
             f"[#{competition_id}] open_registration skipped — "
-            f"competition not found or not in 'approved' status."
+            f"competition not found or not in 'registration' status."
         )
     except Exception as e:
         logger.error(f"[#{competition_id}] open_registration error: {e}")
@@ -222,7 +202,7 @@ def open_registration(competition_id):
 def close_registration(competition_id):
     """
     Transitions competition from 'registration_open' → 'registration_closed'.
-    Notifies shop owner with final participant count.
+    Notifies arena owner with final participant count.
     Sends reminder email to all registered gamers with their unique code.
     """
     from .models import Competition
@@ -231,12 +211,10 @@ def close_registration(competition_id):
     try:
         competition = Competition.objects.get(
             integer_id=competition_id,
-            status='registration_open'
+            status='registration'
         )
-        competition.status = 'registration_closed'
-        competition.save(update_fields=['status', 'updated_at'])
 
-        # Notify shop owner
+        # Notify arena owner
         EmailManager.send_competition_registration_closed(
             competition=competition,
             participant_count=competition.registered_count()
@@ -273,7 +251,7 @@ def close_registration(competition_id):
     except Competition.DoesNotExist:
         logger.warning(
             f"[#{competition_id}] close_registration skipped — "
-            f"competition not found or not in 'registration_open' status."
+            f"competition not found or not in 'registration' status."
         )
     except Exception as e:
         logger.error(f"[#{competition_id}] close_registration error: {e}")
@@ -281,7 +259,7 @@ def close_registration(competition_id):
 
 def start_competition(competition_id):
     """
-    Transitions competition from 'registration_closed' → 'ongoing'.
+    Transitions competition from 'registration' → 'ongoing'.
     Expires all unused registration codes (gamers who haven't been verified yet).
     """
     from .models import Competition, CompetitionRegistration
@@ -289,13 +267,13 @@ def start_competition(competition_id):
     try:
         competition = Competition.objects.get(
             integer_id=competition_id,
-            status='registration_closed'
+            status='registration'
         )
         competition.status = 'ongoing'
         competition.save(update_fields=['status', 'updated_at'])
 
         # Expire all codes that haven't been used yet
-        # (checked_in=False means they haven't been verified by shop owner)
+        # (checked_in=False means they haven't been verified by arena owner)
         expired_count = CompetitionRegistration.objects.filter(
             competition=competition,
             checked_in=False,
@@ -322,7 +300,7 @@ def start_competition(competition_id):
     except Competition.DoesNotExist:
         logger.warning(
             f"[#{competition_id}] start_competition skipped — "
-            f"competition not found or not in 'registration_closed' status."
+            f"competition not found or not in 'registration' status."
         )
     except Exception as e:
         logger.error(f"[#{competition_id}] start_competition error: {e}")
@@ -330,9 +308,9 @@ def start_competition(competition_id):
 
 def end_competition(competition_id):
     """
-    Transitions competition from 'ongoing' → prompts shop owner to submit check-ins.
-    Sends a notification to the shop owner reminding them to verify and submit check-ins.
-    The competition stays in 'ongoing' status — shop owner must actively submit.
+    Prompts the arena owner to submit check-ins once the competition end time is reached.
+    Sends a notification to the arena owner reminding them to verify and submit check-ins.
+    The competition stays in 'ongoing' status — arena owner must actively submit.
     """
     from .models import Competition
     from core.email_service import EmailManager
@@ -343,8 +321,8 @@ def end_competition(competition_id):
             status='ongoing'
         )
 
-        # Notify shop owner to submit check-ins — status stays 'ongoing'
-        # until the shop owner actively submits via shop_owner_submit_checkins view
+        # Notify arena owner to submit check-ins — status stays 'ongoing'
+        # until the arena owner actively submits via shop_owner_submit_checkins view
         EmailManager.send_competition_ended_prompt(competition)
 
         # Audit
@@ -353,14 +331,14 @@ def end_competition(competition_id):
             CompetitionAuditLog.objects.create(
                 competition=competition,
                 action='end',
-                details='Automated: competition end time reached; shop owner prompted to submit check-ins.'
+                details='Automated: competition end time reached; arena owner prompted to submit check-ins.'
             )
         except Exception:
             logger.exception('Failed to create audit log for end_competition')
 
         logger.info(
             f"[#{competition_id}] Competition end time reached. "
-            f"Shop owner notified to submit check-ins."
+            f"Arena owner notified to submit check-ins."
         )
 
     except Competition.DoesNotExist:
@@ -380,9 +358,7 @@ def safety_net_check():
     but didn't (e.g. due to a server restart or missed job execution).
 
     Handles:
-        - approved → registration_open (if registration_opens_at has passed)
-        - registration_open → registration_closed (if registration_closes_at has passed)
-        - registration_closed → ongoing (if scheduled_time has passed)
+        - registration → ongoing (if scheduled_time has passed)
     """
     from .models import Competition, CompetitionRegistration
     from core.email_service import EmailManager
@@ -390,75 +366,9 @@ def safety_net_check():
     now = timezone.now()
     transitioned = 0
 
-    # approved → registration_open
-    missed_open = Competition.objects.filter(
-        status='approved',
-        registration_opens_at__lte=now
-    )
-    for competition in missed_open:
-        competition.status = 'registration_open'
-        competition.save(update_fields=['status', 'updated_at'])
-        EmailManager.send_competition_registration_opened(competition)
-        try:
-            from .models import CompetitionAuditLog
-            CompetitionAuditLog.objects.create(
-                competition=competition,
-                action='open_registration',
-                details='Safety-net automated transition: opened registration.'
-            )
-        except Exception:
-            logger.exception('Failed to create safety-net audit log for open_registration')
-        logger.info(f"[Safety Net] [#{competition.integer_id}] Opened registration (missed job).")
-        transitioned += 1
-
-    # registration_open → registration_closed
-    # Evaluate close conditions in Python from annotated values to avoid brittle
-    # filter chains and keep this safety-net resilient across model refactors.
-    close_candidates = Competition.objects.filter(
-        status='registration_open'
-    ).annotate(
-        active_registrations=Count('registrations', filter=Q(registrations__is_cancelled=False))
-    )
-    for competition in close_candidates:
-        deadline_passed = competition.registration_closes_at <= now
-        registration_full = competition.active_registrations >= competition.max_participants
-
-        if not (deadline_passed or registration_full):
-            continue
-
-        competition.status = 'registration_closed'
-        competition.save(update_fields=['status', 'updated_at'])
-
-        EmailManager.send_competition_registration_closed(
-            competition=competition,
-            participant_count=competition.registered_count()
-        )
-
-        registrations = competition.registrations.filter(
-            is_cancelled=False
-        ).select_related('gamer')
-        for registration in registrations:
-            EmailManager.send_competition_reminder(
-                gamer=registration.gamer,
-                competition=competition,
-                registration=registration
-            )
-
-        try:
-            from .models import CompetitionAuditLog
-            CompetitionAuditLog.objects.create(
-                competition=competition,
-                action='close_registration',
-                details='Safety-net automated transition: closed registration.'
-            )
-        except Exception:
-            logger.exception('Failed to create safety-net audit log for close_registration')
-        logger.info(f"[Safety Net] [#{competition.integer_id}] Closed registration (missed job).")
-        transitioned += 1
-
-    # registration_closed → ongoing
+    # registration → ongoing
     missed_start = Competition.objects.filter(
-        status='registration_closed',
+        status='registration',
         scheduled_time__lte=now
     )
     for competition in missed_start:
@@ -483,7 +393,7 @@ def safety_net_check():
         logger.info(f"[Safety Net] [#{competition.integer_id}] Started competition (missed job).")
         transitioned += 1
 
-    # ongoing → prompt shop owner (if end_time passed and still ongoing)
+    # ongoing → prompt arena owner (if end_time passed and still ongoing)
     missed_end = Competition.objects.filter(
         status='ongoing',
         competition_end_time__lte=now
@@ -495,13 +405,13 @@ def safety_net_check():
             CompetitionAuditLog.objects.create(
                 competition=competition,
                 action='end',
-                details='Safety-net automated transition: end time passed; shop owner re-notified.'
+                details='Safety-net automated transition: end time passed; arena owner re-notified.'
             )
         except Exception:
             logger.exception('Failed to create safety-net audit log for end')
         logger.info(
             f"[Safety Net] [#{competition.integer_id}] End time passed — "
-            f"shop owner re-notified to submit check-ins."
+            f"arena owner re-notified to submit check-ins."
         )
         transitioned += 1
 

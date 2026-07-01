@@ -64,7 +64,7 @@ def index(request):
     
     # Fetch upcoming competitions
     upcoming_competitions = Competition.objects.filter(
-        status__in=['approved', 'registration_open', 'registration_closed']
+        status__in=['registration', 'ongoing']
     ).order_by('scheduled_time')[:3]
     
     # Fetch top players this week (ranked by points)

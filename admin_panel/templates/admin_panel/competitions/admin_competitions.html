@@ -68,14 +68,8 @@
                         <option value="">All Statuses</option>
                         <option value="pending"   {% if request.GET.status == 'pending' %}selected{% endif %}>Pending Review</option>
                         <option value="rejected"         {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
-                        <option value="approved"         {% if request.GET.status == 'approved' %}selected{% endif %}>Approved</option>
-                        <option value="registration_open"{% if request.GET.status == 'registration_open' %}selected{% endif %}>Registration Open</option>
-                        <option value="registration_closed"{% if request.GET.status == 'registration_closed' %}selected{% endif %}>Registration Closed</option>
+                    <option value="registration"     {% if request.GET.status == 'registration' %}selected{% endif %}>Registration</option>
                         <option value="ongoing"          {% if request.GET.status == 'ongoing' %}selected{% endif %}>Ongoing</option>
-                        <option value="checkin_submitted"{% if request.GET.status == 'checkin_submitted' %}selected{% endif %}>Check-in Submitted</option>
-                        <option value="results_pending"  {% if request.GET.status == 'results_pending' %}selected{% endif %}>Results Pending</option>
-                        <option value="results_submitted"{% if request.GET.status == 'results_submitted' %}selected{% endif %}>Results Submitted</option>
-                        <option value="pending_prize_verification" {% if request.GET.status == 'pending_prize_verification' %}selected{% endif %}>Prize Verification</option>
                         <option value="completed"        {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
                     </select>
                 <select name="prize_type" onchange="this.form.submit()">
@@ -231,7 +225,7 @@
                     <button type="button" class="close-modal" aria-label="Close">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p>Please provide a short reason for rejecting this competition (shop owner will be notified):</p>
+                    <p>Please provide a short reason for rejecting this competition (arena owner will be notified):</p>
                     <textarea id="rejectReason" rows="4" style="width:100%;" placeholder="Reason (required)"></textarea>
                 </div>
                 <div class="modal-footer">

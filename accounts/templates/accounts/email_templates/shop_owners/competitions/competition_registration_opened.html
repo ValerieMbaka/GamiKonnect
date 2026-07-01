@@ -3,7 +3,7 @@
 {% block title %}Registration Now Open — {{ project_name }}{% endblock %}
 {% block header_bg %}background: linear-gradient(135deg, #20c997 0%, #0ca678 100%);{% endblock %}
 {% block header_title %}🟢 REGISTRATION OPEN{% endblock %}
-{% block header_subtitle %}Gamers can now register for your competition{% endblock %}
+{% block header_subtitle %}Gamers can now join the registration phase{% endblock %}
 
 {% block content %}
     <p class="text-primary" style="font-weight: 600; font-size: 18px;">Hi {{ shop_owner_name }},</p>
@@ -11,7 +11,7 @@
 
     <div class="status-success">
         <p class="text-secondary">
-            <strong>✓ Registration closes:</strong> {{ competition.registration_closes_at|date:"N j, Y · g:i A" }}
+            <strong>✓ Competition starts:</strong> {{ competition.scheduled_time|date:"N j, Y · g:i A" }}
         </p>
     </div>
 

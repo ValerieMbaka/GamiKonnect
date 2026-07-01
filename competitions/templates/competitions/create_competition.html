@@ -56,10 +56,10 @@
                     </div>
 
                     <div class="col-md-6 mb-4">
-                        <label class="form-label fw-semibold">Venue (Shop) <span class="text-danger">*</span></label>
+                        <label class="form-label fw-semibold">Venue (Arena) <span class="text-danger">*</span></label>
                         <div class="select-wrapper">
                             <select name="shop" class="form-select form-select-lg premium-input" required id="shopSelect">
-                                <option value="">Select your shop...</option>
+                                <option value="">Select your arena...</option>
                                 {% for shop in approved_shops %}
                                     <option value="{{ shop.id }}">{{ shop.name }}</option>
                                 {% endfor %}
@@ -83,7 +83,7 @@
                         <label class="form-label fw-semibold">Game <span class="text-danger">*</span></label>
                         <div class="select-wrapper">
                             <select name="game" id="gameSelect" class="form-select form-select-lg premium-input" required>
-                                <option value="">Select a shop first...</option>
+                                <option value="">Select an arena first...</option>
                             </select>
                         </div>
                         <div class="invalid-feedback d-block" id="err-game"></div>
@@ -97,7 +97,7 @@
                             </select>
                         </div>
                         <div class="form-text text-muted small mt-2" id="platformNote" style="display:none;">
-                            <i class="fas fa-info-circle"></i> Only platforms available at your shop are shown.
+                            <i class="fas fa-info-circle"></i> Only platforms available at your arena are shown.
                         </div>
                         <div class="invalid-feedback d-block" id="err-platform"></div>
                     </div>
@@ -179,7 +179,7 @@
                         <label class="form-label fw-semibold d-block">Platform Access</label>
                         <div class="form-check form-switch custom-switch mt-3">
                             <input class="form-check-input" type="checkbox" role="switch" name="is_pwa_only" id="pwaOnlyToggle">
-                            <label class="form-check-label fw-bold ms-2" for="pwaOnlyToggle">PWA Only</label>
+                            <label class="form-check-label fw-bold ms-2" for="pwaOnlyToggle">PWD Only</label>
                         </div>
                     </div>
                 </div>

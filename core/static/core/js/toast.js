@@ -150,3 +150,13 @@ class ToastManager {
 }
 
 window.toastManager = new ToastManager();
+
+/**
+ * Global helper for toast notifications
+ */
+function showToast(type, message, title = null) {
+    if (!title) {
+        title = type.charAt(0).toUpperCase() + type.slice(1);
+    }
+    window.toastManager.show({ type, title, message });
+}

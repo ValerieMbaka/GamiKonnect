@@ -723,9 +723,9 @@ def admin_competition_create(request):
             try:
                 with transaction.atomic():
                     competition = form.save(commit=False)
-                    # Set the creator and status to 'live' (admin-created competitions skip review)
+                    # Set the creator and status to 'registration' (admin-created competitions skip review)
                     competition.created_by = request.user
-                    competition.status = 'live'
+                    competition.status = 'registration'
                     competition.approved_at = timezone.now()
                     competition.save()
 
@@ -743,7 +743,7 @@ def admin_competition_create(request):
                     # Schedule all the background jobs for status transitions
                     schedule_competition_jobs(competition)
 
-                    # Notify shop owner that their competition has been created by admin
+                    # Notify arena owner that their competition has been created by admin
                     EmailManager.send_competition_approved(competition)
 
                 messages.success(request, f"Competition '{competition.name}' created and scheduled successfully.")
@@ -801,7 +801,7 @@ def admin_competition_list(request):
         'total_competitions': Competition.objects.count(),
         'pending_competitions_count': Competition.objects.filter(status='pending').count(),
         'live_competitions': Competition.objects.filter(
-            status__in=['live', 'registration_open', 'registration_closed', 'ongoing']
+            status__in=['registration', 'ongoing']
         ).count(),
         'completed_competitions': Competition.objects.filter(status='completed').count(),
         'new_this_week': Competition.objects.filter(created_at__gte=seven_days_ago).count(),
@@ -854,12 +854,16 @@ def admin_competition_detail(request, slug):
 def admin_competition_approve(request, slug):
     # Try slug first, then ID for backward compatibility
     try:
-        competition = Competition.objects.get(slug=slug, status='pending')
+        competition = Competition.objects.get(slug=slug)
+        if competition.status not in ['pending', 'rejected']:
+             return JsonResponse({'success': False, 'message': f'Competition is already {competition.status}.'}, status=400)
     except Competition.DoesNotExist:
         try:
-            competition = Competition.objects.get(integer_id=int(slug), status='pending')
+            competition = Competition.objects.get(integer_id=int(slug))
+            if competition.status not in ['pending', 'rejected']:
+                 return JsonResponse({'success': False, 'message': f'Competition is already {competition.status}.'}, status=400)
         except (Competition.DoesNotExist, ValueError):
-            return JsonResponse({'success': False, 'message': 'Competition not found or not in pending review.'}, status=404)
+            return JsonResponse({'success': False, 'message': 'Competition not found.'}, status=404)
     
     if request.method == 'POST':
         # Support JSON from inline AJAX (quick-approve) as well as normal form posts
@@ -878,7 +882,7 @@ def admin_competition_approve(request, slug):
                 )
                 return JsonResponse({
                     'success': True,
-                    'message': f"'{competition.name}' approved and is now live.",
+                    'message': f"'{competition.name}' approved and is now in registration.",
                 })
             except Exception as e:
                 logger.error(f"Competition approval error: {e}")
@@ -893,12 +897,16 @@ def admin_competition_approve(request, slug):
 def admin_competition_reject(request, slug):
     # Try slug first, then ID for backward compatibility
     try:
-        competition = Competition.objects.get(slug=slug, status='pending')
+        competition = Competition.objects.get(slug=slug)
+        if competition.status != 'pending':
+            return JsonResponse({'success': False, 'message': f'Competition is already {competition.status}.'}, status=400)
     except Competition.DoesNotExist:
         try:
-            competition = Competition.objects.get(integer_id=int(slug), status='pending')
+            competition = Competition.objects.get(integer_id=int(slug))
+            if competition.status != 'pending':
+                return JsonResponse({'success': False, 'message': f'Competition is already {competition.status}.'}, status=400)
         except (Competition.DoesNotExist, ValueError):
-            return JsonResponse({'success': False, 'message': 'Competition not found or not in pending review.'}, status=404)
+            return JsonResponse({'success': False, 'message': 'Competition not found.'}, status=404)
     
     if request.method == 'POST':
         # Support JSON from inline AJAX (quick-reject) and normal form posts
@@ -921,7 +929,7 @@ def admin_competition_reject(request, slug):
                 )
                 return JsonResponse({
                     'success': True,
-                    'message': f"'{competition.name}' rejected. Shop owner notified.",
+                    'message': f"'{competition.name}' rejected. Arena owner notified.",
                 })
             except Exception as e:
                 logger.error(f"Competition rejection error: {e}")
@@ -936,12 +944,16 @@ def admin_competition_reject(request, slug):
 def admin_confirm_checkins(request, slug):
     # Try slug first, then ID for backward compatibility
     try:
-        competition = Competition.objects.get(slug=slug, status='checkin_submitted')
+        competition = Competition.objects.get(slug=slug)
+        if competition.status != 'ongoing':
+            return JsonResponse({'success': False, 'message': f'Competition is in {competition.status} status, not ongoing.'}, status=400)
     except Competition.DoesNotExist:
         try:
-            competition = Competition.objects.get(integer_id=int(slug), status='checkin_submitted')
+            competition = Competition.objects.get(integer_id=int(slug))
+            if competition.status != 'ongoing':
+                return JsonResponse({'success': False, 'message': f'Competition is in {competition.status} status, not ongoing.'}, status=400)
         except (Competition.DoesNotExist, ValueError):
-            return JsonResponse({'success': False, 'message': 'Competition not found or check-ins not submitted.'}, status=404)
+            return JsonResponse({'success': False, 'message': 'Competition not found.'}, status=404)
     
     if request.method == 'POST':
         try:
@@ -951,7 +963,7 @@ def admin_confirm_checkins(request, slug):
             )
             return JsonResponse({
                 'success': True,
-                'message': 'Check-ins confirmed. Shop owner notified to submit results.',
+                'message': 'Check-ins confirmed. Arena owner notified to submit results.',
             })
         except Exception as e:
             logger.error(f"Confirm checkins error: {e}")
@@ -1074,7 +1086,7 @@ def admin_shop_detail(request, shop_id):
         form = ShopForm(request.POST, instance=shop)
         if form.is_valid():
             form.save()
-            messages.success(request, "Shop details updated.")
+            messages.success(request, "Arena details updated.")
             return redirect('admin_panel:shop_detail', shop_id=shop_id)
     else:
         form = ShopForm(instance=shop)

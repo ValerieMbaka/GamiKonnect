@@ -117,14 +117,12 @@
                 <div class="my-comp-card-body">
                     <div class="my-comp-card-top">
                         <div class="my-comp-status-badge my-comp-status--{{ reg.competition.status }}">
-                            {% if reg.competition.status == 'registration_open' %}
-                                <i class="fas fa-circle pulse-dot"></i> Registration Open
-                            {% elif reg.competition.status == 'approved' %}
-                                <i class="fas fa-clock"></i> Coming Soon
-                            {% elif reg.competition.status == 'registration_closed' %}
-                                <i class="fas fa-lock"></i> Registration Closed
+                            {% if reg.competition.status == 'registration' %}
+                                <i class="fas fa-circle pulse-dot"></i> Registration
                             {% elif reg.competition.status == 'ongoing' %}
                                 <i class="fas fa-play-circle pulse-dot"></i> Live Now
+                            {% elif reg.competition.status == 'completed' %}
+                                <i class="fas fa-flag-checkered"></i> Completed
                             {% endif %}
                         </div>
                         {% if reg.competition.age_restricted %}
@@ -217,7 +215,7 @@
                 <i class="fas fa-calendar-times"></i>
                 <h3>No Upcoming Competitions</h3>
                 <p>You haven't registered for any upcoming competitions yet. Browse available competitions and register now!</p>
-                <a href="{% url 'competitions:list' %}?status=registration_open" class="btn btn-primary mt-3">
+                <a href="{% url 'competitions:list' %}?status=registration" class="btn btn-primary mt-3">
                     <i class="fas fa-search"></i> Browse Open Competitions
                 </a>
             </div>
@@ -255,10 +253,8 @@
                         <div class="my-comp-status-badge my-comp-status--{{ reg.competition.status }}">
                             {% if reg.competition.status == 'completed' %}
                                 <i class="fas fa-flag-checkered"></i> Completed
-                            {% elif reg.competition.status == 'checkin_submitted' or reg.competition.status == 'results_pending' or reg.competition.status == 'results_submitted' %}
-                                <i class="fas fa-hourglass-half"></i> Results Pending
-                            {% elif reg.competition.status == 'pending_prize_verification' %}
-                                <i class="fas fa-hourglass-half"></i> Prize Verification
+                            {% elif reg.competition.status == 'ongoing' %}
+                                <i class="fas fa-hourglass-half"></i> In Progress
                             {% else %}
                                 <i class="fas fa-clock"></i> {{ reg.competition.get_status_display }}
                             {% endif %}

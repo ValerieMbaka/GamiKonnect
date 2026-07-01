@@ -266,15 +266,15 @@
     font-weight: 600;
 }
 
-.my-comp-status--registration_open   { background: rgba(16,185,129,0.1);  color: #10B981; }
-.my-comp-status--approved            { background: rgba(53,168,240,0.1);  color: var(--primary-color); }
-.my-comp-status--registration_closed { background: rgba(102,16,242,0.1); color: #6610f2; }
-.my-comp-status--ongoing             { background: rgba(240,53,75,0.1);   color: #F0354B; }
-.my-comp-status--completed           { background: rgba(16,185,129,0.1);  color: #10B981; }
+.my-comp-status--registration,
+.my-comp-status--registration_open,
+.my-comp-status--approved            { background: rgba(16,185,129,0.1);  color: #10B981; }
+.my-comp-status--ongoing,
 .my-comp-status--checkin_submitted,
 .my-comp-status--results_pending,
 .my-comp-status--results_submitted,
-.my-comp-status--pending_prize_verification { background: rgba(253,126,20,0.1); color: #fd7e14; }
+.my-comp-status--pending_prize_verification { background: rgba(240,53,75,0.1);   color: #F0354B; }
+.my-comp-status--completed           { background: rgba(16,185,129,0.1);  color: #10B981; }
 
 .my-comp-age-badge {
     font-size: 10px;

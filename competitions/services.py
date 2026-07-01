@@ -14,7 +14,7 @@ class CompetitionService:
     @transaction.atomic
     def approve_competition(competition, approval_form, performed_by=None, performed_by_label=''):
         competition = approval_form.save(commit=False)
-        competition.status = 'live'
+        competition.status = 'registration'
         competition.approved_at = timezone.now()
         competition.rejection_reason = ''
         competition.save()
@@ -57,7 +57,6 @@ class CompetitionService:
     @staticmethod
     @transaction.atomic
     def confirm_checkins(competition, performed_by=None, performed_by_label=''):
-        competition.status = 'results_pending'
         competition.save()
         try:
             CompetitionAuditLog.objects.create(
@@ -211,7 +210,7 @@ class CompetitionService:
             
             EmailManager.send_competition_results_auto_completed(competition)
         else:
-            competition.status = 'pending_prize_verification'
+            competition.status = 'ongoing'
             competition.save()
             EmailManager.send_competition_results_submitted(competition)
         

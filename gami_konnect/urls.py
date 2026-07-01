@@ -38,6 +38,9 @@ urlpatterns = [
     path('feeds/', include('feeds.urls')),
     path('notifications/', include('notifications.urls', namespace='notifications')),
     path('activities/', include('activities.urls', namespace='activities')),
+    path('pusher/auth', include([
+        path('', include('notifications.urls', namespace='pusher_auth')),
+    ])),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

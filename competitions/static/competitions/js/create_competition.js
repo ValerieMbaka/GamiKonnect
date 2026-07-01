@@ -300,7 +300,7 @@ loadDataIsland() {
 
             if (data.success) {
                 if (typeof showToast === 'function') showToast('success', data.message || 'Submitted successfully!');
-                // REDIRECT back to the shop owner's competition dashboard
+                // REDIRECT back to the arena owner's competition dashboard
                 setTimeout(() => window.location.href = '/competitions/manage/', 1500);
             } else {
                 if (data.errors) {

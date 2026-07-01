@@ -242,18 +242,18 @@ class CompetitionRejectionForm(forms.ModelForm):
 
 # Competition Registration Form
 class CompetitionRegistrationForm(forms.ModelForm):
-    # PWA checkbox — user confirms their PWA status for this registration
+    # PWD checkbox — user confirms their PWD status for this registration
     is_pwa = forms.BooleanField(
         required=False,
-        label="I am PWA (Person With Albinism or other specified status)",
-        help_text="Check this box if applicable to this competition's PWA requirements."
+        label="I am PWD (Person With Disability or other specified status)",
+        help_text="Check this box if applicable to this competition's PWD requirements."
     )
     
     class Meta:
         model = CompetitionRegistration
         fields = []
         # No model fields in the form — competition and gamer are set in the view.
-        # The form's purpose is to collect the PWA flag and trigger model-level validation.
+        # The form's purpose is to collect the PWD flag and trigger model-level validation.
 
     def __init__(self, *args, **kwargs):
         # Accept competition and gamer from the view for validation context
@@ -272,7 +272,7 @@ class CompetitionRegistrationForm(forms.ModelForm):
             raise forms.ValidationError('Invalid registration request.')
 
         # Competition must be open for registration
-        if self.competition.status != 'registration_open':
+        if self.competition.status != 'registration':
             raise forms.ValidationError('Registration for this competition is not currently open.')
 
         # Registration must not be full
@@ -287,15 +287,15 @@ class CompetitionRegistrationForm(forms.ModelForm):
         ).exists():
             raise forms.ValidationError('You are already registered for this competition.')
         
-        # PWA requirement check
+        # PWD requirement check
         is_pwa_checked = cleaned_data.get('is_pwa', False)
         if self.competition.is_pwa_only and not is_pwa_checked:
-            raise forms.ValidationError('This competition is only for PWA. Please confirm your PWA status.')
+            raise forms.ValidationError('This competition is only for PWD. Please confirm your PWD status.')
         
         return cleaned_data
     
     def save(self, commit=True):
-        # Save the PWA status to the gamer's profile
+        # Save the PWD status to the gamer's profile
         is_pwa = self.cleaned_data.get('is_pwa', False)
         if self.gamer:
             self.gamer.is_pwa = is_pwa

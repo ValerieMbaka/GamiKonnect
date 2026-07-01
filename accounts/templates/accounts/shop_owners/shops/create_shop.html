@@ -1,7 +1,7 @@
 {% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
 {% load static %}
 
-{% block title %} Create Shop · {{ project_detail.title }} {% endblock %}
+{% block title %} Create Arena · {{ project_detail.title }} {% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'accounts/css/shop_owners/shops/create_shop.css' %}">
@@ -45,18 +45,18 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="shop_name">Shop Name *</label>
-                            <input type="text" id="shop_name" name="shop_name" required placeholder="Enter your shop name">
+                            <label for="shop_name">Arena Name *</label>
+                            <input type="text" id="shop_name" name="shop_name" required placeholder="Enter your arena name">
                         </div>
                         <div class="form-group">
-                            <label for="logo">Shop Logo *</label>
+                            <label for="logo">Arena Logo *</label>
                             <input type="file" id="logo" name="logo" accept="image/*" class="form-control" required>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="description">Shop Description *</label>
-                        <textarea id="description" name="description" required placeholder="Tell gamers what makes your shop special..." rows="3"></textarea>
+                            <label for="description">Arena Description *</label>
+                            <textarea id="description" name="description" required placeholder="Tell gamers what makes your arena special..." rows="3"></textarea>
                     </div>
 
                     <h3 class="mt-4 pt-3"><i class="fas fa-map-marker-alt text-accent"></i> Location Details</h3>
@@ -78,8 +78,8 @@
                             <input type="text" id="floor" name="floor" required placeholder="e.g. 2nd Floor">
                         </div>
                         <div class="form-group">
-                            <label for="room_number">Room/Shop Number *</label>
-                            <input type="text" id="room_number" name="room_number" required placeholder="e.g. Shop B12">
+                            <label for="room_number">Room/Arena Number *</label>
+                            <input type="text" id="room_number" name="room_number" required placeholder="e.g. Arena B12">
                         </div>
                     </div>
 

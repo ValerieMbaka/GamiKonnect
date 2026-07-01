@@ -84,7 +84,7 @@
     border-color: var(--warning);
 }
 
-.status-approved, .status-registration_open, .status-ongoing {
+.status-registration, .status-approved, .status-registration_open, .status-ongoing {
     background-color: var(--bg-secondary);
     color: var(--success);
     border-color: var(--success);

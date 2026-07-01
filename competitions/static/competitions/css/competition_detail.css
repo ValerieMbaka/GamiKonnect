@@ -56,10 +56,15 @@
     box-shadow: var(--shadow-sm);
 }
 
-.comp-status--registration_open { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
-.comp-status--approved { background: rgba(53, 168, 240, 0.15); color: var(--primary-dark); border: 1px solid rgba(53, 168, 240, 0.3); }
-.comp-status--registration_closed { background: rgba(102, 16, 242, 0.15); color: #6610f2; border: 1px solid rgba(102, 16, 242, 0.3); }
-.comp-status--ongoing { background: rgba(240, 53, 75, 0.15); color: var(--danger); border: 1px solid rgba(240, 53, 75, 0.3); }
+.comp-status--registration,
+.comp-status--registration_open,
+.comp-status--approved { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+.comp-status--ongoing,
+.comp-status--checkin_submitted,
+.comp-status--results_pending,
+.comp-status--results_submitted,
+.comp-status--pending_prize_verification { background: rgba(240, 53, 75, 0.15); color: var(--danger); border: 1px solid rgba(240, 53, 75, 0.3); }
+.comp-status--completed { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
 
 .pulse-dot { animation: pulseDot 1.5s infinite; }
 @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.2); } }

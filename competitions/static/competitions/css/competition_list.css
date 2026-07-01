@@ -224,10 +224,15 @@
 
 /* Status Badge */
 .comp-status-badge { position: absolute; top: 10px; right: 10px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: var(--font-bold); display: flex; align-items: center; gap: 6px; backdrop-filter: blur(8px); box-shadow: var(--shadow-sm); z-index: 2; }
-.comp-status--registration_open { background: rgba(95, 211, 179, 0.95); color: #000; }
-.comp-status--approved { background: rgba(137, 207, 240, 0.95); color: #000; }
-.comp-status--registration_closed { background: rgba(74, 85, 104, 0.95); color: #fff; }
-.comp-status--ongoing { background: rgba(240, 53, 75, 0.95); color: #fff; }
+.comp-status--registration,
+.comp-status--registration_open,
+.comp-status--approved { background: rgba(95, 211, 179, 0.95); color: #000; }
+.comp-status--ongoing,
+.comp-status--checkin_submitted,
+.comp-status--results_pending,
+.comp-status--results_submitted,
+.comp-status--pending_prize_verification { background: rgba(240, 53, 75, 0.95); color: #fff; }
+.comp-status--completed { background: rgba(16, 185, 129, 0.95); color: #fff; }
 .pulse-dot { animation: pulseDot 1.5s infinite; }
 @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.2); } }
 

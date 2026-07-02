@@ -34,7 +34,7 @@ class RoleAccessMiddleware:
         # Always allow access to Django admin and our Custom Admin Panel
         if resolver_match and resolver_match.app_name in ['admin', 'admin_panel']:
             return None
-        if request.path.startswith('/admin/') or request.path.startswith('/admin-panel/'):
+        if request.path.startswith('/admin/') or request.path.startswith('/management/'):
             return None
         
         if resolver_match and resolver_match.app_name == 'admin':

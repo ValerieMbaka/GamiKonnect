@@ -144,19 +144,19 @@
                     </div>
                     <ul class="nav-list">
                         <li>
-                            <a href="{% url 'accounts:gamer_dashboard' %}" class="nav-link active" data-tooltip="Dashboard">
+                            <a href="{% url 'accounts:gamer_dashboard' %}" class="nav-link {% if request.path == '/accounts/gamer-dashboard/' %}active{% endif %}" data-tooltip="Dashboard">
                                 <i class="fas fa-tachometer-alt"></i>
                                 <span>Dashboard</span>
                             </a>
                         </li>
                         <li>
-                            <a href="{% url 'accounts:gamer_games' %}" class="nav-link profile-restricted" data-tooltip="My Games" data-restricted="true">
+                            <a href="{% url 'accounts:gamer_games' %}" class="nav-link profile-restricted {% if 'games' in request.path %}active{% endif %}" data-tooltip="My Games" data-restricted="true">
                                 <i class="fas fa-gamepad"></i>
                                 <span>My Games</span>
                             </a>
                         </li>
                         <li>
-                            <a href="{% url 'competitions:gamer_competitions' %}" class="nav-link profile-restricted" data-tooltip="Competitions" data-restricted="true">
+                            <a href="{% url 'competitions:gamer_competitions' %}" class="nav-link profile-restricted {% if 'competitions' in request.path %}active{% endif %}" data-tooltip="Competitions" data-restricted="true">
                                 <i class="fas fa-trophy"></i>
                                 <span>Competitions</span>
                                 <span class="badge">2</span>
@@ -172,7 +172,7 @@
                     </div>
                     <ul class="nav-list">
                         <li>
-                            <a href="{% url 'feeds:feed_list' %}" class="nav-link profile-restricted" data-tooltip="Feeds" data-restricted="true">
+                            <a href="{% url 'feeds:feed_list' %}" class="nav-link profile-restricted {% if 'feeds' in request.path %}active{% endif %}" data-tooltip="Feeds" data-restricted="true">
                                 <i class="fas fa-newspaper"></i>
                                 <span>Feeds</span>
                             </a>
@@ -193,7 +193,7 @@
                     </div>
                     <ul class="nav-list">
                         <li>
-                            <a href="{% url 'notifications:center' %}" class="nav-link" data-tooltip="Notifications">
+                            <a href="{% url 'notifications:center' %}" class="nav-link {% if 'notifications' in request.path %}active{% endif %}" data-tooltip="Notifications">
                                 <i class="fas fa-bell"></i>
                                 <span>Notifications</span>
                                 {% if gamer_unread_notifications_count and gamer_unread_notifications_count > 0 %}
@@ -202,7 +202,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{% url 'accounts:gamer_settings' %}" class="nav-link" data-tooltip="Settings">
+                            <a href="{% url 'accounts:gamer_settings' %}" class="nav-link {% if 'settings' in request.path %}active{% endif %}" data-tooltip="Settings">
                                 <i class="fas fa-cog"></i>
                                 <span>Settings</span>
                             </a>

@@ -140,7 +140,7 @@
                     </div>
                     <ul class="nav-list">
                         <li>
-                            <a href="{% url 'admin_panel:dashboard' %}" class="nav-link" data-tooltip="Dashboard">
+                            <a href="{% url 'admin_panel:dashboard' %}" class="nav-link {% if request.path == '/management/' %}active{% endif %}" data-tooltip="Dashboard">
                                 <i class="fas fa-chart-line"></i>
                                 <span>Dashboard</span>
                             </a>

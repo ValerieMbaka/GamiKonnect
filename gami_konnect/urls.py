@@ -19,6 +19,7 @@ from django.contrib.gis import feeds
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from notifications import views as notification_views
 
 urlpatterns = [
     # Default admin route
@@ -38,9 +39,7 @@ urlpatterns = [
     path('feeds/', include('feeds.urls')),
     path('notifications/', include('notifications.urls', namespace='notifications')),
     path('activities/', include('activities.urls', namespace='activities')),
-    path('pusher/auth', include([
-        path('', include('notifications.urls', namespace='pusher_auth')),
-    ])),
+    path('pusher/auth', notification_views.pusher_auth, name='pusher_auth'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

@@ -356,7 +356,7 @@ def competition_register(request, slug):
                     return JsonResponse({
                         'success': True,
                         'message': (
-                            'Registration created. Continue to secure payment to complete your entry.'
+                            'Registration created successfully. Please continue to secure payment to finalize your entry.'
                             if competition.entry_fee > 0
                             else f'Registration successful! Your unique access code has been sent to {gamer.email}.'
                         ),

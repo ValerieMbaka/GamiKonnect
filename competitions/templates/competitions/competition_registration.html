@@ -145,6 +145,14 @@
                                 <span class="total-amount">KES {{ competition.entry_fee }}</span>
                             </div>
                         </div>
+                        <div class="test-payment-notice mt-2 p-2 border rounded bg-light">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> <strong>Test Mode:</strong> 
+                                If using Mobile Money, please use one of Paystack's 
+                                <a href="https://paystack.com/docs/payments/test-payments/#test-cards" target="_blank" rel="noopener">test numbers</a> 
+                                (e.g., 0800 000 000) for success.
+                            </small>
+                        </div>
                     {% else %}
                         <div class="info-alert">
                             <i class="fas fa-ticket-alt"></i>

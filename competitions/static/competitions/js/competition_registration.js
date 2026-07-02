@@ -207,6 +207,9 @@ class CompetitionRegistration {
             const result = await response.json();
 
             if (result.success) {
+                if (result.message && typeof Toast !== 'undefined') {
+                    Toast.info('Registration Created', result.message);
+                }
                 this.handleRegistrationSuccess(result);
             } else {
                 this.handleRegistrationError(result.message || 'Registration failed. Please try again.');

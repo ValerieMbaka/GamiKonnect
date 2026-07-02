@@ -143,7 +143,7 @@
                     </div>
                     <ul class="nav-list">
                         <li>
-                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if current_path == '/accounts/shop-owner-dashboard/' %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_dashboard' %}" class="nav-link {% if current_path == '/accounts/shop-owner-dashboard/' %}active{% endif %}" data-tooltip="Dashboard"{% endif %}>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if request.path == '/accounts/shop-owner-dashboard/' %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_dashboard' %}" class="nav-link {% if request.path == '/accounts/shop-owner-dashboard/' %}active{% endif %}" data-tooltip="Dashboard"{% endif %}>
                                 <i class="fas fa-gauge"></i>
                                 <span>Dashboard</span>
                             </a>
@@ -159,13 +159,13 @@
                     <ul class="nav-list">
 
                         <li>
-                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if '/competitions/manage' in current_path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'competitions:shop_owner_competitions' %}" class="nav-link {% if '/competitions/manage' in current_path %}active{% endif %}" data-tooltip="Competitions"{% endif %}>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if 'competitions' in request.path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'competitions:shop_owner_competitions' %}" class="nav-link {% if 'competitions' in request.path %}active{% endif %}" data-tooltip="Competitions"{% endif %}>
                                 <i class="fas fa-trophy"></i>
                                 <span>Competitions</span>
                             </a>
                         </li>
                     <li>
-                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if current_path == '/accounts/create-shop/' %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_venues' %}" class="nav-link {% if current_path == '/accounts/shop-owner-venues/' %}active{% endif %}" data-tooltip="Manage Shops"{% endif %}>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if 'shop-owner-venues' in request.path or 'shops' in request.path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_venues' %}" class="nav-link {% if 'shop-owner-venues' in request.path or 'shops' in request.path %}active{% endif %}" data-tooltip="Manage Shops"{% endif %}>
                                 <i class="fas fa-box-open"></i>
                                 <span>Manage Shops</span>
                             </a>
@@ -186,7 +186,7 @@
 {#                            </a>#}
 {#                        </li>#}
 	                    <li>
-                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if current_path == '/accounts/shop-owner-profile/' %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_profile' %}" class="nav-link {% if current_path == '/accounts/shop-owner-profile/' %}active{% endif %}" data-tooltip="Account"{% endif %}>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if 'profile' in request.path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_profile' %}" class="nav-link {% if 'profile' in request.path %}active{% endif %}" data-tooltip="Account"{% endif %}>
                                 <i class="fas fa-user-cog"></i>
                                 <span>Account</span>
                             </a>

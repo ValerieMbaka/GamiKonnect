@@ -4,8 +4,11 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.conf import settings
 from django.db.models import Q
+from accounts.view_utils import require_gamer_role
+from .models import NotificationRecipient
 
 @csrf_exempt
 def pusher_auth(request):

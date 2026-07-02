@@ -2,7 +2,7 @@ import logging
 import sys
 import django.utils.timezone
 from django.core.mail import send_mail
-from django.template.loader import render_to_string
+from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.core.signing import TimestampSigner
@@ -35,9 +35,23 @@ class EmailManager:
             if 'support_email' not in context:
                 context['support_email'] = getattr(settings, 'SUPPORT_EMAIL', 'support@gamikonnect.com')
             
+            # Check if template_path already contains the prefix or should be handled specially
+            if template_path.startswith('notifications/'):
+                 # Try directly first, then with the fallback
+                 full_template_path = template_path
+            else:
+                 full_template_path = f'accounts/email_templates/{template_path}'
+
             # Render the raw HTML
-            html_message = render_to_string(f'accounts/email_templates/{template_path}', context)
-            
+            try:
+                html_message = render_to_string(full_template_path, context)
+            except TemplateDoesNotExist:
+                # If notifications path failed, try adding the accounts prefix just in case
+                if not full_template_path.startswith('accounts/'):
+                     html_message = render_to_string(f'accounts/email_templates/{template_path}', context)
+                else:
+                     raise
+
             # Use premailer to automatically convert <style> tags to inline CSS
             html_message = transform(html_message)
             

@@ -85,11 +85,16 @@ class SidebarManager {
     }
 
     setupActiveStateManagement() {
+        // We rely on template-level active class setting to avoid false positives in JS
+        // Only apply fallback if no active link is found
+        if (document.querySelector('.dashboard-sidebar .nav-link.active')) {
+            return;
+        }
+
         const currentPath = window.location.pathname;
         document.querySelectorAll('.dashboard-sidebar .nav-link[href]').forEach(link => {
-            link.classList.remove('active');
             const href = link.getAttribute('href');
-            if (href && href !== '#' && currentPath.includes(new URL(href, window.location.origin).pathname)) {
+            if (href && href !== '#' && href !== '/' && currentPath === new URL(href, window.location.origin).pathname) {
                 link.classList.add('active');
             }
         });

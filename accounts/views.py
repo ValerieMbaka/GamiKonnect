@@ -553,6 +553,15 @@ def logout_view(request):
     return redirect('core:home')
 
 
+def forgot_password(request):
+    """
+    Renders the forgot password page where users can enter their email 
+    to receive a password reset link via Firebase.
+    """
+    context = base_site_context()
+    return render(request, 'accounts/forgot_password.html', context)
+
+
 # Password and Account management
 @csrf_exempt
 def change_password(request):

@@ -60,6 +60,16 @@ class FirebaseManager {
                 throw error;
             }
         };
+
+        window.firebaseSendPasswordResetEmail = async (email) => {
+            try {
+                await sendPasswordResetEmail(this.auth, email);
+                return true;
+            } catch (error) {
+                console.error('Error sending password reset email:', error);
+                throw error;
+            }
+        };
         
         window.firebaseAuthInstance = this.auth;
     }

@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.utils import timezone
+from django.core.cache import cache
 from django.db import transaction, models
 from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
 import json
@@ -52,6 +53,17 @@ from .view_utils import (
 logger = logging.getLogger(__name__)
 
 
+REGISTER_EMAIL_WINDOW_SECONDS = 15 * 60
+REGISTER_IP_WINDOW_SECONDS = 15 * 60
+REGISTER_EMAIL_MAX_ATTEMPTS = 1
+REGISTER_IP_MAX_ATTEMPTS = 5
+
+RESEND_EMAIL_WINDOW_SECONDS = 5 * 60
+RESEND_IP_WINDOW_SECONDS = 15 * 60
+RESEND_EMAIL_MAX_ATTEMPTS = 1
+RESEND_IP_MAX_ATTEMPTS = 3
+
+
 class ProvisioningError(Exception):
     """Raised when pending registration cannot be safely converted to an account."""
 
@@ -65,6 +77,54 @@ def is_valid_uuid(val):
         return True
     except (ValueError, AttributeError, TypeError, ImportError):
         return False
+
+
+def get_client_ip(request):
+    forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    if forwarded_for:
+        return forwarded_for.split(',')[0].strip()
+
+    return request.META.get('REMOTE_ADDR', 'unknown')
+
+
+def is_rate_limited(action, identifier, max_attempts, window_seconds):
+    normalized_identifier = re.sub(r'[^a-z0-9]+', '_', (identifier or '').strip().lower())
+    if not normalized_identifier:
+        normalized_identifier = 'unknown'
+
+    bucket = int(timezone.now().timestamp() // window_seconds)
+    cache_key = f'email-rate:{action}:{normalized_identifier}:{bucket}'
+
+    current_attempts = cache.get(cache_key, 0)
+    if current_attempts >= max_attempts:
+        return True
+
+    cache.set(cache_key, current_attempts + 1, timeout=window_seconds)
+    return False
+
+
+def registration_email_rate_limited(request, email):
+    client_ip = get_client_ip(request)
+
+    if is_rate_limited('register-email', email, REGISTER_EMAIL_MAX_ATTEMPTS, REGISTER_EMAIL_WINDOW_SECONDS):
+        return True
+
+    if is_rate_limited('register-ip', client_ip, REGISTER_IP_MAX_ATTEMPTS, REGISTER_IP_WINDOW_SECONDS):
+        return True
+
+    return False
+
+
+def resend_email_rate_limited(request, email):
+    client_ip = get_client_ip(request)
+
+    if is_rate_limited('resend-email', email, RESEND_EMAIL_MAX_ATTEMPTS, RESEND_EMAIL_WINDOW_SECONDS):
+        return True
+
+    if is_rate_limited('resend-ip', client_ip, RESEND_IP_MAX_ATTEMPTS, RESEND_IP_WINDOW_SECONDS):
+        return True
+
+    return False
 
 
 # Ensure Firebase is initialized
@@ -243,6 +303,12 @@ def register_submit(request):
 
             if not uid or not email or not first_name or not last_name or not phone:
                 return JsonResponse({'success': False, 'message': 'All required fields must be provided'})
+
+            if registration_email_rate_limited(request, email):
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please wait a few minutes before requesting another verification email.'
+                })
 
             if Account.objects.filter(uid=uid).exists():
                 return JsonResponse({'success': False, 'message': 'Account already exists. Please login.'})
@@ -486,7 +552,16 @@ def verify_email(request, uid):
 def resend_verification(request):
     if request.method == 'POST':
         try:
-            email = request.POST.get('email')
+            email = (request.POST.get('email') or '').strip().lower()
+
+            if not email:
+                return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+            if resend_email_rate_limited(request, email):
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please wait a few minutes before requesting another verification email.'
+                })
             
             try:
                 pending = PendingRegistration.objects.get(email=email)
@@ -503,24 +578,26 @@ def resend_verification(request):
             
             except PendingRegistration.DoesNotExist:
                 try:
+                    account = Gamer.objects.get(email=email)
+                except Gamer.DoesNotExist:
                     try:
-                        account = Gamer.objects.get(email=email)
-                    except Gamer.DoesNotExist:
                         account = ShopOwner.objects.get(email=email)
-                    
-                    firebase_user = firebase_auth.get_user_by_email(email)
-                    if firebase_user.email_verified:
-                        return JsonResponse({'success': False, 'message': 'Email already verified'})
-                    role = 'gamer' if hasattr(account, 'gamer') else 'shop_owner'
-                    
-                    email_sent = EmailManager.send_verification(email, firebase_user.uid, role)
-                    if not email_sent:
-                        return JsonResponse(
-                            {'success': False, 'message': 'Could not send verification email. Try again later.'})
-                
-                except (Gamer.DoesNotExist, ShopOwner.DoesNotExist):
-                    firebase_user = firebase_auth.get_user_by_email(email)
-                    EmailManager.send_verification(email, firebase_user.uid, 'gamer')
+                    except ShopOwner.DoesNotExist:
+                        return JsonResponse({
+                            'success': False,
+                            'message': 'No verification record was found for that email.'
+                        })
+
+                firebase_user = firebase_auth.get_user_by_email(email)
+                if firebase_user.email_verified:
+                    return JsonResponse({'success': False, 'message': 'Email already verified'})
+
+                role = 'gamer' if isinstance(account, Gamer) else 'shop_owner'
+
+                email_sent = EmailManager.send_verification(email, firebase_user.uid, role)
+                if not email_sent:
+                    return JsonResponse(
+                        {'success': False, 'message': 'Could not send verification email. Try again later.'})
             
             return JsonResponse({'success': True, 'message': 'Verification email sent successfully'})
         

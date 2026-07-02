@@ -41,6 +41,11 @@
                 <div class="step-number">3</div>
                 <span class="step-label">Rules & Entry</span>
             </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="4">
+                <div class="step-number">4</div>
+                <span class="step-label">Review</span>
+            </div>
         </div>
 
         <form id="createCompForm" novalidate>
@@ -56,6 +61,18 @@
                     </div>
 
                     <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold d-block">Competition Type</label>
+                        <div class="form-check form-check-inline mt-2">
+                            <input class="form-check-input" type="radio" name="is_virtual" id="typePhysical" value="false" checked>
+                            <label class="form-check-label" for="typePhysical">Physical (In-Arena)</label>
+                        </div>
+                        <div class="form-check form-check-inline mt-2">
+                            <input class="form-check-input" type="radio" name="is_virtual" id="typeVirtual" value="true">
+                            <label class="form-check-label" for="typeVirtual">Virtual (Online)</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4" id="shopField">
                         <label class="form-label fw-semibold">Venue (Arena) <span class="text-danger">*</span></label>
                         <div class="select-wrapper">
                             <select name="shop" class="form-select form-select-lg premium-input" required id="shopSelect">
@@ -67,6 +84,18 @@
                         </div>
                         <div class="invalid-feedback d-block" id="err-shop"></div>
                     </div>
+
+                    <div class="col-md-6 mb-4" id="virtualLinkField" style="display:none;">
+                        <label class="form-label fw-semibold">Platform/Shop Link <span class="text-danger">*</span></label>
+                        <input type="text" name="platform_or_shop_link" class="form-control form-control-lg premium-input" placeholder="e.g. Discord, Twitch, or Shop link">
+                        <div class="invalid-feedback d-block" id="err-platform_or_shop_link"></div>
+                    </div>
+                </div>
+
+                <div class="mb-4" id="virtualGuidelinesField" style="display:none;">
+                    <label class="form-label fw-semibold">Guidelines <span class="text-danger">*</span></label>
+                    <textarea name="guidelines" class="form-control form-control-lg premium-input" rows="3" placeholder="Specific guidelines for the virtual competition..."></textarea>
+                    <div class="invalid-feedback d-block" id="err-guidelines"></div>
                 </div>
 
                 <div class="mb-4">
@@ -167,7 +196,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4 mb-4">
+                    <div class="col-md-4 mb-4" style="display:none;">
                         <label class="form-label fw-semibold d-block">Age Restriction</label>
                         <div class="form-check form-switch custom-switch mt-3">
                             <input class="form-check-input" type="checkbox" role="switch" name="age_restricted" id="ageRestrictedToggle" checked>
@@ -193,10 +222,32 @@
                     </div>
                 </div>
 
+                <div class="info-alert mt-4">
+                    <i class="fas fa-coins text-warning"></i>
+                    <div>
+                        <strong>Default Points Allocation:</strong>
+                        <ul class="mb-0 small mt-1">
+                            <li>1st Place: 150 Points</li>
+                            <li>2nd Place: 100 Points</li>
+                            <li>3rd Place: 70 Points</li>
+                            <li>4th-10th Place: 30 Points</li>
+                            <li>Participation: 10 Points</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {# --- STEP 4: SUMMARY & DEPLOY --- #}
+            <div class="wizard-step" data-step="4">
+                <h5 class="step-section-title"><i class="fas fa-clipboard-check"></i> Competition Summary</h5>
+                <div class="summary-card p-4 bg-light rounded border mb-4" id="summaryContainer">
+                    <!-- Populated by JS -->
+                </div>
+
                 <div class="info-alert mt-2">
                     <i class="fas fa-info-circle"></i>
                     <div>
-                        <strong>Admin Review:</strong> Your competition will be reviewed and prize pools will be allocated by the admin before going live.
+                        <strong>Ready to Deploy?</strong> Once you submit, the competition will be available for gamers to see, and the admin will be notified for review.
                     </div>
                 </div>
             </div>

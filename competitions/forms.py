@@ -9,14 +9,22 @@ class CompetitionCreateForm(forms.ModelForm):
         model = Competition
         fields = [
             'name', 'description', 'game', 'platform', 'shop',
+            'is_virtual', 'platform_or_shop_link', 'guidelines',
             'scheduled_time', 'competition_end_time',
             'entry_fee', 'max_participants', 'team_size',
-            'gender_rules', 'is_pwa_only', 'age_restricted', 'rules',
+            'gender_rules', 'is_pwa_only', 'rules',
         ]
         widgets = {
             'description': forms.Textarea(attrs={
                 'rows': 4,
                 'placeholder': 'Describe the competition...',
+            }),
+            'platform_or_shop_link': forms.TextInput(attrs={
+                'placeholder': 'e.g. Discord, Twitch, or Shop link',
+            }),
+            'guidelines': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Specific guidelines for participants...',
             }),
             'scheduled_time': forms.DateTimeInput(attrs={
                 'type': 'datetime-local',
@@ -64,36 +72,39 @@ class CompetitionCreateForm(forms.ModelForm):
         cleaned_data = super().clean()
         scheduled_time = cleaned_data.get('scheduled_time')
         competition_end_time = cleaned_data.get('competition_end_time')
+        is_virtual = cleaned_data.get('is_virtual')
 
-        # Competition must be scheduled in the future
-        if scheduled_time and scheduled_time <= timezone.now():
-            self.add_error('scheduled_time', 'The competition must be scheduled for a future date and time.')
-
-        # End time must be after start time
-        if scheduled_time and competition_end_time:
-            if competition_end_time <= scheduled_time:
+        # Competition must be scheduled at least 2 hours 45 minutes in the future
+        if scheduled_time:
+            min_start_time = timezone.now() + timezone.timedelta(hours=2, minutes=45)
+            if scheduled_time < min_start_time:
                 self.add_error(
-                    'competition_end_time',
-                    'Competition end time must be after the scheduled start time.'
+                    'scheduled_time', 
+                    f"The competition must be scheduled to start at least 2 hours 45 minutes from now. "
+                    f"Earliest allowed time: {min_start_time.strftime('%I:%M %p')}"
                 )
 
-        # Platform must be supported by the selected game
-        game = cleaned_data.get('game')
-        platform = cleaned_data.get('platform')
-        if game and platform:
-            if not game.supported_platforms.filter(pk=platform.pk).exists():
-                self.add_error('platform', 'The selected platform is not supported by this game.')
-
-        # Platform must be available at the selected shop
-        shop = cleaned_data.get('shop')
-        if shop and platform:
-            if not shop.consoles.filter(console_type=platform).exists():
-                self.add_error('platform', 'The selected platform is not available at this shop.')
-
-        # Game must be available at the selected shop
-        if shop and game:
-            if not shop.games_available.filter(pk=game.pk).exists():
-                self.add_error('game', 'The selected game is not available at this shop.')
+        # Virtual competition validations
+        if is_virtual:
+            if not cleaned_data.get('platform_or_shop_link'):
+                self.add_error('platform_or_shop_link', 'Platform or shop link is required for virtual competitions.')
+            if not cleaned_data.get('guidelines'):
+                self.add_error('guidelines', 'Guidelines are required for virtual competitions.')
+        else:
+            # Physical competition: shop is required and must have the platform
+            shop = cleaned_data.get('shop')
+            platform = cleaned_data.get('platform')
+            if not shop:
+                self.add_error('shop', 'Shop is required for physical competitions.')
+            if shop and platform:
+                if not shop.consoles.filter(console_type=platform).exists():
+                    self.add_error('platform', 'The selected platform is not available at this shop.')
+            
+            # Game must be available at the selected shop
+            game = cleaned_data.get('game')
+            if shop and game:
+                if not shop.games_available.filter(pk=game.pk).exists():
+                    self.add_error('game', 'The selected game is not available at this shop.')
 
         return cleaned_data
 
@@ -272,8 +283,15 @@ class CompetitionRegistrationForm(forms.ModelForm):
             raise forms.ValidationError('Invalid registration request.')
 
         # Competition must be open for registration
+        now = timezone.now()
+        if not self.competition.registration_opens_at or now < self.competition.registration_opens_at:
+            raise forms.ValidationError('Registration for this competition has not opened yet.')
+        
+        if self.competition.registration_closes_at and now > self.competition.registration_closes_at:
+            raise forms.ValidationError('Registration for this competition has closed.')
+
         if self.competition.status != 'registration':
-            raise forms.ValidationError('Registration for this competition is not currently open.')
+            raise forms.ValidationError('This competition is not open for registration.')
 
         # Registration must not be full
         if self.competition.is_registration_full():
@@ -292,6 +310,33 @@ class CompetitionRegistrationForm(forms.ModelForm):
         if self.competition.is_pwa_only and not is_pwa_checked:
             raise forms.ValidationError('This competition is only for PWD. Please confirm your PWD status.')
         
+        # Age restriction check (Requirement: Restrict to 18+)
+        dob = self.gamer.date_of_birth
+        if dob:
+            today = now.date()
+            age = today.year - dob.year - (
+                (today.month, today.day) < (dob.month, dob.day)
+            )
+            if age < 18:
+                raise forms.ValidationError(
+                    'You must be 18 years or older to register for this competition.'
+                )
+        else:
+            raise forms.ValidationError(
+                'Your date of birth is not set. Please update your profile before registering.'
+            )
+
+        # Shop owner restriction — cannot register for competitions at their own shop
+        from accounts.models import ShopOwner
+        try:
+            shop_owner = ShopOwner.objects.get(uid=self.gamer.uid)
+            if not self.competition.is_virtual and shop_owner.shops.filter(pk=self.competition.shop.pk).exists():
+                raise forms.ValidationError(
+                    'You cannot register for a competition held at your own shop.'
+                )
+        except ShopOwner.DoesNotExist:
+            pass  # Pure gamer — no restriction
+        
         return cleaned_data
     
     def save(self, commit=True):
@@ -301,43 +346,20 @@ class CompetitionRegistrationForm(forms.ModelForm):
             self.gamer.is_pwa = is_pwa
             self.gamer.save(update_fields=['is_pwa'])
         
-        # Save the registration
-        return super().save(commit=commit)
-
-        # Age restriction check
-        if self.competition.age_restricted:
-            dob = self.gamer.date_of_birth
-            if dob:
-                today = timezone.now().date()
-                age = today.year - dob.year - (
-                    (today.month, today.day) < (dob.month, dob.day)
-                )
-                if age < 18:
-                    raise forms.ValidationError(
-                        'You must be 18 years or older to register for this competition.'
-                    )
-            else:
-                raise forms.ValidationError(
-                    'Your date of birth is not set. Please update your profile before registering.'
-                )
-
-        # Shop owner restriction — cannot register for competitions at their own shop
-        from accounts.models import ShopOwner
-        try:
-            shop_owner = ShopOwner.objects.get(uid=self.gamer.uid)
-            if shop_owner.shops.filter(pk=self.competition.shop.pk).exists():
-                raise forms.ValidationError(
-                    'You cannot register for a competition held at your own shop.'
-                )
-        except ShopOwner.DoesNotExist:
-            pass  # Pure gamer — no restriction
-
-        return cleaned_data
-
-    def save(self, commit=True):
         instance = super().save(commit=False)
         instance.competition = self.competition
         instance.gamer = self.gamer
+        
+        # Generate a unique 5-character access code
+        import string
+        import random
+        if not instance.unique_code:
+            while True:
+                code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+                if not CompetitionRegistration.objects.filter(unique_code=code).exists():
+                    instance.unique_code = code
+                    break
+        
         if commit:
             instance.save()
         return instance
@@ -385,9 +407,10 @@ class CompetitionAdminCreateForm(forms.ModelForm):
         fields = [
             # Core details
             'name', 'description', 'game', 'platform', 'shop',
+            'is_virtual', 'platform_or_shop_link', 'guidelines',
             'scheduled_time', 'competition_end_time',
             'entry_fee', 'max_participants',
-            'age_restricted', 'rules',
+            'rules',
             
             # Registration windows
             'registration_opens_at', 'registration_closes_at',
@@ -404,6 +427,13 @@ class CompetitionAdminCreateForm(forms.ModelForm):
             'description': forms.Textarea(attrs={
                 'rows': 4,
                 'placeholder': 'Describe the competition...',
+            }),
+            'platform_or_shop_link': forms.TextInput(attrs={
+                'placeholder': 'e.g. Discord, Twitch, or Shop link',
+            }),
+            'guidelines': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Specific guidelines for participants...',
             }),
             'scheduled_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'competition_end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -440,12 +470,25 @@ class CompetitionAdminCreateForm(forms.ModelForm):
         closes_at = cleaned_data.get('registration_closes_at')
         prize_type = cleaned_data.get('prize_type')
         competition_end_time = cleaned_data.get('competition_end_time')
+        is_virtual = cleaned_data.get('is_virtual')
         
         now = timezone.now()
 
-        # Scheduled time validation
-        if scheduled_time and scheduled_time <= now:
-            self.add_error('scheduled_time', 'Competition must be scheduled for a future time.')
+        # Scheduled time validation (2h 45m rule)
+        if scheduled_time:
+            min_start_time = now + timezone.timedelta(hours=2, minutes=45)
+            if scheduled_time < min_start_time:
+                self.add_error(
+                    'scheduled_time', 
+                    f"The competition must be scheduled to start at least 2 hours 45 minutes from now."
+                )
+
+        # Virtual competition validations
+        if is_virtual:
+            if not cleaned_data.get('platform_or_shop_link'):
+                self.add_error('platform_or_shop_link', 'Platform or shop link is required for virtual competitions.')
+            if not cleaned_data.get('guidelines'):
+                self.add_error('guidelines', 'Guidelines are required for virtual competitions.')
 
         # Registration window validations
         if not opens_at:

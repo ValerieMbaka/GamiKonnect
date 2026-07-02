@@ -39,9 +39,9 @@ class Competition(models.Model):
     }
 
     PRIZE_TYPE_CHOICES = [
-        ('points', 'Points'),
-        ('money', 'Money'),
-        ('gift', 'Gift'),
+        ('points', 'Points Only'),
+        ('money_points', 'Money + Points'),
+        ('gift_points', 'Gift + Points'),
     ]
 
     GENDER_RULE_CHOICES = [
@@ -67,6 +67,18 @@ class Competition(models.Model):
     competition_end_time = models.DateTimeField(
         null=True, blank=True,
         help_text="The date and time the competition ends. Used to compute participation hours."
+    )
+    is_virtual = models.BooleanField(
+        default=False,
+        help_text="If True, the competition is virtual/online."
+    )
+    platform_or_shop_link = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text="Platform name (e.g. Discord, Twitch) for virtual competitions, or shop link."
+    )
+    guidelines = models.TextField(
+        blank=True, null=True,
+        help_text="Specific guidelines for the competition (especially for virtual ones)."
     )
     max_participants = models.PositiveIntegerField(
         help_text="Maximum number of participants allowed to register."
@@ -106,31 +118,31 @@ class Competition(models.Model):
 
     # Prize (set by admin on approval)
     prize_type = models.CharField(
-        max_length=10, choices=PRIZE_TYPE_CHOICES,
+        max_length=20, choices=PRIZE_TYPE_CHOICES,
         null=True, blank=True,
         help_text="Type of prize for this competition. Set by admin during approval."
     )
 
-    # Points prize fields (used when prize_type = 'points')
+    # Points prize fields (All competitions now have points)
     points_1st = models.PositiveIntegerField(
-        null=True, blank=True,
-        help_text="XP/points awarded to 1st place."
+        default=150,
+        help_text="Points awarded to 1st place."
     )
     points_2nd = models.PositiveIntegerField(
-        null=True, blank=True,
-        help_text="XP/points awarded to 2nd place."
+        default=100,
+        help_text="Points awarded to 2nd place."
     )
     points_3rd = models.PositiveIntegerField(
-        null=True, blank=True,
-        help_text="XP/points awarded to 3rd place."
+        default=70,
+        help_text="Points awarded to 3rd place."
     )
     points_4_to_10 = models.PositiveIntegerField(
-        null=True, blank=True,
-        help_text="XP/points awarded to positions 4 through 10."
+        default=30,
+        help_text="Points awarded to positions 4 through 10."
     )
     points_beyond_10 = models.PositiveIntegerField(
-        null=True, blank=True,
-        help_text="XP/points awarded to positions 11 and beyond. Defaults to 0 if not set."
+        default=10,
+        help_text="Points awarded to positions 11 and beyond."
     )
 
     # Money prize fields (used when prize_type = 'money')
@@ -177,7 +189,7 @@ class Competition(models.Model):
         help_text="The admin or shop owner who created this competition."
     )
     status = models.CharField(
-        max_length=30, choices=STATUS_CHOICES, default='draft', db_index=True
+        max_length=30, choices=STATUS_CHOICES, default='pending', db_index=True
     )
     rejection_reason = models.TextField(
         blank=True,
@@ -195,6 +207,8 @@ class Competition(models.Model):
         ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
+        import string
+        import random
         from games.models import Counter
         from django.utils.text import slugify
 
@@ -203,7 +217,9 @@ class Competition(models.Model):
         if not self.integer_id:
             self.integer_id = Counter.get_next_id('Competition')
         if not self.slug:
-            self.slug = slugify(f"{self.name}-{self.shop.name}")
+            # For virtual competitions, shop name might be empty or placeholders
+            shop_name = self.shop.name if self.shop else "Virtual"
+            self.slug = slugify(f"{self.name}-{shop_name}")
             # Ensure uniqueness
             original_slug = self.slug
             counter = 1
@@ -220,18 +236,21 @@ class Competition(models.Model):
                 raise ValidationError(
                     "The selected platform is not supported by this game."
                 )
-        # Platform must be physically available at the shop (via consoles)
-        if self.platform and self.shop:
-            if not self.shop.consoles.filter(console_type=self.platform).exists():
-                raise ValidationError(
-                    "The selected platform is not available at this shop."
-                )
-        # Game must be in the shop's available games list
-        if self.game and self.shop:
-            if not self.shop.games_available.filter(pk=self.game.pk).exists():
-                raise ValidationError(
-                    "The selected game is not available at this shop."
-                )
+        
+        if not self.is_virtual:
+            # Platform must be physically available at the shop (via consoles)
+            if self.platform and self.shop:
+                if not self.shop.consoles.filter(console_type=self.platform).exists():
+                    raise ValidationError(
+                        "The selected platform is not available at this shop."
+                    )
+            # Game must be in the shop's available games list
+            if self.game and self.shop:
+                if not self.shop.games_available.filter(pk=self.game.pk).exists():
+                    raise ValidationError(
+                        "The selected game is not available at this shop."
+                    )
+        
         # Registration window must be before the competition starts
         if self.registration_opens_at and self.registration_closes_at:
             if self.registration_opens_at >= self.registration_closes_at:
@@ -250,7 +269,7 @@ class Competition(models.Model):
                     "Competition end time must be after the scheduled start time."
                 )
         # Money prize percentages must not exceed 100%
-        if self.prize_type == 'money':
+        if self.prize_type in ['money', 'money_points']:
             total_pct = (
                 (self.prize_money_1st_pct or 0) +
                 (self.prize_money_2nd_pct or 0) +
@@ -273,19 +292,17 @@ class Competition(models.Model):
         return self.registrations.filter(is_cancelled=False).count()
 
     def get_points_for_rank(self, rank):
-        # Returns the points to be awarded for a given rank. Only applicable when prize_type is 'points'.
-        if self.prize_type != 'points':
-            return 0
+        # Returns the points to be awarded for a given rank.
         if rank == 1:
-            return self.points_1st or 0
+            return self.points_1st
         elif rank == 2:
-            return self.points_2nd or 0
+            return self.points_2nd
         elif rank == 3:
-            return self.points_3rd or 0
+            return self.points_3rd
         elif 4 <= rank <= 10:
-            return self.points_4_to_10 or 0
+            return self.points_4_to_10
         else:
-            return self.points_beyond_10 or 0
+            return self.points_beyond_10
 
     def get_full_rules(self):
         """
@@ -402,8 +419,8 @@ class CompetitionRegistration(models.Model):
         related_name='competition_registrations'
     )
     unique_code = models.CharField(
-        max_length=6, unique=True, editable=False,
-        help_text="Unique 6-character code generated at registration."
+        max_length=10, unique=True, editable=False,
+        help_text="Unique 5-character code generated at registration."
     )
     registered_at = models.DateTimeField(auto_now_add=True)
     

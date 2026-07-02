@@ -64,6 +64,9 @@
                     {% if competition.age_restricted %}
                         <span class="comp-age-badge"><i class="fas fa-exclamation-triangle"></i> 18+ Only</span>
                     {% endif %}
+                    {% if registration and registration.payment_status == 'completed' %}
+                        <span class="comp-code-badge"><i class="fas fa-ticket-alt"></i> Access Code: <strong>{{ registration.unique_code }}</strong></span>
+                    {% endif %}
                 </div>
                 
                 <h1 class="comp-hero-title">{{ competition.name }}</h1>
@@ -73,6 +76,12 @@
                     <span><i class="fas fa-store"></i> {{ competition.shop.name }}, {{ competition.shop.city }}</span>
                     <span><i class="fas fa-calendar-alt"></i> {{ competition.scheduled_time|date:"M j, Y · g:i A" }}</span>
                 </div>
+                {% if competition.status != 'completed' %}
+                <div class="comp-countdown-timer mt-3" id="startCountdown" data-start="{{ competition.scheduled_time|date:'c' }}">
+                    <span class="timer-label">Competition starts in:</span>
+                    <span class="timer-val">...</span>
+                </div>
+                {% endif %}
             </div>
 
             <div class="comp-hero-action">

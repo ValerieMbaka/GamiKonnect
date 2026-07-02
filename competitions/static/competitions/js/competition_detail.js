@@ -13,8 +13,50 @@ class CompetitionDetail {
         this.codeInput = document.getElementById('verifyCodeInput');
         this.feedback = document.getElementById('verifyFeedback');
         this.verifyBtn = document.querySelector('.comp-verify-btn');
+        this.submitResultsBtn = document.getElementById('submitResultsBtn');
 
+        this.init();
         this.bindEvents();
+    }
+
+    init() {
+        this.initStartCountdown();
+    }
+
+    initStartCountdown() {
+        const timerEl = document.getElementById('startCountdown');
+        if (!timerEl) return;
+
+        const startAtStr = timerEl.dataset.start;
+        if (!startAtStr) return;
+
+        const timerVal = timerEl.querySelector('.timer-val');
+        const startAt = new Date(startAtStr).getTime();
+
+        const update = () => {
+            const now = new Date().getTime();
+            const diff = startAt - now;
+
+            if (diff <= 0) {
+                timerVal.textContent = 'Competition Live!';
+                timerEl.classList.add('live');
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            let timeStr = '';
+            if (days > 0) timeStr += `${days}d `;
+            if (hours > 0 || days > 0) timeStr += `${hours}h `;
+            timeStr += `${mins}m ${secs}s`;
+            timerVal.textContent = timeStr;
+        };
+
+        update();
+        setInterval(update, 1000);
     }
 
     bindEvents() {
@@ -35,6 +77,10 @@ class CompetitionDetail {
                     this.verifyGamer();
                 }
             });
+        }
+
+        if (this.submitResultsBtn) {
+            this.submitResultsBtn.addEventListener('click', () => this.submitResults());
         }
 
         // Optional: bind any register buttons that use a class
@@ -255,14 +301,14 @@ class CompetitionDetail {
 
     // Arena Owner — Submit Results
     async submitResults() {
-        const entries = document.querySelectorAll('.comp-result-entry');
+        const rows = document.querySelectorAll('.comp-result-entry');
         const results = [];
         let hasError = false;
 
-        entries.forEach(entry => {
-            const gamerId = entry.dataset.gamerId;
-            const rankInput = entry.querySelector('.result-rank-input');
-            const noShowCheck = entry.querySelector('.result-noshow-check');
+        rows.forEach(row => {
+            const gamerId = row.dataset.gamerId;
+            const rankInput = row.querySelector('.result-rank-input');
+            const noShowCheck = row.querySelector('.result-noshow-check');
 
             const isNoShow = noShowCheck?.checked || false;
             const rank = rankInput ? parseInt(rankInput.value) : null;
@@ -278,34 +324,49 @@ class CompetitionDetail {
 
         if (hasError) return;
 
+        // Check for duplicate ranks
         const ranks = results.filter(r => !r.is_no_show).map(r => r.rank);
         const uniqueRanks = new Set(ranks);
-        if (ranks.length !== uniqueRanks.size) { showToast('error', 'Duplicate ranks detected. Each gamer must have a unique rank.'); return; }
+        if (ranks.length !== uniqueRanks.size) { 
+            showToast('error', 'Duplicate ranks detected. Each participating gamer must have a unique rank.'); 
+            return; 
+        }
 
-        if (!confirm('Submit these results? Once submitted, points will be allocated automatically for points-based competitions.')) return;
+        if (!confirm('Submit these results? Once submitted, points will be allocated and the admin will be notified for review.')) return;
 
-        const submitBtn = document.querySelector('.comp-results-submit-row .comp-action-btn');
-        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...'; }
+        if (this.submitResultsBtn) { 
+            this.submitResultsBtn.disabled = true; 
+            this.submitResultsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...'; 
+        }
 
         try {
-            const formData = new FormData();
-            formData.append('csrfmiddlewaretoken', this.config.csrfToken);
-            formData.append('results', JSON.stringify(results));
-
-            const resp = await fetch(this.config.submitResultsUrl, { method: 'POST', body: formData });
-            const data = await resp.json();
+            const response = await fetch(this.config.submitResultsUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.config.csrfToken
+                },
+                body: JSON.stringify({ results: results })
+            });
+            const data = await response.json();
 
             if (data.success) {
                 showToast('success', data.message || 'Results submitted successfully!');
-                setTimeout(() => window.location.reload(), 2500);
+                setTimeout(() => window.location.reload(), 2000);
             } else {
                 showToast('error', data.message || 'Submission failed. Please try again.');
-                if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Results'; }
+                if (this.submitResultsBtn) {
+                    this.submitResultsBtn.disabled = false;
+                    this.submitResultsBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Final Results';
+                }
             }
         } catch (err) {
             console.error('Results submission error:', err);
             showToast('error', 'Something went wrong. Please try again.');
-            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Results'; }
+            if (this.submitResultsBtn) {
+                this.submitResultsBtn.disabled = false;
+                this.submitResultsBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Final Results';
+            }
         }
     }
 

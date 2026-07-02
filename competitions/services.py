@@ -92,17 +92,16 @@ class CompetitionService:
         except Exception:
             logger.exception('Failed to create audit log for verify_results')
         
-        # Award points to gamers based on their rank (if prize_type is 'points')
+        # Award points to gamers based on their rank (Always award points now)
         for result in competition.results.filter(verified=True, is_no_show=False).select_related('gamer'):
-            if competition.prize_type == 'points':
-                points_to_award = competition.get_points_for_rank(result.rank)
-                if points_to_award > 0:
-                    result.gamer.points += points_to_award
-                    result.gamer.save(update_fields=['points'])
+            points_to_award = competition.get_points_for_rank(result.rank)
+            if points_to_award > 0:
+                result.gamer.points += points_to_award
+                result.gamer.save(update_fields=['points'])
         
-        # Prize allocation for money/gift types (no DB fields added; allocations are communicated via email)
+        # Prize allocation for money/gift types (in addition to points)
         allocations = []
-        if competition.prize_type == 'money' and competition.prize_money_total:
+        if competition.prize_type in ['money', 'money_points'] and competition.prize_money_total:
             total = Decimal(competition.prize_money_total)
             # Build mapping for pct fields
             pct_map = {
@@ -116,7 +115,7 @@ class CompetitionService:
                 # Attach transient attribute used by email templates
                 setattr(res, 'money_awarded', award)
                 allocations.append({'gamer': res.gamer, 'rank': res.rank, 'amount': award})
-        elif competition.prize_type == 'gift' and competition.prize_gift_description:
+        elif competition.prize_type in ['gift', 'gift_points'] and competition.prize_gift_description:
             # For gifts, include the description for top winners
             for res in competition.results.filter(rank__in=[1,2,3], is_no_show=False).select_related('gamer').order_by('rank'):
                 setattr(res, 'gift_description', competition.prize_gift_description)
@@ -161,11 +160,14 @@ class CompetitionService:
             verified = False
             verified_at = None
             
-            if not is_no_show and competition.prize_type == 'points':
+            # Points are now always awarded
+            if not is_no_show:
                 points_awarded = competition.get_points_for_rank(rank)
                 auto_allocated = True
-                verified = True
-                verified_at = timezone.now()
+                # If it's a points-only competition, we can auto-verify
+                if competition.prize_type == 'points':
+                    verified = True
+                    verified_at = timezone.now()
             
             if gamer_id in existing_results:
                 res = existing_results[gamer_id]
@@ -200,14 +202,14 @@ class CompetitionService:
                 'auto_allocated', 'verified', 'verified_at'
             ])
         
-        if competition.prize_type == 'points':
-            for result in competition.results.filter(is_no_show=False):
-                result.gamer.points += result.points_awarded
-                result.gamer.save(update_fields=['points'])
+        # Award points to gamers immediately
+        for result in competition.results.filter(is_no_show=False):
+            result.gamer.points += result.points_awarded
+            result.gamer.save(update_fields=['points'])
             
+        if competition.prize_type == 'points':
             competition.status = 'completed'
             competition.save()
-            
             EmailManager.send_competition_results_auto_completed(competition)
         else:
             competition.status = 'ongoing'

@@ -18,6 +18,46 @@ class CompetitionList {
 
     init() {
         this.bindEvents();
+        this.initCountdowns();
+    }
+
+    initCountdowns() {
+        const countdowns = document.querySelectorAll('.comp-btn--countdown');
+        if (countdowns.length === 0) return;
+
+        const updateTimers = () => {
+            const now = new Date().getTime();
+            countdowns.forEach(btn => {
+                const opensAtStr = btn.dataset.opens;
+                if (!opensAtStr) return;
+
+                const opensAt = new Date(opensAtStr).getTime();
+                const diff = opensAt - now;
+
+                if (diff <= 0) {
+                    // Registration should be open now, refresh page or update UI
+                    const span = btn.querySelector('.reg-countdown');
+                    if (span) span.textContent = 'Opening...';
+                    // Optional: window.location.reload();
+                    return;
+                }
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+                const span = btn.querySelector('.reg-countdown');
+                if (span) {
+                    let timeStr = '';
+                    if (hours > 0) timeStr += `${hours}h `;
+                    timeStr += `${mins}m ${secs}s`;
+                    span.textContent = timeStr;
+                }
+            });
+        };
+
+        updateTimers();
+        setInterval(updateTimers, 1000);
     }
 
     bindEvents() {

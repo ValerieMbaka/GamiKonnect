@@ -269,7 +269,7 @@
                     <h2><i class="fas fa-qrcode"></i> <span>Verify Gamers</span></h2>
                 </div>
                 <div class="card-body">
-                    <p class="comp-section-desc">Enter the gamer's unique registration code to verify and check them in before the competition starts.</p>
+                    <p class="comp-section-desc">Enter the gamer's unique registration code to verify and check them in.</p>
                     <div class="comp-verify-form">
                         <div class="comp-verify-input-wrap">
                             <i class="fas fa-key"></i>
@@ -277,8 +277,8 @@
                                 type="text"
                                 id="verifyCodeInput"
                                 class="comp-verify-input"
-                                placeholder="Paste or type unique code here..."
-                                maxlength="36"
+                                placeholder="Paste or type unique 5-char code..."
+                                maxlength="5"
                             >
                         </div>
                         <button class="comp-verify-btn" onclick="competitionDetail.verifyGamer()">
@@ -301,7 +301,7 @@
                                         <i class="fas fa-user-circle fs-4 text-muted"></i>
                                     {% endif %}
                                     <div class="ms-2">
-                                        <span class="fw-bold d-block">{{ reg.gamer.first_name }} {{ reg.gamer.last_name }}</span>
+                                        <span class="fw-bold d-block">{{ reg.gamer.get_full_name }}</span>
                                         <span class="text-muted small">@{{ reg.gamer.custom_username|default:"gamer" }}</span>
                                     </div>
                                 </div>
@@ -314,22 +314,20 @@
                     </div>
 
                     <div class="comp-submit-checkins-section">
-                        <p class="comp-section-desc">Once all gamers have been verified, submit the check-in list to the admin for review.</p>
+                        <p class="comp-section-desc">Once all gamers have been verified, you can proceed to the next stage.</p>
                         <button class="comp-action-btn comp-action-btn--primary" onclick="competitionDetail.submitCheckins()">
-                            <i class="fas fa-paper-plane"></i> Submit Check-in List to Admin
+                            <i class="fas fa-paper-plane"></i> Lock Check-in List
                         </button>
                     </div>
                 </div>
             </section>
-            {% endif %}
 
-            {% if competition.status == 'results_pending' %}
             <section class="comp-detail-section component-card hoverable" id="resultsSubmitPanel">
                 <div class="card-header component-card-header">
-                    <h2><i class="fas fa-list-ol"></i> <span>Submit Results</span></h2>
+                    <h2><i class="fas fa-list-ol"></i> <span>Submit Final Results</span></h2>
                 </div>
                 <div class="card-body">
-                    <p class="comp-section-desc">Rank all participants from 1st to last. Mark any registered gamers who did not participate as no-shows.</p>
+                    <p class="comp-section-desc">Rank all participants. Points will be awarded automatically upon submission.</p>
 
                     <div class="comp-results-form" id="resultsForm">
                         {% for reg in registrations %}
@@ -339,7 +337,7 @@
                                     {{ reg.gamer.custom_username|default:reg.gamer.first_name }}
                                 </span>
                                 <span class="result-entry-fullname">
-                                    {{ reg.gamer.first_name }} {{ reg.gamer.last_name }}
+                                    {{ reg.gamer.get_full_name }}
                                 </span>
                                 {% if not reg.checked_in %}
                                 <span class="result-entry-noshow-hint">Did not check in</span>
@@ -370,8 +368,8 @@
                     </div>
 
                     <div class="comp-results-submit-row">
-                        <button class="comp-action-btn comp-action-btn--primary" onclick="competitionDetail.submitResults()">
-                            <i class="fas fa-paper-plane"></i> Submit Results
+                        <button class="comp-action-btn comp-action-btn--primary" id="submitResultsBtn">
+                            <i class="fas fa-paper-plane"></i> Submit Final Results
                         </button>
                     </div>
                 </div>

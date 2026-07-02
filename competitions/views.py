@@ -71,9 +71,12 @@ def get_shop_owner(request):
 # ---------------------------------------------------------------------------
 
 def competition_list(request):
+    now = timezone.now()
+    # requirement: show only active competitions (registration yet to start, ongoing, or registration ongoing)
+    # completed competitions should not be shown.
     competitions = Competition.objects.filter(
-        status__in=['registration', 'ongoing']
-    ).select_related('game', 'platform', 'shop').order_by('-scheduled_time')
+        status__in=['pending', 'registration', 'ongoing']
+    ).select_related('game', 'platform', 'shop').order_by('scheduled_time')
     
     query = request.GET.get('q')
     game_id = request.GET.get('game')
@@ -122,6 +125,7 @@ def competition_list(request):
         'all_games': Game.objects.filter(is_active=True, is_verified=True).order_by('name'),
         'all_platforms': Platform.objects.all().order_by('name'),
         'gamer': gamer,
+        'now': now,
     }
     return render(request, 'competitions/competition_list.html', context)
 
@@ -136,15 +140,11 @@ def competition_detail(request, slug):
         except (Competition.DoesNotExist, ValueError):
             raise Http404("Competition not found.")
 
-    if competition.status not in [
-        'registration', 'ongoing', 'completed'
-    ]:
-        raise Http404("Competition not accessible.")
-    
     gamer = get_gamer(request)
     shop_owner = get_shop_owner(request)
-    
-    # Access control: Only registered gamers or the arena owner or admin can view detail page
+    is_admin = request.session.get('role') == 'admin'
+
+    # Check for direct access permission
     is_shop_owner_of_competition = False
     if shop_owner:
         is_shop_owner_of_competition = competition.shop.owners.filter(pk=shop_owner.pk).exists()
@@ -154,12 +154,25 @@ def competition_detail(request, slug):
         registration = CompetitionRegistration.objects.filter(
             competition=competition, gamer=gamer, is_cancelled=False
         ).first()
+
+    # Determine if they can view details
+    can_view_details = registration or is_shop_owner_of_competition or is_admin
+
+    if competition.status not in [
+        'registration', 'ongoing', 'completed'
+    ]:
+        if not (is_shop_owner_of_competition or is_admin):
+            raise Http404("Competition not accessible.")
     
-    # Check access permission
-    is_admin = request.session.get('role') == 'admin' # Assuming session contains role
-    if not (registration or is_shop_owner_of_competition or is_admin):
-        messages.warning(request, "You must be registered for this competition to view its details.")
-        return redirect('competitions:list')
+    # Access control: Only registered gamers or the arena owner or admin can view full detail page
+    if not can_view_details:
+        # Redirect to registration if it's open, else back to list
+        if competition.status == 'registration' and not competition.is_registration_full():
+            messages.info(request, "Please register to view full competition details.")
+            return redirect('competitions:list') # The list will show the Join button
+        else:
+            messages.warning(request, "You must be registered for this competition to view its details.")
+            return redirect('competitions:list')
 
     # Get all registered gamers (participants) for all users to see
     participants = competition.registrations.filter(
@@ -604,6 +617,11 @@ def shop_owner_competition_create(request):
                     logger.debug(f"Competition creation form data: {request.POST}")
                     
                     competition.save()
+                    
+                    # Set automatic registration window: 1h before start to 40m before start
+                    competition.registration_opens_at = competition.scheduled_time - timezone.timedelta(hours=1)
+                    competition.registration_closes_at = competition.scheduled_time - timezone.timedelta(minutes=40)
+                    competition.save(update_fields=['registration_opens_at', 'registration_closes_at'])
 
                     try:
                         ActivityLog.objects.create(
@@ -694,6 +712,11 @@ def shop_owner_competition_edit(request, slug):
                     competition.rejection_reason = ''
                     competition.save()
 
+                    # Set automatic registration window: 1h before start to 40m before start
+                    competition.registration_opens_at = competition.scheduled_time - timezone.timedelta(hours=1)
+                    competition.registration_closes_at = competition.scheduled_time - timezone.timedelta(minutes=40)
+                    competition.save(update_fields=['registration_opens_at', 'registration_closes_at'])
+
                     try:
                         ActivityLog.objects.create(
                             actor=shop_owner,
@@ -772,8 +795,7 @@ def shop_owner_verify_gamer(request, slug):
     competition = get_object_or_404(
         Competition,
         slug=slug,
-        shop__in=shop_owner.shops.all(),
-        status='ongoing'
+        shop__in=shop_owner.shops.all()
     )
     
     if request.method == 'POST':
@@ -782,28 +804,34 @@ def shop_owner_verify_gamer(request, slug):
             return JsonResponse({'success': False, 'message': 'No code provided.'}, status=400)
         
         try:
+            # requirement: access code should be unique per gamer-per competition.
+            # Only allow verification if registration is completed (paid or free)
             registration = CompetitionRegistration.objects.get(
                 unique_code=unique_code,
                 competition=competition,
-                is_cancelled=False,
-                code_expired=False
+                payment_status='completed',
+                is_cancelled=False
             )
         except CompetitionRegistration.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': 'Invalid or already used code. Please check and try again.'
+                'message': 'Invalid or unpaid registration code. Please check and try again.'
             }, status=404)
         
         if registration.checked_in:
             return JsonResponse({
-                'success': False,
-                'message': f"{registration.gamer.first_name} {registration.gamer.last_name} is already checked in."
+                'success': True, # Still return success but with a message
+                'message': f"{registration.gamer.get_full_name()} is already checked in.",
+                'gamer': {
+                    'name': registration.gamer.get_full_name(),
+                    'username': registration.gamer.custom_username or registration.gamer.email,
+                    'profile_picture': registration.gamer.profile_picture.url if registration.gamer.profile_picture else None,
+                }
             })
         
         registration.checked_in = True
         registration.checked_in_at = timezone.now()
-        registration.code_expired = True
-        registration.save()
+        registration.save(update_fields=['checked_in', 'checked_in_at'])
         
         # Log check-in activity
         from activities.models import Activity
@@ -812,40 +840,21 @@ def shop_owner_verify_gamer(request, slug):
             activity_type=Activity.ActivityTypes.COMPETITION_CHECKEDIN,
             description=f"Checked in for {competition.name}",
             metadata={
-                'competition_id': competition.integer_id,
+                'competition_id': str(competition.id),
                 'competition_name': competition.name,
                 'checked_in_at': registration.checked_in_at.isoformat()
             }
         )
 
-        try:
-            ActivityLog.objects.create(
-                actor=shop_owner,
-                gamer=registration.gamer,
-                action_type=ActivityLog.ActionTypes.UPDATE,
-                target=registration,
-                description=f"Verified gamer check-in for {competition.name}",
-                meta_data={
-                    'competition_id': competition.integer_id,
-                    'competition_name': competition.name,
-                    'gamer_name': f"{registration.gamer.first_name} {registration.gamer.last_name}",
-                    'registration_id': str(registration.id),
-                }
-            )
-        except Exception:
-            logger.exception('Failed to log gamer check-in verification activity')
-        
         return JsonResponse({
             'success': True,
-            'message': f"{registration.gamer.first_name} {registration.gamer.last_name} verified and checked in.",
+            'message': f"{registration.gamer.get_full_name()} verified successfully.",
             'gamer': {
-                'id': registration.gamer.id,
-                'name': f"{registration.gamer.first_name} {registration.gamer.last_name}",
-                'username': registration.gamer.custom_username,
-                'checked_in_at': registration.checked_in_at.strftime('%H:%M %p'),
+                'name': registration.gamer.get_full_name(),
+                'username': registration.gamer.custom_username or registration.gamer.email,
                 'profile_picture': registration.gamer.profile_picture.url if registration.gamer.profile_picture else None,
             },
-            'registration_id': registration.id
+            'registration_id': str(registration.id)
         })
     
     return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)

@@ -8,7 +8,7 @@ class CompetitionWizard {
     constructor(createUrl) {
         this.createUrl = createUrl;
         this.currentStep = 1;
-        this.totalSteps = 3;
+        this.totalSteps = 4;
         
         // Load data from the HTML5 Data Island
         this.loadDataIsland();
@@ -27,6 +27,13 @@ class CompetitionWizard {
         
         this.ageToggle = document.getElementById('ageRestrictedToggle');
         this.ageToggleText = document.getElementById('ageToggleText');
+
+        this.typePhysical = document.getElementById('typePhysical');
+        this.typeVirtual = document.getElementById('typeVirtual');
+        this.shopField = document.getElementById('shopField');
+        this.virtualLinkField = document.getElementById('virtualLinkField');
+        this.virtualGuidelinesField = document.getElementById('virtualGuidelinesField');
+        this.summaryContainer = document.getElementById('summaryContainer');
 
         this.btnPrev = document.getElementById('btnPrev');
         this.btnNext = document.getElementById('btnNext');
@@ -76,6 +83,28 @@ loadDataIsland() {
         this.endTime?.addEventListener('change', () => this.validateSchedule());
         
         this.ageToggle?.addEventListener('change', (e) => this.handleAgeRestriction(e.target));
+
+        this.typePhysical?.addEventListener('change', () => this.toggleCompType());
+        this.typeVirtual?.addEventListener('change', () => this.toggleCompType());
+    }
+
+    toggleCompType() {
+        const isVirtual = this.typeVirtual?.checked;
+        if (isVirtual) {
+            this.shopField.style.display = 'none';
+            this.virtualLinkField.style.display = 'block';
+            this.virtualGuidelinesField.style.display = 'block';
+            this.shopSelect.removeAttribute('required');
+            this.virtualLinkField.querySelector('input').setAttribute('required', 'required');
+            this.virtualGuidelinesField.querySelector('textarea').setAttribute('required', 'required');
+        } else {
+            this.shopField.style.display = 'block';
+            this.virtualLinkField.style.display = 'none';
+            this.virtualGuidelinesField.style.display = 'none';
+            this.shopSelect.setAttribute('required', 'required');
+            this.virtualLinkField.querySelector('input').removeAttribute('required');
+            this.virtualGuidelinesField.querySelector('textarea').removeAttribute('required');
+        }
     }
 
     init() {
@@ -125,8 +154,46 @@ loadDataIsland() {
         if (!this.validateCurrentStep()) return;
         if (this.currentStep < this.totalSteps) {
             this.currentStep++;
+            if (this.currentStep === 4) {
+                this.updateSummary();
+            }
             this.updateWizardUI();
         }
+    }
+
+    updateSummary() {
+        const formData = new FormData(this.form);
+        let summaryHtml = '<div class="row">';
+        
+        const fields = [
+            { label: 'Name', name: 'name' },
+            { label: 'Type', name: 'is_virtual', transform: (v) => v === 'true' ? 'Virtual' : 'Physical' },
+            { label: 'Game', name: 'game', transform: () => this.gameSelect.options[this.gameSelect.selectedIndex].text },
+            { label: 'Platform', name: 'platform', transform: () => this.platformSelect.options[this.platformSelect.selectedIndex].text },
+            { label: 'Start Time', name: 'scheduled_time' },
+            { label: 'End Time', name: 'competition_end_time' },
+            { label: 'Capacity', name: 'max_participants' },
+            { label: 'Entry Fee', name: 'entry_fee', transform: (v) => v ? `KES ${v}` : 'Free' },
+        ];
+
+        if (formData.get('is_virtual') === 'true') {
+            fields.push({ label: 'Platform Link', name: 'platform_or_shop_link' });
+        } else {
+            fields.push({ label: 'Venue', name: 'shop', transform: () => this.shopSelect.options[this.shopSelect.selectedIndex].text });
+        }
+
+        fields.forEach(f => {
+            const val = formData.get(f.name);
+            const displayVal = f.transform ? f.transform(val) : val;
+            summaryHtml += `
+                <div class="col-md-6 mb-2">
+                    <strong>${f.label}:</strong> <span>${displayVal || 'N/A'}</span>
+                </div>
+            `;
+        });
+
+        summaryHtml += '</div>';
+        if (this.summaryContainer) this.summaryContainer.innerHTML = summaryHtml;
     }
 
     prevStep() {
@@ -167,10 +234,14 @@ loadDataIsland() {
             const endStr = this.endTime?.value;
             const now = new Date();
             
-            if (startStr && new Date(startStr) <= now) {
-                this.scheduledTime.classList.add('is-invalid');
-                document.getElementById('err-scheduled_time').textContent = 'Must be in the future.';
-                isValid = false;
+            if (startStr) {
+                const startTime = new Date(startStr);
+                const minStartTime = new Date(now.getTime() + (2 * 60 + 45) * 60 * 1000); // 2h 45m
+                if (startTime < minStartTime) {
+                    this.scheduledTime.classList.add('is-invalid');
+                    document.getElementById('err-scheduled_time').textContent = `Start time must be at least 2h 45m from now (after ${minStartTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}).`;
+                    isValid = false;
+                }
             }
             if (startStr && endStr && new Date(endStr) <= new Date(startStr)) {
                 this.endTime.classList.add('is-invalid');

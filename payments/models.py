@@ -7,6 +7,9 @@ class MpesaTransaction(models.Model):
         ('PENDING', 'Pending'),
         ('SUCCESS', 'Success'),
         ('FAILED', 'Failed'),
+        ('REFUNDED', 'Refunded'),
+        ('REFUND_PENDING', 'Refund Pending'),
+        ('REFUND_FAILED', 'Refund Failed'),
     )
     
     gamer = models.ForeignKey(Gamer, on_delete=models.SET_NULL, null=True, related_name='transactions')
@@ -34,6 +37,9 @@ class MpesaTransaction(models.Model):
         default=False,
         help_text="If True, this is a simulated payment for testing purposes."
     )
+    refund_reference = models.CharField(max_length=100, blank=True, null=True)
+    refunded_at = models.DateTimeField(null=True, blank=True)
+    refund_note = models.TextField(blank=True, default='')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

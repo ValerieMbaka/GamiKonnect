@@ -180,6 +180,19 @@
                         <div class="form-text small mt-2 text-muted">Leave 0 for free entry.</div>
                         <div class="invalid-feedback d-block" id="err-entry_fee"></div>
                     </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label fw-semibold">Prize Type <span class="text-danger">*</span></label>
+                        <div class="select-wrapper">
+                            <select name="prize_type" class="form-select form-select-lg premium-input" required>
+                                <option value="">Select prize type...</option>
+                                <option value="points">Points Only</option>
+                                <option value="money">Cash + Points</option>
+                                <option value="gift">Gift + Points</option>
+                            </select>
+                        </div>
+                        <div class="invalid-feedback d-block" id="err-prize_type"></div>
+                    </div>
                 </div>
 
                 {# Group 2: Restrictions & Access #}
@@ -262,7 +275,7 @@
                         Next <i class="fas fa-chevron-right"></i>
                     </button>
                     <button type="button" class="btn-wizard btn-wizard-success wizard-btn-hidden" id="createCompSubmitBtn">
-                        <i class="fas fa-rocket"></i> Submit for Review
+                        <i class="fas fa-rocket"></i> Deploy Competition
                     </button>
                 </div>
             </div>

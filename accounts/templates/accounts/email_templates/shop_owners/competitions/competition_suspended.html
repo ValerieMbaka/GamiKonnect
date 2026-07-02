@@ -1,0 +1,10 @@
+{% extends "accounts/email_templates/base_email.html" %}
+{% block title %}Competition Suspended — {{ project_name }}{% endblock %}
+{% block header_title %}Competition Suspended{% endblock %}
+{% block content %}
+    <p class="text-secondary">Your competition <strong>"{{ competition.name }}"</strong> has been suspended.</p>
+    <p class="text-secondary"><strong>Reason:</strong> {{ suspension_reason }}</p>
+    {% if refund_results.refunded %}
+    <p class="text-secondary">{{ refund_results.refunded }} paid registration(s) were refunded.</p>
+    {% endif %}
+{% endblock %}

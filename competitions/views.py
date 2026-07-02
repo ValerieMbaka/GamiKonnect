@@ -75,7 +75,7 @@ def competition_list(request):
     # requirement: show only active competitions (registration yet to start, ongoing, or registration ongoing)
     # completed competitions should not be shown.
     competitions = Competition.objects.filter(
-        status__in=['pending', 'registration', 'ongoing']
+        status__in=['registration', 'ongoing']
     ).select_related('game', 'platform', 'shop').order_by('scheduled_time')
     
     query = request.GET.get('q')
@@ -466,7 +466,8 @@ def gamer_competitions(request):
         return redirect('core:home')
     
     registrations = CompetitionRegistration.objects.filter(
-        gamer=gamer, is_cancelled=False
+        gamer=gamer, is_cancelled=False,
+        competition__status__in=['registration', 'ongoing', 'completed'],
     ).select_related('competition__game', 'competition__platform', 'competition__shop').order_by(
         '-competition__scheduled_time'
     )
@@ -531,7 +532,8 @@ def shop_owner_competitions(request):
         return redirect('core:home')
     
     competitions = Competition.objects.filter(
-        shop__in=shop_owner.shops.all()
+        shop__in=shop_owner.shops.all(),
+        status__in=['pending', 'registration', 'ongoing', 'rejected', 'suspended'],
     ).select_related('game', 'platform', 'shop').order_by('-created_at')
 
     ongoing_competitions = competitions.filter(status='ongoing').order_by('scheduled_time')
@@ -611,24 +613,37 @@ def shop_owner_competition_create(request):
                 with transaction.atomic():
                     competition = form.save(commit=False)
                     competition.created_by = shop_owner
-                    competition.status = 'pending'
-                    
-                    # Log the submitted data if it fails validation for debugging
-                    logger.debug(f"Competition creation form data: {request.POST}")
-                    
+                    competition.age_restricted = True
+
+                    if competition.is_virtual and not competition.shop_id:
+                        default_shop = shop_owner.shops.filter(is_approved=True).first()
+                        if not default_shop:
+                            return JsonResponse({
+                                'success': False,
+                                'message': 'You need at least one approved arena to deploy a virtual competition.',
+                            }, status=400)
+                        competition.shop = default_shop
+
+                    competition.registration_opens_at = (
+                        competition.scheduled_time - timezone.timedelta(hours=1)
+                    )
+                    competition.registration_closes_at = (
+                        competition.scheduled_time - timezone.timedelta(minutes=40)
+                    )
                     competition.save()
-                    
-                    # Set automatic registration window: 1h before start to 40m before start
-                    competition.registration_opens_at = competition.scheduled_time - timezone.timedelta(hours=1)
-                    competition.registration_closes_at = competition.scheduled_time - timezone.timedelta(minutes=40)
-                    competition.save(update_fields=['registration_opens_at', 'registration_closes_at'])
+
+                    CompetitionService.deploy_competition(
+                        competition,
+                        performed_by=shop_owner,
+                        performed_by_label=shop_owner.custom_username or str(shop_owner),
+                    )
 
                     try:
                         ActivityLog.objects.create(
                             actor=shop_owner,
                             action_type=ActivityLog.ActionTypes.CREATE,
                             target=competition,
-                            description=f"Created competition: {competition.name}",
+                            description=f"Deployed competition: {competition.name}",
                             meta_data={
                                 'shop_id': str(competition.shop_id),
                                 'game_id': str(competition.game_id),
@@ -637,16 +652,15 @@ def shop_owner_competition_create(request):
                         )
                     except Exception:
                         logger.exception('Failed to log competition creation activity')
-                    
-                    EmailManager.send_competition_submitted(competition)
+
                     EmailManager.send_competition_submission_confirmation(
                         shop_owner=shop_owner,
                         competition=competition
                     )
-                
+
                 return JsonResponse({
                     'success': True,
-                    'message': f"'{competition.name}' submitted for review!",
+                    'message': f"'{competition.name}' deployed successfully! Gamers can now see it.",
                 })
             except Exception as e:
                 logger.error(f"Competition creation error: {e}")
@@ -708,21 +722,28 @@ def shop_owner_competition_edit(request, slug):
             try:
                 with transaction.atomic():
                     competition = form.save(commit=False)
-                    competition.status = 'pending'
+                    competition.age_restricted = True
                     competition.rejection_reason = ''
+                    competition.registration_opens_at = (
+                        competition.scheduled_time - timezone.timedelta(hours=1)
+                    )
+                    competition.registration_closes_at = (
+                        competition.scheduled_time - timezone.timedelta(minutes=40)
+                    )
                     competition.save()
 
-                    # Set automatic registration window: 1h before start to 40m before start
-                    competition.registration_opens_at = competition.scheduled_time - timezone.timedelta(hours=1)
-                    competition.registration_closes_at = competition.scheduled_time - timezone.timedelta(minutes=40)
-                    competition.save(update_fields=['registration_opens_at', 'registration_closes_at'])
+                    CompetitionService.deploy_competition(
+                        competition,
+                        performed_by=shop_owner,
+                        performed_by_label=shop_owner.custom_username or str(shop_owner),
+                    )
 
                     try:
                         ActivityLog.objects.create(
                             actor=shop_owner,
                             action_type=ActivityLog.ActionTypes.UPDATE,
                             target=competition,
-                            description=f"Resubmitted competition: {competition.name}",
+                            description=f"Redeployed competition: {competition.name}",
                             meta_data={
                                 'shop_id': str(competition.shop_id),
                                 'game_id': str(competition.game_id),
@@ -731,17 +752,17 @@ def shop_owner_competition_edit(request, slug):
                         )
                     except Exception:
                         logger.exception('Failed to log competition resubmission activity')
-                    
+
                     EmailManager.send_competition_resubmitted(competition)
                     EmailManager.send_competition_submission_confirmation(
                         shop_owner=shop_owner,
                         competition=competition,
                         is_resubmission=True
                     )
-                
+
                 return JsonResponse({
                     'success': True,
-                    'message': f"'{competition.name}' has been resubmitted for admin review.",
+                    'message': f"'{competition.name}' has been redeployed successfully.",
                 })
             except Exception as e:
                 logger.error(f"Competition edit error: {e}")
@@ -818,6 +839,12 @@ def shop_owner_verify_gamer(request, slug):
                 'message': 'Invalid or unpaid registration code. Please check and try again.'
             }, status=404)
         
+        if registration.code_expired:
+            return JsonResponse({
+                'success': False,
+                'message': 'This access code has expired.',
+            }, status=400)
+
         if registration.checked_in:
             return JsonResponse({
                 'success': True, # Still return success but with a message
@@ -831,7 +858,8 @@ def shop_owner_verify_gamer(request, slug):
         
         registration.checked_in = True
         registration.checked_in_at = timezone.now()
-        registration.save(update_fields=['checked_in', 'checked_in_at'])
+        registration.code_expired = True
+        registration.save(update_fields=['checked_in', 'checked_in_at', 'code_expired'])
         
         # Log check-in activity
         from activities.models import Activity

@@ -12,7 +12,7 @@ class CompetitionCreateForm(forms.ModelForm):
             'is_virtual', 'platform_or_shop_link', 'guidelines',
             'scheduled_time', 'competition_end_time',
             'entry_fee', 'max_participants', 'team_size',
-            'gender_rules', 'is_pwa_only', 'rules',
+            'gender_rules', 'is_pwa_only', 'rules', 'prize_type',
         ]
         widgets = {
             'description': forms.Textarea(attrs={
@@ -51,6 +51,11 @@ class CompetitionCreateForm(forms.ModelForm):
             }),
             'gender_rules': forms.Select(),
             'is_pwa_only': forms.CheckboxInput(),
+            'prize_type': forms.Select(choices=[
+                ('points', 'Points Only'),
+                ('money', 'Cash + Points'),
+                ('gift', 'Gift + Points'),
+            ]),
         }
 
     def __init__(self, *args, **kwargs):
@@ -61,6 +66,8 @@ class CompetitionCreateForm(forms.ModelForm):
 
         if self.shop_owner:
             self.fields['shop'].queryset = self.shop_owner.shops.filter(is_approved=True)
+
+        self.fields['prize_type'].required = True
 
         # Filter platforms to only those supported by the selected game.
         self.fields['platform'].queryset = self.fields['platform'].queryset.order_by('name')
@@ -105,6 +112,12 @@ class CompetitionCreateForm(forms.ModelForm):
             if shop and game:
                 if not shop.games_available.filter(pk=game.pk).exists():
                     self.add_error('game', 'The selected game is not available at this shop.')
+
+        prize_type = cleaned_data.get('prize_type')
+        if not prize_type:
+            self.add_error('prize_type', 'Please select a prize type.')
+        elif prize_type:
+            cleaned_data['prize_type'] = Competition.normalize_prize_type(prize_type)
 
         return cleaned_data
 
@@ -213,7 +226,7 @@ class CompetitionApprovalForm(forms.ModelForm):
             if not cleaned_data.get('points_3rd'):
                 self.add_error('points_3rd', 'Points for 3rd place are required.')
 
-        if prize_type == 'money':
+        if prize_type in ['money', 'money_points']:
             if not cleaned_data.get('prize_money_total'):
                 self.add_error('prize_money_total', 'Total prize money is required.')
             pct_1st = cleaned_data.get('prize_money_1st_pct') or 0
@@ -225,9 +238,12 @@ class CompetitionApprovalForm(forms.ModelForm):
                     'Total prize money percentages cannot exceed 100%.'
                 )
 
-        if prize_type == 'gift':
+        if prize_type in ['gift', 'gift_points']:
             if not cleaned_data.get('prize_gift_description'):
                 self.add_error('prize_gift_description', 'Please describe the gift prize.')
+
+        if prize_type:
+            cleaned_data['prize_type'] = Competition.normalize_prize_type(prize_type)
 
         return cleaned_data
 
@@ -523,7 +539,7 @@ class CompetitionAdminCreateForm(forms.ModelForm):
             if not cleaned_data.get('points_3rd'):
                 self.add_error('points_3rd', 'Points for 3rd place are required.')
 
-        if prize_type == 'money':
+        if prize_type in ['money', 'money_points']:
             if not cleaned_data.get('prize_money_total'):
                 self.add_error('prize_money_total', 'Total prize money is required.')
             pct_1st = cleaned_data.get('prize_money_1st_pct') or 0
@@ -532,8 +548,65 @@ class CompetitionAdminCreateForm(forms.ModelForm):
             if pct_1st + pct_2nd + pct_3rd > 100:
                 self.add_error('prize_money_3rd_pct', 'Total prize money percentages cannot exceed 100%.')
 
-        if prize_type == 'gift':
+        if prize_type in ['gift', 'gift_points']:
             if not cleaned_data.get('prize_gift_description'):
                 self.add_error('prize_gift_description', 'Please describe the gift prize.')
+
+        if prize_type:
+            cleaned_data['prize_type'] = Competition.normalize_prize_type(prize_type)
+
+        return cleaned_data
+
+
+class CompetitionSuspendForm(forms.Form):
+    suspension_reason = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'rows': 4,
+            'placeholder': 'Explain why this competition is being suspended...',
+        }),
+    )
+
+    def clean_suspension_reason(self):
+        reason = self.cleaned_data.get('suspension_reason', '').strip()
+        if not reason:
+            raise forms.ValidationError('A suspension reason is required.')
+        return reason
+
+
+class CompetitionEditPrizesForm(CompetitionApprovalForm):
+    """Admin form for editing prize/allocation details on live competitions."""
+
+    class Meta(CompetitionApprovalForm.Meta):
+        fields = CompetitionApprovalForm.Meta.fields
+
+    def clean(self):
+        cleaned_data = super(CompetitionApprovalForm, self).clean()
+        prize_type = cleaned_data.get('prize_type')
+        scheduled_time = self.instance.scheduled_time
+        opens_at = cleaned_data.get('registration_opens_at')
+        closes_at = cleaned_data.get('registration_closes_at')
+
+        if not opens_at:
+            self.add_error('registration_opens_at', 'Registration open time is required.')
+        if not closes_at:
+            self.add_error('registration_closes_at', 'Registration close time is required.')
+
+        if opens_at and closes_at and opens_at >= closes_at:
+            self.add_error('registration_closes_at', 'Registration must close after it opens.')
+
+        if closes_at and scheduled_time and closes_at >= scheduled_time:
+            self.add_error('registration_closes_at', 'Registration must close before the competition starts.')
+
+        if not prize_type:
+            self.add_error('prize_type', 'Please select a prize type.')
+
+        if prize_type in ['money', 'money_points'] and not cleaned_data.get('prize_money_total'):
+            self.add_error('prize_money_total', 'Total prize money is required.')
+
+        if prize_type in ['gift', 'gift_points'] and not cleaned_data.get('prize_gift_description'):
+            self.add_error('prize_gift_description', 'Please describe the gift prize.')
+
+        if prize_type:
+            cleaned_data['prize_type'] = Competition.normalize_prize_type(prize_type)
 
         return cleaned_data

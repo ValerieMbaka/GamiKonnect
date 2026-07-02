@@ -1,0 +1,19 @@
+{% extends "accounts/email_templates/base_email.html" %}
+{% block title %}New Competition — {{ project_name }}{% endblock %}
+{% block header_bg %}background: linear-gradient(135deg, #35A8F0 0%, #7FDBFF 100%);{% endblock %}
+{% block header_title %}🎮 NEW COMPETITION{% endblock %}
+{% block header_subtitle %}Registration is now open{% endblock %}
+{% block content %}
+    <p class="text-primary" style="font-weight: 600; font-size: 18px;">Hey {{ gamer.custom_username|default:gamer.first_name }}!</p>
+    <p class="text-secondary">A new competition <strong>"{{ competition.name }}"</strong> is available. Register before the deadline to secure your spot.</p>
+    <div class="info-box">
+        <ul class="list-compact text-secondary">
+            <li><strong>Game:</strong> {{ competition.game.name }}</li>
+            <li><strong>Starts:</strong> {{ competition.scheduled_time|date:"N j, Y · g:i A" }}</li>
+            <li><strong>Entry Fee:</strong> {% if competition.entry_fee %}KES {{ competition.entry_fee }}{% else %}Free{% endif %}</li>
+        </ul>
+    </div>
+    <div class="text-center mt-3">
+        <a href="{{ register_link }}" class="btn-primary">Browse Competitions</a>
+    </div>
+{% endblock %}

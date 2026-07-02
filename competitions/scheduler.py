@@ -101,6 +101,18 @@ def schedule_competition_jobs(competition):
 
     job_definitions = [
         {
+            'id': f'competition_{cid}_open_registration',
+            'name': f'[#{cid}] Open Registration — {competition.name}',
+            'func': open_registration,
+            'run_at': competition.registration_opens_at,
+        },
+        {
+            'id': f'competition_{cid}_close_registration',
+            'name': f'[#{cid}] Close Registration — {competition.name}',
+            'func': close_registration,
+            'run_at': competition.registration_closes_at,
+        },
+        {
             'id': f'competition_{cid}_start',
             'name': f'[#{cid}] Start Competition — {competition.name}',
             'func': start_competition,
@@ -150,6 +162,8 @@ def remove_competition_jobs(competition):
     sched = get_scheduler()
     cid = competition.integer_id
     job_ids = [
+        f'competition_{cid}_open_registration',
+        f'competition_{cid}_close_registration',
         f'competition_{cid}_start',
         f'competition_{cid}_end',
     ]

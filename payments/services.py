@@ -77,6 +77,36 @@ class PaystackService:
         except requests.exceptions.RequestException as exc:
             return {"status": False, "message": str(exc)}
 
+    def refund_transaction(self, transaction_reference, amount=None, currency="KES", customer_note="", merchant_note=""):
+        """
+        Initiate a Paystack refund for a successful transaction.
+        transaction_reference: Paystack transaction reference or ID.
+        amount: Optional partial refund amount in major currency units.
+        """
+        payload = {
+            "transaction": transaction_reference,
+            "currency": currency,
+            "customer_note": customer_note,
+            "merchant_note": merchant_note,
+        }
+        if amount is not None:
+            subunit_amount = self._amount_to_subunits(amount)
+            if subunit_amount is None or subunit_amount <= 0:
+                return {"status": False, "message": "Invalid refund amount."}
+            payload["amount"] = subunit_amount
+
+        try:
+            response = requests.post(
+                f"{self.BASE_URL}/refund",
+                json=payload,
+                headers=self._headers(),
+                timeout=20,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as exc:
+            return {"status": False, "message": str(exc)}
+
 
 class PaymentSimulationService:
     """

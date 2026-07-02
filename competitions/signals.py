@@ -7,26 +7,27 @@ logger = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender='competitions.CompetitionRegistration')
-def on_competition_registration(sender, instance, created, **kwargs):
-    """
-    Send notification when user registers for a competition.
-    """
-    if not created:
+def on_competition_registration(sender, instance, created, update_fields, **kwargs):
+    """Send dashboard notification when a registration payment is completed."""
+    if instance.payment_status != 'completed':
         return
-    
+
+    if not created and update_fields and 'payment_status' not in update_fields:
+        return
+
     try:
-        from notifications.models import Notification, NotificationRecipient
+        from notifications.models import Notification
         from notifications.services import send_notification_to_users
-        
+
         competition = instance.competition
         gamer = instance.gamer
-        
-        # Create notification for registration
+
         notification_text = (
             f"You've successfully registered for {competition.name}! "
-            f"Competition starts at {competition.scheduled_time.strftime('%I:%M %p')}. Good luck!"
+            f"Your access code is {instance.unique_code}. "
+            f"Competition starts at {competition.scheduled_time.strftime('%I:%M %p')}."
         )
-        
+
         notification, _ = Notification.objects.get_or_create(
             title=f"Registered: {competition.name}",
             category="competition",
@@ -34,49 +35,39 @@ def on_competition_registration(sender, instance, created, **kwargs):
             is_system=True,
             defaults={
                 'message': notification_text,
-                'message_template': (
-                    f"You've successfully registered for {{competition_name}}! "
-                    f"Competition starts at {competition.scheduled_time.strftime('%I:%M %p')}. Good luck!"
-                )
             }
         )
-        
+
         notification.set_expiry()
         notification.save()
-        
-        # Create recipient for this user
-        send_notification_to_users(notification, [gamer], send_email=True)
-        
-        logger.info(f"{gamer.custom_username} registered for {competition.name}")
+        send_notification_to_users(notification, [gamer], send_email=False)
+
+        logger.info("%s registered for %s", gamer.custom_username, competition.name)
     except Exception as e:
-        logger.error(f"Error sending competition registration notification: {e}")
+        logger.error("Error sending competition registration notification: %s", e)
 
 
 @receiver(post_save, sender='competitions.CompetitionResult')
 def on_competition_result_published(sender, instance, created, update_fields, **kwargs):
-    """
-    Send notification when competition results are published (verified).
-    """
-    # Only process if verified changed to True
+    """Send notification when competition results are verified."""
     if update_fields and 'verified' not in update_fields:
         return
-    
+
     if not instance.verified:
         return
-    
+
     try:
-        from notifications.models import Notification, NotificationRecipient
+        from notifications.models import Notification
         from notifications.services import send_notification_to_users
-        
+
         gamer = instance.gamer
-        competition = instance.competition_registration.competition
-        
-        # Different message based on result
+        competition = instance.competition
+
         if instance.is_no_show:
             notification_text = f"You were marked as no-show for {competition.name}."
             importance = "medium"
         elif instance.rank == 1:
-            notification_text = f"🏆 Congratulations! You won {competition.name}!"
+            notification_text = f"Congratulations! You won {competition.name}!"
             importance = "critical"
         else:
             notification_text = (
@@ -84,7 +75,7 @@ def on_competition_result_published(sender, instance, created, update_fields, **
                 f"You placed #{instance.rank}!"
             )
             importance = "high"
-        
+
         notification, _ = Notification.objects.get_or_create(
             title=f"Results: {competition.name}",
             category="competition",
@@ -92,67 +83,54 @@ def on_competition_result_published(sender, instance, created, update_fields, **
             is_system=True,
             defaults={'message': notification_text}
         )
-        
+
         notification.set_expiry()
         notification.save()
-        
-        # Create recipient for this user
-        send_notification_to_users(notification, [gamer], send_email=True)
-        
-        logger.info(f"Results notification sent to {gamer.custom_username} for {competition.name}")
+        send_notification_to_users(notification, [gamer], send_email=False)
+
+        logger.info("Results notification sent to %s for %s", gamer.custom_username, competition.name)
     except Exception as e:
-        logger.error(f"Error sending competition results notification: {e}")
+        logger.error("Error sending competition results notification: %s", e)
 
 
 @receiver(post_save, sender='competitions.Competition')
-def on_competition_registration_opened(sender, instance, created, update_fields, **kwargs):
-    """
-    Send notification when competition registration opens.
-    Targeted to eligible gamers (not created, only when status changes).
-    """
+def on_competition_deployed(sender, instance, created, update_fields, **kwargs):
+    """Notify eligible gamers when a competition is deployed for registration."""
     if created:
         return
-    
+
     if update_fields and 'status' not in update_fields:
         return
-    
-    # Only notify when status changes to the active registration state.
+
     if instance.status != 'registration':
         return
-    
+
     try:
-        from notifications.models import Notification, NotificationGroup
-        from notifications.services import get_group_users, send_notification_to_users
-        
-        # Determine eligibility based on competition criteria
+        from notifications.models import Notification
+        from notifications.services import send_notification_to_users
+
         eligible_gamers = instance.get_eligible_gamers()
-        
         if not eligible_gamers.exists():
             return
-        
+
+        closes_at = instance.registration_closes_at.strftime('%I:%M %p') if instance.registration_closes_at else 'the deadline'
         notification_text = (
-            f"Registration is now open for {instance.name}! "
-            f"Register before {instance.registration_closes_at.strftime('%I:%M %p')} to participate."
+            f"A new competition is available: {instance.name}! "
+            f"Register before {closes_at} to participate."
         )
-        
+
         notification, _ = Notification.objects.get_or_create(
-            title=f"Registration Open: {instance.name}",
+            title=f"New Competition: {instance.name}",
             category="competition",
             importance="high",
             is_system=True,
-            defaults={'message': notification_text}
+            defaults={'message': notification_text},
         )
-        
+
         notification.set_expiry()
         notification.save()
-        
-        # Send to eligible gamers
-        send_notification_to_users(
-            notification,
-            eligible_gamers,
-            send_email=True
-        )
-        
-        logger.info(f"Registration open notification sent for {instance.name}")
+        send_notification_to_users(notification, eligible_gamers, send_email=False)
+
+        logger.info("New competition notification sent for %s", instance.name)
     except Exception as e:
-        logger.error(f"Error sending competition registration notification: {e}")
+        logger.error("Error sending new competition notification: %s", e)

@@ -32,6 +32,9 @@ urlpatterns = [
     path('competitions/<slug:slug>/reject/', views.admin_competition_reject, name='competition_reject'),
     path('competitions/<slug:slug>/confirm-checkins/', views.admin_confirm_checkins, name='competition_confirm_checkins'),
     path('competitions/<slug:slug>/verify-results/', views.admin_verify_results, name='competition_verify_results'),
+    path('competitions/<slug:slug>/suspend/', views.admin_competition_suspend, name='competition_suspend'),
+    path('competitions/<slug:slug>/edit-prizes/', views.admin_competition_edit_prizes, name='competition_edit_prizes'),
+    path('competitions/<slug:slug>/edit-results/', views.admin_competition_edit_results, name='competition_edit_results'),
 
     # User Management
     path('users/', views.admin_user_list, name='user_list'),

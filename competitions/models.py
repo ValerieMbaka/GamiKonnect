@@ -15,6 +15,7 @@ class Competition(models.Model):
         ('registration', 'Registration'),
         ('ongoing', 'Ongoing'),
         ('completed', 'Completed'),
+        ('suspended', 'Suspended'),
     ]
 
     LEGACY_STATUS_MAP = {
@@ -195,6 +196,15 @@ class Competition(models.Model):
         blank=True,
         help_text="Reason provided by admin when rejecting a competition submission."
     )
+    suspension_reason = models.TextField(
+        blank=True,
+        help_text="Reason provided by admin when suspending a live competition."
+    )
+    suspended_at = models.DateTimeField(null=True, blank=True)
+    admin_reviewed = models.BooleanField(
+        default=False,
+        help_text="True once an admin has reviewed a deployed competition."
+    )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -370,6 +380,49 @@ class Competition(models.Model):
         """
         return self.GAMER_STATUS_DISPLAY.get(self.status, self.status)
 
+    def is_registration_open(self):
+        """Returns True if registration is currently open for this competition."""
+        if self.status != 'registration':
+            return False
+        now = timezone.now()
+        if self.registration_opens_at and now < self.registration_opens_at:
+            return False
+        if self.registration_closes_at and now > self.registration_closes_at:
+            return False
+        if self.is_registration_full():
+            return False
+        return True
+
+    def get_eligible_gamers(self):
+        """Returns gamers eligible to register based on competition restrictions."""
+        from accounts.models import Gamer, ShopOwner
+
+        gamers = Gamer.objects.all()
+        if self.age_restricted:
+            cutoff = timezone.now().date().replace(
+                year=timezone.now().date().year - 18
+            )
+            gamers = gamers.filter(date_of_birth__lte=cutoff)
+        if self.gender_rules != 'all':
+            gamers = gamers.filter(gender=self.gender_rules)
+        if self.is_pwa_only:
+            gamers = gamers.filter(is_pwa=True)
+        if self.shop_id:
+            owner_uids = ShopOwner.objects.filter(
+                shops=self.shop
+            ).values_list('uid', flat=True)
+            gamers = gamers.exclude(uid__in=owner_uids)
+        return gamers.distinct()
+
+    @staticmethod
+    def normalize_prize_type(prize_type):
+        """Map legacy/UI prize type values to model choices."""
+        mapping = {
+            'money': 'money_points',
+            'gift': 'gift_points',
+        }
+        return mapping.get(prize_type, prize_type)
+
     @classmethod
     def normalize_status(cls, status):
         return cls.LEGACY_STATUS_MAP.get(status, status)
@@ -472,10 +525,9 @@ class CompetitionRegistration(models.Model):
         import string
         import random
         if not self.unique_code:
-            # Generate a unique 6-character alphanumeric code
             chars = string.ascii_uppercase + string.digits
             while True:
-                code = ''.join(random.choice(chars) for _ in range(6))
+                code = ''.join(random.choice(chars) for _ in range(5))
                 if not CompetitionRegistration.objects.filter(unique_code=code).exists():
                     self.unique_code = code
                     break
@@ -592,6 +644,9 @@ class CompetitionAuditLog(models.Model):
     ACTION_CHOICES = [
         ('approve', 'Approved'),
         ('reject', 'Rejected'),
+        ('suspend', 'Suspended'),
+        ('edit_prizes', 'Prize Details Edited'),
+        ('edit_results', 'Results Edited'),
         ('open_registration', 'Open Registration'),
         ('close_registration', 'Close Registration'),
         ('start', 'Competition Started'),

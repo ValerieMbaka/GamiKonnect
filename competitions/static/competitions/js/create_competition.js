@@ -174,6 +174,10 @@ loadDataIsland() {
             { label: 'End Time', name: 'competition_end_time' },
             { label: 'Capacity', name: 'max_participants' },
             { label: 'Entry Fee', name: 'entry_fee', transform: (v) => v ? `KES ${v}` : 'Free' },
+            { label: 'Prize Type', name: 'prize_type', transform: (v) => {
+                const map = { points: 'Points Only', money: 'Cash + Points', gift: 'Gift + Points' };
+                return map[v] || v;
+            }},
         ];
 
         if (formData.get('is_virtual') === 'true') {

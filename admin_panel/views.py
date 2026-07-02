@@ -39,8 +39,14 @@ from progression.models import Level, Achievement, GamerStats
 from shops.models import Shop
 from payments.models import MpesaTransaction
 from competitions.models import Competition, CompetitionAuditLog, CompetitionRegistration, CompetitionResult
-from competitions.forms import CompetitionApprovalForm, CompetitionRejectionForm, CompetitionAdminCreateForm
-from competitions.scheduler import schedule_competition_jobs
+from competitions.forms import (
+    CompetitionApprovalForm,
+    CompetitionRejectionForm,
+    CompetitionAdminCreateForm,
+    CompetitionSuspendForm,
+    CompetitionEditPrizesForm,
+)
+from competitions.scheduler import schedule_competition_jobs, remove_competition_jobs
 from competitions.services import CompetitionService
 from activities.services import ActivityFeedService
 from notifications.models import Notification, NotificationGroup, NotificationRecipient, NotificationSchedule
@@ -831,11 +837,14 @@ def admin_competition_detail(request, slug):
     
     # Prepare approval form with pre-filled rules if competition is pending
     approval_form = None
+    edit_prizes_form = None
     if competition.status == 'pending':
         initial_data = {
             'rules': competition.get_rules_for_admin_editing(),
         }
         approval_form = CompetitionApprovalForm(instance=competition, initial=initial_data)
+    elif competition.status in ['registration', 'ongoing']:
+        edit_prizes_form = CompetitionEditPrizesForm(instance=competition)
     
     context = {
         'competition': competition,
@@ -845,6 +854,7 @@ def admin_competition_detail(request, slug):
         'checked_in_count': checked_in_count,
         'no_show_count': no_show_count,
         'approval_form': approval_form,
+        'edit_prizes_form': edit_prizes_form,
         'full_rules': competition.get_full_rules(),
     }
     return render(request, 'admin_panel/competitions/admin_competition_detail.html', context)
@@ -992,6 +1002,133 @@ def admin_verify_results(request, slug):
             return JsonResponse({'success': False, 'message': f'Failed: {str(e)}'})
     
     return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=405)
+
+
+@admin_required
+def admin_competition_suspend(request, slug):
+    try:
+        competition = Competition.objects.get(slug=slug)
+    except Competition.DoesNotExist:
+        try:
+            competition = Competition.objects.get(integer_id=int(slug))
+        except (Competition.DoesNotExist, ValueError):
+            return JsonResponse({'success': False, 'message': 'Competition not found.'}, status=404)
+
+    if competition.status in ['completed', 'suspended', 'rejected']:
+        return JsonResponse({
+            'success': False,
+            'message': f'Cannot suspend a competition in {competition.status} status.',
+        }, status=400)
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=405)
+
+    if request.content_type == 'application/json':
+        import json as _json
+        try:
+            payload = _json.loads(request.body.decode('utf-8') or '{}')
+        except Exception:
+            payload = {}
+        form = CompetitionSuspendForm(payload)
+    else:
+        form = CompetitionSuspendForm(request.POST)
+
+    if not form.is_valid():
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+    try:
+        competition, refund_results = CompetitionService.suspend_competition(
+            competition,
+            reason=form.cleaned_data['suspension_reason'],
+            performed_by=request.user,
+            performed_by_label=request.user.get_username(),
+        )
+        return JsonResponse({
+            'success': True,
+            'message': (
+                f"'{competition.name}' suspended. "
+                f"{refund_results['refunded']} refund(s) processed."
+            ),
+            'refund_results': refund_results,
+        })
+    except Exception as e:
+        logger.error(f"Competition suspension error: {e}")
+        return JsonResponse({'success': False, 'message': 'Suspension failed. Please try again.'})
+
+
+@admin_required
+def admin_competition_edit_prizes(request, slug):
+    try:
+        competition = Competition.objects.get(slug=slug)
+    except Competition.DoesNotExist:
+        try:
+            competition = Competition.objects.get(integer_id=int(slug))
+        except (Competition.DoesNotExist, ValueError):
+            return JsonResponse({'success': False, 'message': 'Competition not found.'}, status=404)
+
+    if competition.status not in ['registration', 'ongoing', 'pending']:
+        return JsonResponse({
+            'success': False,
+            'message': f'Cannot edit prizes for competition in {competition.status} status.',
+        }, status=400)
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=405)
+
+    form = CompetitionEditPrizesForm(request.POST, instance=competition)
+    if not form.is_valid():
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+    try:
+        CompetitionService.edit_prizes(
+            competition,
+            form,
+            performed_by=request.user,
+            performed_by_label=request.user.get_username(),
+        )
+        return JsonResponse({
+            'success': True,
+            'message': 'Prize details updated successfully.',
+        })
+    except Exception as e:
+        logger.error(f"Edit prizes error: {e}")
+        return JsonResponse({'success': False, 'message': 'Failed to update prize details.'})
+
+
+@admin_required
+def admin_competition_edit_results(request, slug):
+    competition = get_object_or_404(Competition, slug=slug)
+
+    if not competition.results.exists():
+        return JsonResponse({'success': False, 'message': 'No results to edit.'}, status=400)
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=405)
+
+    import json as _json
+    try:
+        payload = _json.loads(request.body.decode('utf-8') or '{}')
+        results_data = payload.get('results', [])
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON payload.'}, status=400)
+
+    if not results_data:
+        return JsonResponse({'success': False, 'message': 'No result data provided.'}, status=400)
+
+    try:
+        CompetitionService.edit_results(
+            competition,
+            results_data,
+            performed_by=request.user,
+            performed_by_label=request.user.get_username(),
+        )
+        return JsonResponse({
+            'success': True,
+            'message': 'Results updated and gamers notified.',
+        })
+    except Exception as e:
+        logger.error(f"Edit results error: {e}")
+        return JsonResponse({'success': False, 'message': f'Failed: {str(e)}'})
 
 
 @admin_required

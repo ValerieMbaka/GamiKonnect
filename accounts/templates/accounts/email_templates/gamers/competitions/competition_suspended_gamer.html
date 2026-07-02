@@ -1,0 +1,11 @@
+{% extends "accounts/email_templates/base_email.html" %}
+{% block title %}Competition Cancelled — {{ project_name }}{% endblock %}
+{% block header_bg %}background: linear-gradient(135deg, #F0354B 0%, #c62828 100%);{% endblock %}
+{% block header_title %}Competition Cancelled{% endblock %}
+{% block content %}
+    <p class="text-secondary">The competition <strong>"{{ competition.name }}"</strong> has been suspended by an administrator.</p>
+    <p class="text-secondary"><strong>Reason:</strong> {{ suspension_reason }}</p>
+    {% if registration.payment_status == 'completed' and competition.entry_fee %}
+    <p class="text-secondary">Your registration fee will be refunded automatically if payment was completed.</p>
+    {% endif %}
+{% endblock %}

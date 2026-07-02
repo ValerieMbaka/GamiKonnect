@@ -206,6 +206,183 @@ const adminComp = (() => {
     }
 
     // ------------------------------------------------------------------
+    // Suspend Modal
+    // ------------------------------------------------------------------
+
+    function openSuspendModal() {
+        document.getElementById('suspendModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSuspendModal() {
+        document.getElementById('suspendModal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    async function submitSuspend() {
+        const reason = document.getElementById('suspensionReason')?.value.trim();
+        if (!reason) {
+            document.getElementById('sus-err-suspension_reason').textContent = 'A suspension reason is required.';
+            return;
+        }
+
+        const btn = document.getElementById('suspendSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suspending...';
+
+        try {
+            const response = await fetch(cfg.suspendUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': cfg.csrfToken,
+                },
+                body: JSON.stringify({ suspension_reason: reason }),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                closeSuspendModal();
+                showToast('success', data.message);
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                showToast('error', data.message || 'Suspension failed.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-ban"></i> Suspend & Refund';
+            }
+        } catch (err) {
+            console.error('Suspend error:', err);
+            showToast('error', 'Something went wrong.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-ban"></i> Suspend & Refund';
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Edit Prizes Modal
+    // ------------------------------------------------------------------
+
+    function openEditPrizesModal() {
+        document.getElementById('editPrizesModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+        const prizeSelect = document.getElementById('editPrizeType');
+        if (prizeSelect) onEditPrizeTypeChange(prizeSelect);
+    }
+
+    function closeEditPrizesModal() {
+        document.getElementById('editPrizesModal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    function onEditPrizeTypeChange(select) {
+        const type = select.value;
+        document.getElementById('editPointsFields').style.display = 'block';
+        document.getElementById('editMoneyFields').style.display = type === 'money' ? 'block' : 'none';
+        document.getElementById('editGiftFields').style.display = type === 'gift' ? 'block' : 'none';
+    }
+
+    async function submitEditPrizes() {
+        const form = document.getElementById('editPrizesForm');
+        const btn = document.getElementById('editPrizesSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        try {
+            const response = await fetch(cfg.editPrizesUrl, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'X-CSRFToken': cfg.csrfToken },
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                closeEditPrizesModal();
+                showToast('success', data.message);
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                showToast('error', data.message || 'Failed to save prize details.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }
+        } catch (err) {
+            console.error('Edit prizes error:', err);
+            showToast('error', 'Something went wrong.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Edit Results
+    // ------------------------------------------------------------------
+
+    function openEditResultsModal() {
+        if (!cfg.resultsData || !cfg.resultsData.length) {
+            showToast('error', 'No results available to edit.');
+            return;
+        }
+
+        let html = '<table class="modern-table"><thead><tr><th>Gamer</th><th>Rank</th><th>No-show</th></tr></thead><tbody>';
+        cfg.resultsData.forEach((row, idx) => {
+            html += `<tr>
+                <td>${row.username}</td>
+                <td><input type="number" min="1" class="form-control edit-rank" data-idx="${idx}" value="${row.rank || ''}"></td>
+                <td><input type="checkbox" class="edit-noshow" data-idx="${idx}" ${row.is_no_show ? 'checked' : ''}></td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+
+        const container = document.createElement('div');
+        container.innerHTML = html;
+        const confirmed = confirm('Edit results in the prompt that follows. Click OK to open the editor.');
+
+        if (!confirmed) return;
+
+        const modal = document.createElement('div');
+        modal.className = 'admin-modal-overlay show';
+        modal.innerHTML = `
+            <div class="admin-modal" style="max-width:640px;">
+                <div class="modal-header"><h3>Edit Results</h3></div>
+                <div class="modal-body">${container.innerHTML}</div>
+                <div class="modal-footer mt-4">
+                    <button class="btn-admin-secondary" id="cancelEditResults">Cancel</button>
+                    <button class="btn-admin-primary" id="saveEditResults">Save & Notify Gamers</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+
+        modal.querySelector('#cancelEditResults').onclick = () => modal.remove();
+        modal.querySelector('#saveEditResults').onclick = async () => {
+            const results = cfg.resultsData.map((row, idx) => ({
+                gamer_id: row.gamer_id,
+                rank: parseInt(modal.querySelector(`.edit-rank[data-idx="${idx}"]`).value, 10) || null,
+                is_no_show: modal.querySelector(`.edit-noshow[data-idx="${idx}"]`).checked,
+            }));
+
+            try {
+                const response = await fetch(cfg.editResultsUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': cfg.csrfToken,
+                    },
+                    body: JSON.stringify({ results }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    modal.remove();
+                    showToast('success', data.message);
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    showToast('error', data.message || 'Failed to update results.');
+                }
+            } catch (err) {
+                showToast('error', 'Something went wrong.');
+            }
+        };
+    }
+
+    // ------------------------------------------------------------------
     // Error Helpers
     // ------------------------------------------------------------------
 
@@ -230,13 +407,15 @@ const adminComp = (() => {
     // ------------------------------------------------------------------
 
     function init() {
-        ['approveModal', 'rejectModal'].forEach(id => {
+        ['approveModal', 'rejectModal', 'suspendModal', 'editPrizesModal'].forEach(id => {
             const overlay = document.getElementById(id);
             if (overlay) {
                 overlay.addEventListener('click', (e) => {
                     if (e.target === overlay) {
                         if (id === 'approveModal') closeApproveModal();
-                        else closeRejectModal();
+                        else if (id === 'rejectModal') closeRejectModal();
+                        else if (id === 'suspendModal') closeSuspendModal();
+                        else if (id === 'editPrizesModal') closeEditPrizesModal();
                     }
                 });
             }
@@ -254,6 +433,14 @@ const adminComp = (() => {
         openRejectModal,
         closeRejectModal,
         submitReject,
+        openSuspendModal,
+        closeSuspendModal,
+        submitSuspend,
+        openEditPrizesModal,
+        closeEditPrizesModal,
+        onEditPrizeTypeChange,
+        submitEditPrizes,
+        openEditResultsModal,
         confirmCheckins,
         verifyResults,
     };

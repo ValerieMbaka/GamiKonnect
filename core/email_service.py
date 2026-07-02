@@ -572,3 +572,69 @@ class EmailManager:
             'admin_review_link': f"{site_url}/management/competitions/{competition.slug}/",
         }
         return cls._send_html_email(subject, 'admin/competitions/admin_competition_prize_allocations.html', context, [admin_email])
+
+    @classmethod
+    def send_competition_announced_to_gamers(cls, competition):
+        """Notify eligible gamers by email about a newly deployed competition."""
+        from accounts.models import Gamer
+
+        site_url = cls._get_site_url()
+        eligible = competition.get_eligible_gamers()
+        if not eligible.exists():
+            return 0
+
+        subject = f"New Competition: {competition.name} — {settings.PROJECT_NAME}"
+        context = {
+            'competition': competition,
+            'competition_link': f"{site_url}/competitions/",
+            'register_link': f"{site_url}/competitions/",
+        }
+        sent = 0
+        for gamer in eligible.iterator():
+            try:
+                cls._send_html_email(
+                    subject,
+                    'gamers/competitions/competition_new_announcement.html',
+                    {**context, 'gamer': gamer},
+                    [gamer.email],
+                )
+                sent += 1
+            except Exception:
+                logger.exception('Failed to announce competition to %s', gamer.email)
+        return sent
+
+    @classmethod
+    def send_competition_suspended(cls, competition, refund_results=None):
+        """Notify shop owner, admin, and registered gamers that a competition was suspended."""
+        site_url = cls._get_site_url()
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        context = {
+            'competition': competition,
+            'refund_results': refund_results or {},
+            'suspension_reason': competition.suspension_reason,
+        }
+
+        recipients = [owner.email for owner in competition.shop.owners.all()]
+        if recipients:
+            cls._send_html_email(
+                f"Competition Suspended: {competition.name} — {settings.PROJECT_NAME}",
+                'shop_owners/competitions/competition_suspended.html',
+                context,
+                recipients,
+            )
+
+        cls._send_html_email(
+            f"Competition Suspended: {competition.name} — {settings.PROJECT_NAME}",
+            'admin/competitions/admin_competition_suspended.html',
+            context,
+            [admin_email],
+        )
+
+        registrations = competition.registrations.filter(is_cancelled=False).select_related('gamer')
+        for registration in registrations:
+            cls._send_html_email(
+                f"Competition Cancelled: {competition.name} — {settings.PROJECT_NAME}",
+                'gamers/competitions/competition_suspended_gamer.html',
+                {**context, 'gamer': registration.gamer, 'registration': registration},
+                [registration.gamer.email],
+            )

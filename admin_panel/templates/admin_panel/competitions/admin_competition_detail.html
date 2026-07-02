@@ -39,13 +39,26 @@
                 <button class="btn-danger" onclick="adminComp.openRejectModal()">
                     <i class="fas fa-times"></i> Reject
                 </button>
-            {% elif competition.status == 'ongoing' %}
+            {% elif competition.status == 'registration' or competition.status == 'ongoing' %}
+                <button class="btn-primary" onclick="adminComp.openEditPrizesModal()">
+                    <i class="fas fa-gift"></i> Edit Prizes
+                </button>
+                <button class="btn-danger" onclick="adminComp.openSuspendModal()">
+                    <i class="fas fa-ban"></i> Suspend
+                </button>
+                {% if results %}
+                <button class="btn-warning" onclick="adminComp.openEditResultsModal()">
+                    <i class="fas fa-edit"></i> Edit Results
+                </button>
+                {% endif %}
+                {% if competition.status == 'ongoing' %}
                 <button class="btn-primary" onclick="adminComp.confirmCheckins()">
                     <i class="fas fa-user-check"></i> Confirm Check-ins
                 </button>
                 <button class="btn-success" onclick="adminComp.verifyResults()">
                     <i class="fas fa-check-double"></i> Verify & Publish Results
                 </button>
+                {% endif %}
             {% endif %}
         </div>
     </div>
@@ -337,6 +350,37 @@
                 </div>
             </div>
 
+            {% elif competition.status == 'registration' or competition.status == 'ongoing' %}
+            <div class="admin-card action-card mb-4">
+                <div class="action-card-header action-card-header--pending">
+                    <i class="fas fa-eye"></i>
+                    <span>Live — Admin Review</span>
+                </div>
+                <div class="action-card-body">
+                    <p class="action-card-desc">This competition is live for gamers. Review prize details, edit allocations, or suspend if necessary. Paid registrations are refunded automatically on suspension.</p>
+                    <button class="btn-primary w-full mb-2" onclick="adminComp.openEditPrizesModal()">
+                        <i class="fas fa-gift"></i> Edit Prize Details
+                    </button>
+                    <button class="btn-danger w-full" onclick="adminComp.openSuspendModal()">
+                        <i class="fas fa-ban"></i> Suspend Competition
+                    </button>
+                </div>
+            </div>
+
+            {% elif competition.status == 'suspended' %}
+            <div class="admin-card action-card mb-4">
+                <div class="action-card-header action-card-header--danger">
+                    <i class="fas fa-ban"></i>
+                    <span>Competition Suspended</span>
+                </div>
+                <div class="action-card-body">
+                    <p class="action-card-desc">{{ competition.suspension_reason }}</p>
+                    {% if competition.suspended_at %}
+                    <small class="text-muted">Suspended: {{ competition.suspended_at|date:"N j, Y · g:i A" }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
             {% elif competition.status == 'checkin_submitted' %}
             <div class="admin-card action-card mb-4">
                 <div class="action-card-header action-card-header--warning">
@@ -575,6 +619,100 @@
     </div>
 </div>
 
+{# Suspend Modal #}
+<div class="admin-modal-overlay" id="suspendModal">
+    <div class="admin-modal" style="max-width:500px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-ban"></i> Suspend Competition</h3>
+            <button class="modal-close" onclick="adminComp.closeSuspendModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="text-muted mb-3">Suspending will cancel this competition and automatically refund all paid registrations via Paystack.</p>
+            <form id="suspendForm">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    <label>Suspension Reason <span style="color:#F0354B;">*</span></label>
+                    <textarea name="suspension_reason" id="suspensionReason" class="form-control" rows="4" required
+                              placeholder="Explain why this competition is being suspended..."></textarea>
+                    <div class="error-msg" id="sus-err-suspension_reason"></div>
+                </div>
+                <div class="modal-footer mt-4">
+                    <button type="button" class="btn-admin-secondary" onclick="adminComp.closeSuspendModal()">Cancel</button>
+                    <button type="button" class="btn-danger" id="suspendSubmitBtn" onclick="adminComp.submitSuspend()">
+                        <i class="fas fa-ban"></i> Suspend & Refund
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Edit Prizes Modal #}
+<div class="admin-modal-overlay" id="editPrizesModal">
+    <div class="admin-modal" style="max-width:680px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-gift"></i> Edit Prize Details</h3>
+            <button class="modal-close" onclick="adminComp.closeEditPrizesModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="editPrizesForm">
+                {% csrf_token %}
+                <p class="text-muted mb-3">Update prize allocation for this live competition. Default points (150/100/70/30/10) can be adjusted here.</p>
+                <div class="form-group mb-3">
+                    <label>Entry Fee (KES)</label>
+                    <input type="number" name="entry_fee" class="form-control" min="0" step="0.01" value="{{ competition.entry_fee|floatformat:2 }}">
+                </div>
+                <div class="form-grid mb-3">
+                    <div class="form-group">
+                        <label>Registration Opens</label>
+                        <input type="datetime-local" name="registration_opens_at" class="form-control"
+                               value="{% if competition.registration_opens_at %}{{ competition.registration_opens_at|date:"Y-m-d\\TH:i" }}{% endif %}">
+                    </div>
+                    <div class="form-group">
+                        <label>Registration Closes</label>
+                        <input type="datetime-local" name="registration_closes_at" class="form-control"
+                               value="{% if competition.registration_closes_at %}{{ competition.registration_closes_at|date:"Y-m-d\\TH:i" }}{% endif %}">
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <label>Prize Type</label>
+                    <select name="prize_type" id="editPrizeType" class="form-control" onchange="adminComp.onEditPrizeTypeChange(this)">
+                        <option value="points" {% if competition.prize_type == 'points' %}selected{% endif %}>XP Points</option>
+                        <option value="money" {% if competition.prize_type == 'money' or competition.prize_type == 'money_points' %}selected{% endif %}>Cash + Points</option>
+                        <option value="gift" {% if competition.prize_type == 'gift' or competition.prize_type == 'gift_points' %}selected{% endif %}>Gift + Points</option>
+                    </select>
+                </div>
+                <div id="editPointsFields">
+                    <div class="form-grid mb-3">
+                        <div class="form-group"><label>1st Place XP</label><input type="number" name="points_1st" class="form-control" value="{{ competition.points_1st }}"></div>
+                        <div class="form-group"><label>2nd Place XP</label><input type="number" name="points_2nd" class="form-control" value="{{ competition.points_2nd }}"></div>
+                        <div class="form-group"><label>3rd Place XP</label><input type="number" name="points_3rd" class="form-control" value="{{ competition.points_3rd }}"></div>
+                        <div class="form-group"><label>4th–10th XP</label><input type="number" name="points_4_to_10" class="form-control" value="{{ competition.points_4_to_10 }}"></div>
+                        <div class="form-group"><label>11th+ XP</label><input type="number" name="points_beyond_10" class="form-control" value="{{ competition.points_beyond_10 }}"></div>
+                    </div>
+                </div>
+                <div id="editMoneyFields" style="display:none;">
+                    <div class="form-group mb-3"><label>Total Prize Pool (KES)</label><input type="number" name="prize_money_total" class="form-control" value="{{ competition.prize_money_total }}"></div>
+                    <div class="form-grid mb-3">
+                        <div class="form-group"><label>1st %</label><input type="number" name="prize_money_1st_pct" class="form-control" value="{{ competition.prize_money_1st_pct }}"></div>
+                        <div class="form-group"><label>2nd %</label><input type="number" name="prize_money_2nd_pct" class="form-control" value="{{ competition.prize_money_2nd_pct }}"></div>
+                        <div class="form-group"><label>3rd %</label><input type="number" name="prize_money_3rd_pct" class="form-control" value="{{ competition.prize_money_3rd_pct }}"></div>
+                    </div>
+                </div>
+                <div id="editGiftFields" style="display:none;">
+                    <div class="form-group mb-3"><label>Gift Description</label><textarea name="prize_gift_description" class="form-control" rows="3">{{ competition.prize_gift_description }}</textarea></div>
+                </div>
+                <div class="modal-footer mt-4">
+                    <button type="button" class="btn-admin-secondary" onclick="adminComp.closeEditPrizesModal()">Cancel</button>
+                    <button type="button" class="btn-admin-primary" id="editPrizesSubmitBtn" onclick="adminComp.submitEditPrizes()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_scripts %}
@@ -582,10 +720,24 @@
     const ADMIN_COMP_CONFIG = {
         approveUrl: "{% url 'admin_panel:competition_approve' competition.slug %}",
         rejectUrl: "{% url 'admin_panel:competition_reject' competition.slug %}",
+        suspendUrl: "{% url 'admin_panel:competition_suspend' competition.slug %}",
+        editPrizesUrl: "{% url 'admin_panel:competition_edit_prizes' competition.slug %}",
+        editResultsUrl: "{% url 'admin_panel:competition_edit_results' competition.slug %}",
         confirmCheckinsUrl: "{% url 'admin_panel:competition_confirm_checkins' competition.slug %}",
         verifyResultsUrl: "{% url 'admin_panel:competition_verify_results' competition.slug %}",
         csrfToken: "{{ csrf_token }}",
         status: "{{ competition.status }}",
+        resultsData: [
+            {% for result in results %}
+            {
+                gamer_id: "{{ result.gamer_id }}",
+                username: "{{ result.gamer.custom_username|default:result.gamer.first_name|escapejs }}",
+                rank: {{ result.rank|default:"null" }},
+                is_no_show: {{ result.is_no_show|yesno:"true,false" }},
+                points_awarded: {{ result.points_awarded }}
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
     };
 </script>
 <script>

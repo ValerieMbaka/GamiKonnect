@@ -61,6 +61,38 @@
                 </div>
 
                 <div class="form-row">
+                    <div class="form-group">
+                        <label>Competition Type</label>
+                        <div style="margin-top: 8px;">
+                            <label style="margin-right: 20px; cursor: pointer;">
+                                <input type="radio" name="is_virtual" value="false" checked onchange="toggleCompType()"> Physical (In-Shop)
+                            </label>
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="is_virtual" value="true" onchange="toggleCompType()"> Virtual (Online)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="virtualFields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group {% if form.platform_or_shop_link.errors %}has-error{% endif %}">
+                            {{ form.platform_or_shop_link.label_tag }}
+                            {{ form.platform_or_shop_link }}
+                            {{ form.platform_or_shop_link.errors }}
+                            <div class="field-help">e.g. Discord, Twitch, or Zoom link.</div>
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group {% if form.guidelines.errors %}has-error{% endif %}">
+                            {{ form.guidelines.label_tag }}
+                            {{ form.guidelines }}
+                            {{ form.guidelines.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group {% if form.game.errors %}has-error{% endif %}">
                         {{ form.game.label_tag }}
                         {{ form.game }}
@@ -260,5 +292,15 @@
 
     prizeTypeSelect.addEventListener('change', updatePrizeFields);
     updatePrizeFields(); // Initial call
+
+    // Toggle virtual/physical competition fields
+    function toggleCompType() {
+        const isVirtual = document.querySelector('[name="is_virtual"]:checked')?.value === 'true';
+        const virtualFields = document.getElementById('virtualFields');
+        if (virtualFields) {
+            virtualFields.style.display = isVirtual ? 'block' : 'none';
+        }
+    }
+    toggleCompType();
 </script>
 {% endblock %}

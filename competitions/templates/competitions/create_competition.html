@@ -209,13 +209,8 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4 mb-4" style="display:none;">
-                        <label class="form-label fw-semibold d-block">Age Restriction</label>
-                        <div class="form-check form-switch custom-switch mt-3">
-                            <input class="form-check-input" type="checkbox" role="switch" name="age_restricted" id="ageRestrictedToggle" checked>
-                            <label class="form-check-label fw-bold ms-2" for="ageRestrictedToggle" id="ageToggleText">18+ Required</label>
-                        </div>
-                    </div>
+                    {# Age restriction removed - always 18+ enforced by the system #}
+                    <input type="hidden" name="age_restricted" value="true">
 
                     <div class="col-md-4 mb-4">
                         <label class="form-label fw-semibold d-block">Platform Access</label>

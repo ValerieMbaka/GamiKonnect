@@ -25,9 +25,7 @@ class CompetitionWizard {
         this.durationDisplay = document.getElementById('durationDisplay');
         this.durationText = document.getElementById('durationText');
         
-        this.ageToggle = document.getElementById('ageRestrictedToggle');
-        this.ageToggleText = document.getElementById('ageToggleText');
-
+       // Age toggle removed - always 18+ enforced by the system
         this.typePhysical = document.getElementById('typePhysical');
         this.typeVirtual = document.getElementById('typeVirtual');
         this.shopField = document.getElementById('shopField');
@@ -82,8 +80,7 @@ loadDataIsland() {
         this.scheduledTime?.addEventListener('change', () => this.validateSchedule());
         this.endTime?.addEventListener('change', () => this.validateSchedule());
         
-        this.ageToggle?.addEventListener('change', (e) => this.handleAgeRestriction(e.target));
-
+        // Age restriction removed - always 18+ enforced by the system
         this.typePhysical?.addEventListener('change', () => this.toggleCompType());
         this.typeVirtual?.addEventListener('change', () => this.toggleCompType());
     }
@@ -343,12 +340,7 @@ loadDataIsland() {
         }
     }
 
-    handleAgeRestriction(checkboxElement) {
-        if (this.ageToggleText) {
-            this.ageToggleText.textContent = checkboxElement.checked ? '18+ Required' : 'No Restriction';
-        }
-    }
-
+    // Age restriction removed - always 18+ enforced by the system
     // --- Submission Handler ---
 
     async submit() {

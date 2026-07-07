@@ -342,11 +342,11 @@ class CompetitionRegistrationForm(forms.ModelForm):
                 'Your date of birth is not set. Please update your profile before registering.'
             )
 
-        # Shop owner restriction — cannot register for competitions at their own shop
+        # Shop owner restriction — cannot register for competitions at any shop they own
         from accounts.models import ShopOwner
         try:
             shop_owner = ShopOwner.objects.get(uid=self.gamer.uid)
-            if not self.competition.is_virtual and shop_owner.shops.filter(pk=self.competition.shop.pk).exists():
+            if shop_owner.shops.filter(pk=self.competition.shop.pk).exists():
                 raise forms.ValidationError(
                     'You cannot register for a competition held at your own shop.'
                 )

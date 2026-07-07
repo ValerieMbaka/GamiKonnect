@@ -146,8 +146,8 @@
                         <span class="detail-label">Prize Pool</span>
                         <span class="detail-val">
                             {% if competition.prize_type == 'points' %}<i class="fas fa-star"></i> {{ competition.points_1st }} XP
-                            {% elif competition.prize_type == 'money' %}<i class="fas fa-money-bill-wave"></i> KES {{ competition.prize_money_total }}
-                            {% elif competition.prize_type == 'gift' %}<i class="fas fa-gift"></i> Gift
+                            {% elif competition.prize_type == 'money_points' %}<i class="fas fa-money-bill-wave"></i> KES {{ competition.prize_money_total|default:"TBA" }} + Points
+                            {% elif competition.prize_type == 'gift_points' %}<i class="fas fa-gift"></i> Gift + Points
                             {% else %}<i class="fas fa-question-circle"></i> TBA
                             {% endif %}
                         </span>

@@ -749,11 +749,13 @@ def admin_competition_create(request):
                     # Schedule all the background jobs for status transitions
                     schedule_competition_jobs(competition)
 
+                    EmailManager.send_competition_announced_to_gamers(competition)
+
                     # Notify arena owner that their competition has been created by admin
                     EmailManager.send_competition_approved(competition)
 
                 messages.success(request, f"Competition '{competition.name}' created and scheduled successfully.")
-                return redirect('admin_panel:competition_detail', competition_id=competition.integer_id)
+                return redirect('admin_panel:competition_detail', slug=competition.slug)
             except Exception as e:
                 logger.error(f"Competition creation error: {e}")
                 messages.error(request, f"Error creating competition: {str(e)}")

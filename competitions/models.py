@@ -393,6 +393,36 @@ class Competition(models.Model):
             return False
         return True
 
+    def close_registration_if_full(self):
+        """
+        Close registration early when the roster reaches max capacity.
+        Returns True if registration was closed by this call.
+        """
+        if self.status != 'registration' or not self.is_registration_full():
+            return False
+
+        now = timezone.now()
+        if self.registration_closes_at and now >= self.registration_closes_at:
+            return False
+
+        self.registration_closes_at = now
+        self.save(update_fields=['registration_closes_at', 'updated_at'])
+
+        try:
+            CompetitionAuditLog.objects.create(
+                competition=self,
+                action='close_registration',
+                performed_by_label='system',
+                details=(
+                    f'Registration closed early: maximum participants '
+                    f'({self.max_participants}) reached.'
+                ),
+            )
+        except Exception:
+            pass
+
+        return True
+
     def get_eligible_gamers(self):
         """Returns gamers eligible to register based on competition restrictions."""
         from accounts.models import Gamer, ShopOwner

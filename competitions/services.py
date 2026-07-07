@@ -1,10 +1,14 @@
 import logging
+from decimal import Decimal
+
+from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
+
 from .models import Competition, CompetitionResult, CompetitionRegistration, CompetitionAuditLog
 from .scheduler import schedule_competition_jobs, remove_competition_jobs
 from core.email_service import EmailManager
-from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +52,7 @@ class CompetitionService:
         schedule_competition_jobs(competition)
         EmailManager.send_competition_submitted(competition)
         EmailManager.send_competition_announced_to_gamers(competition)
+        CompetitionService._notify_admins_competition_deployed(competition)
         return competition
 
     @staticmethod
@@ -298,6 +303,7 @@ class CompetitionService:
         for result in competition.results.filter(is_no_show=False):
             AchievementService.check_post_competition_unlocks(result.gamer)
 
+        CompetitionService._notify_results_published(competition)
         return competition
 
     @staticmethod
@@ -372,6 +378,87 @@ class CompetitionService:
             for result in competition.results.filter(is_no_show=False, auto_allocated=True):
                 result.gamer.points += result.points_awarded
                 result.gamer.save(update_fields=['points'])
+
+    @staticmethod
+    def _notify_admins_competition_deployed(competition):
+        """Send in-app dashboard notification to admin staff when a competition is deployed."""
+        try:
+            from django.contrib.auth.models import User
+            from accounts.models import Account
+            from notifications.models import Notification
+            from notifications.services import send_notification_to_users
+
+            staff_emails = list(
+                User.objects.filter(Q(is_staff=True) | Q(is_superuser=True))
+                .exclude(email='')
+                .values_list('email', flat=True)
+            )
+            admin_accounts = Account.objects.filter(email__in=staff_emails)
+            if not admin_accounts.exists():
+                admin_email = getattr(settings, 'ADMIN_EMAIL', None)
+                if admin_email:
+                    admin_accounts = Account.objects.filter(email=admin_email)
+
+            if not admin_accounts.exists():
+                return
+
+            submitted_by = (
+                f"{competition.created_by.first_name} {competition.created_by.last_name}".strip()
+                or str(competition.created_by)
+            )
+            notification, _ = Notification.objects.get_or_create(
+                title=f"Competition Deployed: {competition.name}",
+                category="competition",
+                importance="high",
+                is_system=True,
+                defaults={
+                    'message': (
+                        f"'{competition.name}' was deployed by {submitted_by} and is "
+                        f"open for gamer registration. Review prize details and suspend "
+                        f"if needed."
+                    ),
+                },
+            )
+            notification.set_expiry()
+            notification.save()
+            send_notification_to_users(
+                notification, admin_accounts, send_email=False, user_type='admin'
+            )
+        except Exception:
+            logger.exception('Failed to send admin competition deploy notification')
+
+    @staticmethod
+    def _notify_results_published(competition):
+        """Notify registered gamers in their dashboard when results are first submitted."""
+        try:
+            from accounts.models import Gamer
+            from notifications.models import Notification
+            from notifications.services import send_notification_to_users
+
+            gamer_ids = competition.registrations.filter(
+                is_cancelled=False
+            ).values_list('gamer_id', flat=True)
+            eligible = Gamer.objects.filter(id__in=gamer_ids)
+            if not eligible.exists():
+                return
+
+            notification, _ = Notification.objects.get_or_create(
+                title=f"Results Posted: {competition.name}",
+                category="competition",
+                importance="high",
+                is_system=True,
+                defaults={
+                    'message': (
+                        f"Results for {competition.name} have been posted. "
+                        f"View your competition page for details."
+                    ),
+                },
+            )
+            notification.set_expiry()
+            notification.save()
+            send_notification_to_users(notification, eligible, send_email=False)
+        except Exception:
+            logger.exception('Failed to send results published notifications')
 
     @staticmethod
     def _notify_results_updated(competition):

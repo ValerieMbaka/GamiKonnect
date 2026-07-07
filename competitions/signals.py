@@ -43,6 +43,9 @@ def on_competition_registration(sender, instance, created, update_fields, **kwar
         send_notification_to_users(notification, [gamer], send_email=False)
 
         logger.info("%s registered for %s", gamer.custom_username, competition.name)
+
+        if instance.payment_status == 'completed':
+            instance.competition.close_registration_if_full()
     except Exception as e:
         logger.error("Error sending competition registration notification: %s", e)
 
@@ -96,13 +99,13 @@ def on_competition_result_published(sender, instance, created, update_fields, **
 @receiver(post_save, sender='competitions.Competition')
 def on_competition_deployed(sender, instance, created, update_fields, **kwargs):
     """Notify eligible gamers when a competition is deployed for registration."""
-    if created:
-        return
-
-    if update_fields and 'status' not in update_fields:
-        return
-
     if instance.status != 'registration':
+        return
+
+    # Admin-created competitions are saved directly in registration status.
+    if created:
+        pass
+    elif update_fields and 'status' not in update_fields:
         return
 
     try:

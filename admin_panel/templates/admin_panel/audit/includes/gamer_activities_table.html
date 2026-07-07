@@ -1,0 +1,44 @@
+{% if activities %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Timestamp</th>
+                <th>Actor</th>
+                <th>Action</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activity in activities %}
+            <tr>
+                <td><small class="text-muted">{{ activity.timestamp|date:"M d, Y H:i:s" }}</small></td>
+                <td>
+                    <strong>{{ activity.gamer.custom_username|default:activity.gamer.first_name|default:"Unknown" }}</strong>
+                    <span class="badge bg-info-subtle text-info ms-1">Gamer</span>
+                </td>
+                <td><code class="text-primary">{{ activity.verb|default:activity.action_type }}</code></td>
+                <td>{{ activity.description|default:activity.summary|default:activity.verb|title }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if activities.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if activities.has_previous %}
+            <li class="page-item"><a class="page-link" href="?tab=gamer_activities&gamer_page={{ activities.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ activities.number }}</span></li>
+        {% if activities.has_next %}
+            <li class="page-item"><a class="page-link" href="?tab=gamer_activities&gamer_page={{ activities.next_page_number }}">&raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<p class="text-center py-4 text-muted">No gamer activities recorded.</p>
+{% endif %}

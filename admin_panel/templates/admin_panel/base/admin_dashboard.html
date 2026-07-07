@@ -25,15 +25,25 @@
     </div>
 
     <div class="kpi-master-grid mb-4">
-
         <div class="admin-card kpi-card">
             <div class="kpi-top">
                 <div class="kpi-icon blue"><i class="fas fa-users"></i></div>
-                <span class="kpi-label">Total Gamers</span>
+                <span class="kpi-label">Gamers</span>
             </div>
             <div class="kpi-bottom">
                 <h3 class="kpi-value">{{ total_gamers|default:"0" }}</h3>
-                <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> 0%</span>
+                <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> {{ total_gamers|default:0 }}</span>
+            </div>
+        </div>
+
+        <div class="admin-card kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-icon success"><i class="fas fa-store"></i></div>
+                <span class="kpi-label">Arenas</span>
+            </div>
+            <div class="kpi-bottom">
+                <h3 class="kpi-value">{{ total_arenas|default:"0" }}</h3>
+                <span class="kpi-trend positive"><i class="fas fa-check-circle"></i> Approved</span>
             </div>
         </div>
 
@@ -44,32 +54,20 @@
             </div>
             <div class="kpi-bottom">
                 <h3 class="kpi-value">{{ total_competitions|default:"0" }}</h3>
-                <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> 0%</span>
+                <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> {{ total_competitions|default:0 }}</span>
             </div>
         </div>
 
         <div class="admin-card kpi-card">
             <div class="kpi-top">
-                <div class="kpi-icon success"><i class="fas fa-coins"></i></div>
+                <div class="kpi-icon orange"><i class="fas fa-coins"></i></div>
                 <span class="kpi-label">Earnings</span>
             </div>
             <div class="kpi-bottom">
-                <h3 class="kpi-value">KES {{ total_earnings|default:"0" }}</h3>
-                <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> 0%</span>
+                <h3 class="kpi-value">KES {{ total_earnings|floatformat:0|default:"0" }}</h3>
+                <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> Revenue</span>
             </div>
         </div>
-
-        <div class="admin-card kpi-card">
-            <div class="kpi-top">
-                <div class="kpi-icon orange"><i class="fas fa-server"></i></div>
-                <span class="kpi-label">Server Load</span>
-            </div>
-            <div class="kpi-bottom">
-                <h3 class="kpi-value">42%</h3>
-                <span class="kpi-trend negative"><i class="fas fa-arrow-up"></i> 8%</span>
-            </div>
-        </div>
-
     </div>
 
     <div class="dashboard-analytics-grid mb-4">
@@ -79,7 +77,6 @@
                     <h2 class="m-0">Site Activity</h2>
                     <small class="text-muted">Daily Logins (Last 7 Days)</small>
                 </div>
-                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
             </div>
             <div class="card-body">
                 <canvas id="siteActivityChart"></canvas>
@@ -89,8 +86,8 @@
         <div class="admin-card chart-card">
             <div class="card-header styled-header flex-between">
                 <div>
-                    <h2 class="m-0">Revenue</h2>
-                    <small class="text-muted">By Category</small>
+                    <h2 class="m-0">Revenue by Category</h2>
+                    <small class="text-muted">Competitions & Arena Fees (Last 4 Months)</small>
                 </div>
             </div>
             <div class="card-body">
@@ -99,64 +96,10 @@
         </div>
     </div>
 
-    <div class="dashboard-split-grid mb-4">
-        <div class="admin-card">
-            <div class="card-header styled-header flex-between">
-                <h2 class="m-0"><i class="fas fa-clock me-2 text-info"></i> Background Jobs</h2>
-                <small class="text-muted">{{ scheduled_jobs|length }} active tasks</small>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover table-borderless align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Job ID</th>
-                                <th>Task Name</th>
-                                <th>Next Run</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for job in scheduled_jobs %}
-                            <tr>
-                                <td><code class="text-primary">{{ job.id|truncatechars:15 }}</code></td>
-                                <td><strong>{{ job.name }}</strong></td>
-                                <td>
-                                    {% if job.next_run %}
-                                        <span class="badge bg-success-subtle text-success">
-                                            {{ job.next_run|date:"M d, H:i" }}
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-secondary-subtle text-secondary">Paused/Idle</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="3" class="text-center py-4 text-muted">No background jobs currently scheduled.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-card">
-                <div class="card-header styled-header flex-between">
-                <h2 class="m-0"><i class="fas fa-list-ul me-2 text-primary"></i> Recent Activity</h2>
-                <a href="{% url 'activities:all_activity' %}" class="view-all-link">View All</a>
-            </div>
-            <div class="card-body">
-                <div class="vertical-timeline">
-                    {% include 'accounts/includes/activity_feed.html' with activity_feed=recent_activity_feed %}
-                </div>
-            </div>
-        </div>
-
+    <div class="dashboard-split-grid">
         <div class="admin-card">
             <div class="card-header styled-header flex-between">
                 <h2 class="m-0"><i class="fas fa-calendar-day me-2 text-warning"></i> Upcoming Events</h2>
-                <button class="btn-icon"><i class="fas fa-plus"></i></button>
             </div>
             <div class="card-body p-0">
                 <ul class="event-list">
@@ -168,7 +111,8 @@
                         </div>
                         <div class="event-details">
                             <h4>{{ event.name }}</h4>
-                            <p>{{ event.game.name }}</p>
+                            <p>{{ event.game.name }} · {{ event.shop.name }}</p>
+                            <small class="text-muted">{{ event.scheduled_time|date:"g:i A" }}</small>
                         </div>
                     </li>
                     {% empty %}
@@ -177,44 +121,10 @@
                 </ul>
             </div>
         </div>
-    </div>
-
-    <div class="dashboard-split-grid">
-        <div class="admin-card">
-            <div class="card-header styled-header flex-between">
-                <h2 class="m-0"><i class="fas fa-star text-warning me-2"></i> Top Communities</h2>
-                <a href="#" class="view-all-link">Full List</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Category</th>
-                                <th>Members</th>
-                                <th>Growth</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="4" class="text-center py-5">
-                                    <div class="coming-soon-wrapper">
-                                        <i class="fas fa-users-slash mb-3" style="font-size: 2rem; color: #CBD5E1;"></i>
-                                        <p class="m-0 text-muted">None exist, coming soon</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
         <div class="admin-card">
             <div class="card-header styled-header flex-between">
                 <h2 class="m-0"><i class="fas fa-fire text-danger me-2"></i> Top Players</h2>
-                <a href="#" class="view-all-link">Leaderboards</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -231,11 +141,17 @@
                             <tr>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div class="kpi-icon {% cycle 'blue' 'purple' 'orange' 'success' 'danger' %}" style="width: 28px; height: 28px; border-radius: 50%; font-size: 12px;"><i class="fas fa-user"></i></div>
+                                        <div class="kpi-icon {% cycle 'blue' 'purple' 'orange' 'success' 'danger' %}" style="width: 28px; height: 28px; border-radius: 50%; font-size: 12px;">
+                                            {% if player.profile_picture %}
+                                                <img src="{{ player.profile_picture.url }}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                                            {% else %}
+                                                <i class="fas fa-user"></i>
+                                            {% endif %}
+                                        </div>
                                         <strong>{{ player.custom_username|default:player.first_name }}</strong>
                                     </div>
                                 </td>
-                                <td>{{ player.points }}</td>
+                                <td><strong>{{ player.points }}</strong></td>
                                 <td><span class="kpi-trend positive" style="display: inline-flex;">Active</span></td>
                             </tr>
                             {% empty %}

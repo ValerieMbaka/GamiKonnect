@@ -1,0 +1,44 @@
+{% if logs %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Timestamp</th>
+                <th>Actor</th>
+                <th>Action</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td><small class="text-muted">{{ log.timestamp|date:"M d, Y H:i:s" }}</small></td>
+                <td>
+                    <strong>{{ log.actor.username|default:log.actor.email }}</strong>
+                    {% if log.actor.is_staff %}<span class="badge bg-danger-subtle text-danger ms-1">Staff</span>{% endif %}
+                </td>
+                <td><code class="text-primary">{{ log.action_type }}</code></td>
+                <td>{{ log.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if logs.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if logs.has_previous %}
+            <li class="page-item"><a class="page-link" href="?tab=admin_logs&admin_page={{ logs.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ logs.number }}</span></li>
+        {% if logs.has_next %}
+            <li class="page-item"><a class="page-link" href="?tab=admin_logs&admin_page={{ logs.next_page_number }}">&raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<p class="text-center py-4 text-muted">No admin logs recorded.</p>
+{% endif %}

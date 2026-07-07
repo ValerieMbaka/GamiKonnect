@@ -1,0 +1,251 @@
+{% extends 'admin_panel/base/includes/admin_base.html' %}
+{% load static %}
+
+{% block title %}Staff Management | Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+.staff-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.staff-kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: box-shadow 0.2s ease;
+}
+.staff-kpi-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.staff-kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.staff-kpi-icon.blue { background: #e8f0fe; color: #1a73e8; }
+.staff-kpi-icon.purple { background: #f3e8ff; color: #7c3aed; }
+.staff-kpi-icon.green { background: #e6f7e6; color: #16a34a; }
+.staff-kpi-icon.orange { background: #fff3e0; color: #ea580c; }
+.staff-kpi-info h4 { margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.staff-kpi-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-hub-shell">
+    <div class="admin-page-header flex-between mb-4">
+        <div class="header-content">
+            <h1 class="page-title m-0">Staff Management</h1>
+            <p class="page-subtitle text-muted mt-1">Manage admin and staff accounts with role-based access.</p>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="staff-kpi-grid">
+        <div class="staff-kpi-card">
+            <div class="staff-kpi-icon blue"><i class="fas fa-user-shield"></i></div>
+            <div class="staff-kpi-info">
+                <h4>{{ staff_count|default:"0" }}</h4>
+                <p>Total Staff</p>
+            </div>
+        </div>
+        <div class="staff-kpi-card">
+            <div class="staff-kpi-icon purple"><i class="fas fa-crown"></i></div>
+            <div class="staff-kpi-info">
+                <h4>{{ admin_count|default:"0" }}</h4>
+                <p>Superusers</p>
+            </div>
+        </div>
+        <div class="staff-kpi-card">
+            <div class="staff-kpi-icon green"><i class="fas fa-check-circle"></i></div>
+            <div class="staff-kpi-info">
+                <h4>{{ staff_active_count|default:"0" }}</h4>
+                <p>Active</p>
+            </div>
+        </div>
+        <div class="staff-kpi-card">
+            <div class="staff-kpi-icon orange"><i class="fas fa-clock"></i></div>
+            <div class="staff-kpi-info">
+                <h4>{{ staff_inactive_count|default:"0" }}</h4>
+                <p>Inactive</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-split-grid">
+        <!-- Staff List -->
+        <section class="admin-card hub-section hub-table-shell">
+            <div class="hub-table-toolbar">
+                <div>
+                    <h2>Staff Accounts</h2>
+                    <p>All staff users with admin panel access.</p>
+                </div>
+                <button class="btn-admin-primary" onclick="document.getElementById('createStaffModal').classList.add('show')">
+                    <i class="fas fa-plus me-1"></i> Add Staff
+                </button>
+            </div>
+            <div class="hub-table-wrap">
+                <table class="hub-data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Groups</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for staff in staff_users %}
+                        <tr>
+                            <td>
+                                <div class="hub-user-cell">
+                                    <img src="{% static 'core/images/gamepad.jpeg' %}" class="hub-avatar" alt="Avatar">
+                                    <div>
+                                        <p class="hub-cell-title">{{ staff.get_full_name|default:staff.username }}</p>
+                                        <p class="hub-cell-subtitle">@{{ staff.username }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ staff.email }}</td>
+                            <td>
+                                {% if staff.is_superuser %}
+                                    <span class="status-badge danger">Superuser</span>
+                                {% else %}
+                                    <span class="status-badge warning">Staff</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for group in staff.groups.all %}
+                                    <span class="badge bg-secondary-subtle text-secondary me-1">{{ group.name }}</span>
+                                {% empty %}
+                                    <span class="text-muted">—</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if staff.is_active %}
+                                    <span class="status-badge success">Active</span>
+                                {% else %}
+                                    <span class="status-badge danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ staff.date_joined|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'admin_panel:staff_edit' staff.id %}" class="btn-link" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn-link text-danger" onclick="toggleStaffActive({{ staff.id }}, '{{ staff.username|escapejs }}')" title="Toggle Active">
+                                        <i class="fas fa-power-off"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center py-4 text-muted">No staff accounts found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Create Staff Modal -->
+<div id="createStaffModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 560px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus me-2"></i> Create Staff Account</h3>
+            <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('show')">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'admin_panel:staff_list' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Username *</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">First Name</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Last Name</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Password *</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="form-check mt-2">
+                            {{ form.is_superuser }}
+                            <label class="form-check-label" for="{{ form.is_superuser.id_for_label }}">Superuser Access</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Groups</label>
+                        {{ form.groups }}
+                        {% if form.groups.errors %}<div class="text-danger small mt-1">{{ form.groups.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').classList.remove('show')">Cancel</button>
+                <button type="submit" class="btn-admin-primary"><i class="fas fa-save me-1"></i> Create Staff</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleStaffActive(userId, username) {
+    if (!confirm(`Toggle active status for "${username}"?`)) return;
+    fetch(`{% url 'admin_panel:staff_toggle' 0 %}`.replace('0', userId), {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to toggle status.');
+        }
+    })
+    .catch(() => alert('Network error.'));
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
+});
+</script>
+{% endblock %}

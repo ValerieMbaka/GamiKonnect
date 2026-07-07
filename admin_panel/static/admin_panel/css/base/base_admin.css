@@ -567,6 +567,129 @@
     }
 }
 
+/* ===== Modal Overlay Styles (Staff Create, etc.) ===== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.modal-overlay.show {
+    display: flex;
+}
+.modal-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0;
+}
+.modal-close:hover {
+    color: var(--text-primary);
+}
+.modal-body {
+    padding: 1.5rem;
+}
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ===== Admin Button Styles ===== */
+.btn-admin-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent-primary);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    text-decoration: none;
+}
+.btn-admin-primary:hover {
+    background: var(--accent-secondary);
+    color: #fff;
+    text-decoration: none;
+}
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    text-decoration: none;
+}
+.btn-secondary:hover {
+    background: var(--bg-secondary);
+    text-decoration: none;
+}
+.btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+.btn-link:hover {
+    text-decoration: underline;
+    color: var(--accent-secondary);
+}
+.btn-link.text-danger { color: #dc3545; }
+.btn-link.text-danger:hover { color: #b02a37; }
+
 @media (max-width: 576px) {
     .admin-top-nav {
         padding: 0 12px;

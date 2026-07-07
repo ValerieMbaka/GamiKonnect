@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from progression.models import Achievement, Level
 from core.models import (
@@ -266,4 +266,47 @@ class NotificationScheduleForm(AdminStyledModelForm):
         widgets = {
             'scheduled_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'sent_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+
+class StaffUserCreateForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-select form-select-multiple'}),
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'groups', 'is_superuser']
+        widgets = {
+            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
+        }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+            self.save_m2m()
+        return user
+
+
+class StaffUserEditForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-select form-select-multiple'}),
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'groups', 'is_active', 'is_superuser']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_superuser': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

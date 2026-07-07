@@ -34,8 +34,18 @@ import pusher
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = 'RENDER' not in os.environ
 
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Highly recommended extra production security settings:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
 # 1. Grab the raw string from Render's environment (or default to empty string)
 raw_hosts = os.environ.get('ALLOWED_HOSTS', '')
 

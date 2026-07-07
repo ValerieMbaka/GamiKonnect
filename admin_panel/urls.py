@@ -9,21 +9,29 @@ urlpatterns = [
     path('logout/', views.admin_logout, name='logout'),
     path('profile/', views.admin_profile, name='profile'),
     path('change-password/', views.admin_change_password, name='change_password'),
-    
+
     # Dashboard & Settings
     path('', views.admin_dashboard, name='dashboard'),
     path('settings/', views.admin_site_settings, name='site_settings'),
     path('content/', views.admin_content_library, name='content_library'),
     path('notifications/', views.admin_notification_hub, name='notification_hub'),
     path('notifications/send/', views.admin_send_notification, name='notification_send'),
-    
+
+    # System Audit (replaces Admin Logs + Gamer Activities)
+    path('audit/', views.admin_system_audit, name='system_audit'),
+
+    # Staff Management
+    path('staff/', views.admin_staff_list, name='staff_list'),
+    path('staff/<int:user_id>/edit/', views.admin_staff_edit, name='staff_edit'),
+    path('staff/<int:user_id>/toggle/', views.admin_staff_toggle_active, name='staff_toggle'),
+
     # Game Management & API Routes
     path('games/', views.admin_game_list, name='games'),
     path('games/api/save/', views.admin_game_save, name='game_save'),
     path('games/api/<int:game_id>/', views.admin_game_detail, name='game_detail'),
     path('games/api/<int:game_id>/delete/', views.admin_game_delete, name='game_delete'),
     path('games/api/<int:game_id>/toggle/', views.admin_game_toggle_status, name='game_toggle_status'),
-    
+
     # Competition Management
     path('competitions/create/', views.admin_competition_create, name='competition_create'),
     path('competitions/', views.admin_competition_list, name='competition_list'),
@@ -36,7 +44,7 @@ urlpatterns = [
     path('competitions/<slug:slug>/edit-prizes/', views.admin_competition_edit_prizes, name='competition_edit_prizes'),
     path('competitions/<slug:slug>/edit-results/', views.admin_competition_edit_results, name='competition_edit_results'),
 
-    # User Management
+    # User Management (Gamers + Shop Owners only)
     path('users/', views.admin_user_list, name='user_list'),
     path('users/<int:user_id>/', views.admin_user_detail, name='user_detail'),
     path('users/<int:user_id>/toggle-status/', views.admin_user_toggle_status, name='user_toggle_status'),
@@ -59,8 +67,4 @@ urlpatterns = [
     path('progression/stats/', views.admin_progression_stats, name='progression_stats'),
     path('progression/seed/', views.admin_progression_seed, name='progression_seed'),
     path('progression/stats/<uuid:stats_id>/action/', views.admin_progression_stats_action, name='progression_stats_action'),
-
-    # Activities
-    path('activities/', views.admin_activity_logs, name='activity_logs'),
-    path('activities/gamer/', views.admin_gamer_activities, name='gamer_activities'),
 ]

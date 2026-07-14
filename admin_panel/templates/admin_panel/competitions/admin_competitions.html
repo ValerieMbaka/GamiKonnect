@@ -21,6 +21,9 @@
         </div>
     </div>
 
+    {# ------------------------------------------------------------------ #}
+    {# KPI Summary Cards                                                   #}
+    {# ------------------------------------------------------------------ #}
     <div class="hub-summary-grid mb-4">
         <div class="hub-summary-card">
             <div class="hub-summary-icon blue"><i class="fas fa-trophy"></i></div>
@@ -39,19 +42,19 @@
             </div>
         </div>
         <div class="hub-summary-card">
-            <div class="hub-summary-icon success"><i class="fas fa-broadcast-tower"></i></div>
+            <div class="hub-summary-icon success"><i class="fas fa-sack-dollar"></i></div>
             <div class="hub-summary-copy">
-                <span class="hub-summary-label">Live</span>
-                <strong class="hub-summary-value">{{ live_competitions }}</strong>
-                <span class="hub-summary-meta">Currently active events</span>
+                <span class="hub-summary-label">Total Earnings</span>
+                <strong class="hub-summary-value">KES {{ total_earnings|default:0 }}</strong>
+                <span class="hub-summary-meta">From entry fees & platform cuts</span>
             </div>
         </div>
         <div class="hub-summary-card">
-            <div class="hub-summary-icon neutral"><i class="fas fa-flag-checkered"></i></div>
+            <div class="hub-summary-icon neutral"><i class="fas fa-user-check"></i></div>
             <div class="hub-summary-copy">
-                <span class="hub-summary-label">Completed</span>
-                <strong class="hub-summary-value">{{ completed_competitions }}</strong>
-                <span class="hub-summary-meta">Closed and finalized</span>
+                <span class="hub-summary-label">Total Registrations</span>
+                <strong class="hub-summary-value">{{ total_registrations|default:0 }}</strong>
+                <span class="hub-summary-meta">Gamers signed up across all events</span>
             </div>
         </div>
     </div>
@@ -212,27 +215,28 @@
 
     </section>
 </div>
+
+<!-- Reject modal for admin quick actions -->
+<div id="adminRejectModal" class="modal" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Competition</h5>
+                <button type="button" class="close-modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Please provide a short reason for rejecting this competition (arena owner will be notified):</p>
+                <textarea id="rejectReason" rows="4" style="width:100%;" placeholder="Reason (required)"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button id="rejectCancel" class="btn btn-secondary">Cancel</button>
+                <button id="rejectSubmit" class="btn btn-danger">Reject Competition</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
     <script src="{% static 'admin_panel/js/competitions/admin_competitions.js' %}"></script>
-    <!-- Reject modal for admin quick actions -->
-    <div id="adminRejectModal" class="modal" style="display:none;">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Reject Competition</h5>
-                    <button type="button" class="close-modal" aria-label="Close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Please provide a short reason for rejecting this competition (arena owner will be notified):</p>
-                    <textarea id="rejectReason" rows="4" style="width:100%;" placeholder="Reason (required)"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button id="rejectCancel" class="btn btn-secondary">Cancel</button>
-                    <button id="rejectSubmit" class="btn btn-danger">Reject Competition</button>
-                </div>
-            </div>
-        </div>
-    </div>
 {% endblock %}

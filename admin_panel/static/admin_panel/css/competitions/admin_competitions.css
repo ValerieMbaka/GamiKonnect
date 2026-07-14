@@ -5,6 +5,62 @@
    ========================================================================== */
 
 /* ------------------------------------------------------------------
+   KPI Summary Cards (Total / Pending / Earnings / Registrations)
+   Fills in markup used by admin_competitions.html: .hub-summary-label,
+   .hub-summary-value, .hub-summary-meta, plus the "blue" and "neutral"
+   icon color variants referenced on this page.
+   ------------------------------------------------------------------ */
+.hub-summary-icon.blue {
+    background: var(--gradient-primary);
+}
+
+.hub-summary-icon.neutral {
+    background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+}
+
+.hub-summary-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.hub-summary-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.hub-summary-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.15;
+    font-family: var(--font-sans);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hub-summary-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 1200px) {
+    .hub-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+    .hub-summary-grid { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------
    Status Badges — full set for all competition statuses
    ------------------------------------------------------------------ */
 .status-badge {

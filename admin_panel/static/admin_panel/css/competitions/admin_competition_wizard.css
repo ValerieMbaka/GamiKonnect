@@ -1,0 +1,150 @@
+/* ==========================================================================
+   admin_competition_wizard.css
+   Adapts the shop-owner "create_competition" wizard styling to the admin
+   panel theme/tokens, and styles the Django-rendered form-group fields +
+   review summary used on the admin Create Competition page.
+   ========================================================================== */
+
+.admin-wizard-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.admin-wizard-wrapper .create-comp-card {
+    padding: 32px 36px;
+}
+
+@media (max-width: 768px) {
+    .admin-wizard-wrapper .create-comp-card { padding: 24px 20px; }
+}
+
+/* ------------------------------------------------------------------
+   Django-rendered field wrappers (form-group / label / input / select)
+   Reuse the premium-input look from create_competition.css.
+   ------------------------------------------------------------------ */
+.admin-wizard-wrapper .form-group { margin-bottom: 0; }
+
+.admin-wizard-wrapper .form-group label {
+    display: block;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-semibold);
+    margin-bottom: 8px;
+}
+
+.admin-wizard-wrapper .form-group input[type="text"],
+.admin-wizard-wrapper .form-group input[type="number"],
+.admin-wizard-wrapper .form-group input[type="url"],
+.admin-wizard-wrapper .form-group input[type="datetime-local"],
+.admin-wizard-wrapper .form-group select,
+.admin-wizard-wrapper .form-group textarea {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    color: var(--text-primary);
+    padding: 12px 14px;
+    font-size: var(--text-sm);
+    transition: var(--transition-fast);
+}
+
+.admin-wizard-wrapper .form-group input:focus,
+.admin-wizard-wrapper .form-group select:focus,
+.admin-wizard-wrapper .form-group textarea:focus {
+    outline: none;
+    background: var(--bg-card);
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 4px rgba(53, 168, 240, 0.15);
+}
+
+.admin-wizard-wrapper .form-group.has-error input,
+.admin-wizard-wrapper .form-group.has-error select,
+.admin-wizard-wrapper .form-group.has-error textarea {
+    border-color: var(--danger);
+    background: rgba(240, 53, 75, 0.05);
+}
+
+.admin-wizard-wrapper .field-help {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.admin-wizard-wrapper .form-group ul.errorlist {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    font-size: 12px;
+    color: var(--danger);
+    font-weight: var(--font-medium);
+}
+
+.admin-wizard-wrapper .nonfield-errors {
+    background: rgba(240, 53, 75, 0.08);
+    border: 1px solid rgba(240, 53, 75, 0.25);
+    color: var(--danger);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+}
+
+/* ------------------------------------------------------------------
+   Prize type panels
+   ------------------------------------------------------------------ */
+.prize-panel {
+    animation: slideUpFade 0.3s ease forwards;
+}
+
+/* ------------------------------------------------------------------
+   Review Summary (Step 4)
+   ------------------------------------------------------------------ */
+#summaryContainer {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 14px !important;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 24px;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.summary-item--full {
+    grid-column: 1 / -1;
+}
+
+.summary-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.summary-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+@media (max-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------
+   Cancel link styled as an outline wizard button (it's an <a>, not
+   a <button>, in the admin page's actions row).
+   ------------------------------------------------------------------ */
+#btnCancel {
+    text-decoration: none;
+}

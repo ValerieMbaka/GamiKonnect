@@ -237,31 +237,130 @@ def admin_site_settings(request):
     project_detail = ProjectDetail.objects.filter(is_active=True).first() or ProjectDetail()
     site_style = SiteStyle.get_active() or SiteStyle()
 
+    # Content library sections (merged into site settings)
+    content_sections = [
+        {'key': 'navigation_links', 'title': 'Navigation Links', 'icon': 'fas fa-compass',
+         'model': NavigationLink, 'form_class': NavigationLinkForm,
+         'queryset': lambda: NavigationLink.objects.all().order_by('order', 'id'),
+         'summary': lambda item: item.link_text, 'detail': lambda item: item.link or 'No destination set'},
+        {'key': 'footer_sections', 'title': 'Footer Sections', 'icon': 'fas fa-layer-group',
+         'model': FooterSection, 'form_class': FooterSectionForm,
+         'queryset': lambda: FooterSection.objects.all().order_by('order', 'id'),
+         'summary': lambda item: item.title, 'detail': lambda item: f'Order #{item.order}'},
+        {'key': 'footer_links', 'title': 'Footer Links', 'icon': 'fas fa-link',
+         'model': FooterLink, 'form_class': FooterLinkForm,
+         'queryset': lambda: FooterLink.objects.select_related('section').all().order_by('order', 'id'),
+         'summary': lambda item: item.link_text, 'detail': lambda item: item.section.title},
+        {'key': 'sections', 'title': 'Content Sections', 'icon': 'fas fa-square-poll-horizontal',
+         'model': Section, 'form_class': SectionForm,
+         'queryset': lambda: Section.objects.all().order_by('order', 'name'),
+         'summary': lambda item: item.name, 'detail': lambda item: item.slug},
+        {'key': 'section_headings', 'title': 'Section Headings', 'icon': 'fas fa-heading',
+         'model': SectionHeading, 'form_class': SectionHeadingForm,
+         'queryset': lambda: SectionHeading.objects.select_related('section').all().order_by('section__order'),
+         'summary': lambda item: item.heading, 'detail': lambda item: item.section.name},
+        {'key': 'sliders', 'title': 'Hero Sliders', 'icon': 'fas fa-images',
+         'model': Slider, 'form_class': SliderForm,
+         'queryset': lambda: Slider.objects.all().order_by('order', 'id'),
+         'summary': lambda item: item.title, 'detail': lambda item: item.cta_text or 'No CTA'},
+        {'key': 'about', 'title': 'About Section', 'icon': 'fas fa-circle-info',
+         'model': About, 'form_class': AboutForm,
+         'queryset': lambda: About.objects.all().order_by('-id'),
+         'summary': lambda item: item.heading, 'detail': lambda item: item.badge_text},
+        {'key': 'feature_cards', 'title': 'Feature Cards', 'icon': 'fas fa-star',
+         'model': FeatureCard, 'form_class': FeatureCardForm,
+         'queryset': lambda: FeatureCard.objects.all().order_by('order', 'id'),
+         'summary': lambda item: item.feature_name, 'detail': lambda item: f'Order #{item.order}'},
+        {'key': 'events', 'title': 'Events', 'icon': 'fas fa-calendar-days',
+         'model': Event, 'form_class': EventForm,
+         'queryset': lambda: Event.objects.all().order_by('-id'),
+         'summary': lambda item: item.title, 'detail': lambda item: 'Active' if item.is_active else 'Inactive'},
+        {'key': 'footer', 'title': 'Footer Copy', 'icon': 'fas fa-shield-heart',
+         'model': Footer, 'form_class': FooterForm,
+         'queryset': lambda: Footer.objects.all().order_by('-id'),
+         'summary': lambda item: item.copy_right_text, 'detail': lambda item: item.ownership_text},
+    ]
+
     if request.method == 'POST':
-        project_form = ProjectDetailForm(request.POST, request.FILES, instance=project_detail)
-        style_form = SiteStyleForm(request.POST, instance=site_style)
-
-        if project_form.is_valid() and style_form.is_valid():
-            p_detail = project_form.save(commit=False)
-            p_detail.is_active = True
-            p_detail.save()
-
-            s_style = style_form.save(commit=False)
-            s_style.pk = None
-            s_style.save()
-
-            messages.success(request, 'Global site settings updated successfully.')
-            return redirect('admin_panel:site_settings')
+        # Check if this is a content form submission
+        content_form_key = request.POST.get('content_form_key')
+        if content_form_key:
+            selected_config = next((item for item in content_sections if item['key'] == content_form_key), None)
+            if selected_config:
+                object_id = request.POST.get('object_id')
+                instance = None
+                if object_id:
+                    instance = selected_config['model'].objects.filter(pk=object_id).first()
+                form = selected_config['form_class'](request.POST, request.FILES, instance=instance, prefix=selected_config['key'])
+                if form.is_valid():
+                    saved_object = form.save()
+                    messages.success(request, f"{selected_config['title']} saved successfully.")
+                    return redirect(f"{reverse('admin_panel:site_settings')}?section={selected_config['key']}&object_id={saved_object.pk}")
+                else:
+                    messages.error(request, f"Please correct the errors in {selected_config['title']}.")
+            # Ensure forms are defined for the template
+            project_form = ProjectDetailForm(instance=project_detail)
+            style_form = SiteStyleForm(instance=site_style)
         else:
-            messages.error(request, 'Please correct the errors below.')
+            # Site settings form submission
+            project_form = ProjectDetailForm(request.POST, request.FILES, instance=project_detail)
+            style_form = SiteStyleForm(request.POST, instance=site_style)
+            if project_form.is_valid() and style_form.is_valid():
+                p_detail = project_form.save(commit=False)
+                p_detail.is_active = True
+                p_detail.save()
+                s_style = style_form.save(commit=False)
+                s_style.pk = None
+                s_style.save()
+                messages.success(request, 'Global site settings updated successfully.')
+                return redirect('admin_panel:site_settings')
+            else:
+                messages.error(request, 'Please correct the errors below.')
+                project_form = ProjectDetailForm(instance=project_detail)
+                style_form = SiteStyleForm(instance=site_style)
     else:
         project_form = ProjectDetailForm(instance=project_detail)
         style_form = SiteStyleForm(instance=site_style)
 
+    # Build rendered content sections
+    active_section = request.GET.get('section')
+    active_object_id = request.GET.get('object_id')
+    rendered_sections = []
+    for section_config in content_sections:
+        instance = None
+        if active_section == section_config['key'] and active_object_id:
+            instance = section_config['model'].objects.filter(pk=active_object_id).first()
+        form = section_config['form_class'](instance=instance, prefix=section_config['key'])
+        queryset = section_config['queryset']()
+        rendered_sections.append({
+            'key': section_config['key'],
+            'title': section_config['title'],
+            'icon': section_config['icon'],
+            'form': form,
+            'count': queryset.count(),
+            'items': [
+                {'id': item.pk, 'summary': section_config['summary'](item),
+                 'detail': section_config['detail'](item), 'is_active': getattr(item, 'is_active', True)}
+                for item in queryset[:8]
+            ],
+        })
+
     context = {
         'project_form': project_form,
         'style_form': style_form,
-        'current_logo': project_detail.logo if project_detail.logo else None
+        'current_logo': project_detail.logo if project_detail.logo else None,
+        'content_sections': rendered_sections,
+        'active_section': active_section,
+        'active_object_id': active_object_id,
+        'content_counts': {
+            'navigation_links': NavigationLink.objects.count(),
+            'footer_sections': FooterSection.objects.count(),
+            'footer_links': FooterLink.objects.count(),
+            'sections': Section.objects.count(),
+            'sliders': Slider.objects.count(),
+            'feature_cards': FeatureCard.objects.count(),
+            'events': Event.objects.count(),
+        },
     }
     return render(request, 'admin_panel/settings/site_settings.html', context)
 
@@ -420,16 +519,16 @@ def admin_user_list(request):
         gamers = gamers.filter(Q(last_login__isnull=True) | Q(last_login__lt=cutoff))
 
     if pwd_filter == 'yes':
-        gamers = gamers.filter(is_pwa=True)
+        gamers = gamers.filter(is_gwds=True)
     elif pwd_filter == 'no':
-        gamers = gamers.filter(is_pwa=False)
+        gamers = gamers.filter(is_gwds=False)
 
     # KPI stats
     total_gamers = Gamer.objects.count()
     total_shop_owners = ShopOwner.objects.count()
     male_count = Gamer.objects.filter(gender='male').count() + ShopOwner.objects.filter(gender='male').count()
     female_count = Gamer.objects.filter(gender='female').count() + ShopOwner.objects.filter(gender='female').count()
-    pwd_count = Gamer.objects.filter(is_pwa=True).count()
+    pwd_count = Gamer.objects.filter(is_gwds=True).count()
     active_count = Gamer.objects.filter(last_login__gte=timezone.now() - timedelta(days=30)).count()
     inactive_count = total_gamers - active_count
 
@@ -445,7 +544,7 @@ def admin_user_list(request):
             'username': g.custom_username or f"{g.first_name} {g.last_name}".strip(),
             'role': 'Gamer',
             'gender': g.gender,
-            'is_pwa': g.is_pwa,
+            'is_gwds': g.is_gwds,
             'profile_completed': g.profile_completed,
             'last_login': g.last_login,
             'points': g.points,
@@ -462,7 +561,7 @@ def admin_user_list(request):
             'username': f"{s.first_name} {s.last_name}".strip(),
             'role': 'Shop Owner',
             'gender': s.gender,
-            'is_pwa': False,
+            'is_gwds': False,
             'profile_completed': True,
             'last_login': s.last_login,
             'points': 0,
@@ -708,6 +807,75 @@ def admin_notification_hub(request):
         'pending_competitions_count': Competition.objects.filter(status='pending').count(),
     }
     return render(request, 'admin_panel/notifications/admin_notification_hub.html', context)
+
+
+@admin_required
+def admin_notification_compose(request):
+    """Display the compose notification page."""
+    from notifications.forms import BulkNotificationForm as ComposeForm
+    from notifications.models import NotificationGroup
+
+    form = ComposeForm()
+    context = {
+        'form': form,
+        'all_notification_groups': NotificationGroup.objects.filter(is_active=True).order_by('name'),
+        'pending_competitions_count': Competition.objects.filter(status='pending').count(),
+    }
+    return render(request, 'admin_panel/notifications/admin_notification_compose.html', context)
+
+
+@admin_required
+def admin_notification_compose_send(request):
+    """Handle the compose notification form submission."""
+    from notifications.forms import BulkNotificationForm as ComposeForm
+    from notifications.services import send_notification_to_users, get_group_users
+    from notifications.models import Notification, NotificationGroup
+    from accounts.models import Gamer
+
+    if request.method != 'POST':
+        messages.error(request, 'Invalid request method.')
+        return redirect(reverse('admin_panel:notification_compose'))
+
+    form = ComposeForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, 'Please correct the errors below.')
+        return redirect(reverse('admin_panel:notification_compose'))
+
+    # Create the notification
+    notification = Notification.objects.create(
+        title=form.cleaned_data['title'],
+        message=form.cleaned_data['message'],
+        category=form.cleaned_data['category'],
+        importance=form.cleaned_data['importance'],
+    )
+    notification.set_expiry()
+    notification.save(update_fields=['expires_at'])
+
+    # Determine target audience
+    target_type = request.POST.get('target_type', 'all')
+    target_group_id = request.POST.get('target_group')
+    send_email = form.cleaned_data.get('send_email', False)
+
+    if target_type == 'all':
+        users = Gamer.objects.all()
+    elif target_type == 'group' and target_group_id:
+        group = NotificationGroup.objects.filter(pk=target_group_id, is_active=True).first()
+        if not group:
+            messages.error(request, 'Selected group not found or inactive.')
+            return redirect(reverse('admin_panel:notification_compose'))
+        users = get_group_users(group)
+    else:
+        messages.error(request, 'No audience selected.')
+        return redirect(reverse('admin_panel:notification_compose'))
+
+    # Send the notification
+    stats = send_notification_to_users(notification, users, send_email=send_email, user_type='gamer')
+    messages.success(
+        request,
+        f"✅ Notification sent successfully! "
+        f"{stats['created']} users notified, {stats['failed']} failed."
+    )
+    return redirect(reverse('admin_panel:notification_hub'))
 
 
 @admin_required

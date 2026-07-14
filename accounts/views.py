@@ -192,7 +192,7 @@ def provision_account_from_pending(pending):
                     if not gamer:
                         gamer = Gamer(
                             account_ptr_id=existing_account.id,
-                            is_pwd=False,
+                            is_gwds=False,
                             custom_username=f"user{pending.uid[:8]}",
                             bio="Bio",
                             about="About",
@@ -206,7 +206,7 @@ def provision_account_from_pending(pending):
                         first_name=pending.first_name,
                         last_name=pending.last_name,
                         phone=pending.phone,
-                        is_pwd=False,
+                        is_gwds=False,
                         custom_username=f"user{pending.uid[:8]}",
                         bio="Bio",
                         about="About",
@@ -892,12 +892,23 @@ def gamer_dashboard(request):
             }
 
         # ---------------------------------------------------------------
-        # Notifications
+        # Notifications - sorted by importance (critical/high first), then newest
         # ---------------------------------------------------------------
         unread_count = NotificationRecipient.objects.filter(gamer=gamer, is_read=False).count()
+        from django.db.models import Case, When, Value, IntegerField
+        importance_order = Case(
+            When(notification__importance='critical', then=Value(0)),
+            When(notification__importance='high', then=Value(1)),
+            When(notification__importance='medium', then=Value(2)),
+            When(notification__importance='low', then=Value(3)),
+            default=Value(4),
+            output_field=IntegerField(),
+        )
         recent_notifications = NotificationRecipient.objects.filter(
             gamer=gamer
-        ).select_related('notification').order_by('-created_at')[:5]
+        ).select_related('notification').annotate(
+            importance_rank=importance_order
+        ).order_by('importance_rank', '-created_at')[:3]
 
         context = {
             **base_site_context(),
@@ -976,7 +987,7 @@ def gamer_profile_completion(request):
                 elif gender not in dict(Account.GENDER_CHOICES):
                     errors['gender'] = 'Invalid gender selection'
                 
-                is_pwd = get_val('is_pwd') == True or get_val('is_pwd') == 'true' or get_val('is_pwd') == 'on'
+                is_gwds = get_val('is_gwds') == True or get_val('is_gwds') == 'true' or get_val('is_gwds') == 'on'
 
                 date_of_birth_raw = get_val('date_of_birth', '')
                 date_of_birth = parse_date(date_of_birth_raw) if date_of_birth_raw else None
@@ -1001,7 +1012,7 @@ def gamer_profile_completion(request):
                 gamer.about = get_val('about', '').strip()
                 gamer.location = location
                 gamer.gender = gender
-                gamer.is_pwd = is_pwd
+                gamer.is_gwds = is_gwds
                 gamer.date_of_birth = date_of_birth
                 gamer.platforms = platforms_list
                 
@@ -1402,15 +1413,26 @@ def shop_owner_dashboard(request):
             
             pending_total = pending_shops.count()
             
-            # Add notification context
+            # Add notification context - sorted by importance (critical/high first), then newest
             shop_owner_unread_count = NotificationRecipient.objects.filter(
                 shop_owner=shop_owner,
                 is_read=False
             ).count()
             
+            from django.db.models import Case, When, Value, IntegerField
+            importance_order = Case(
+                When(notification__importance='critical', then=Value(0)),
+                When(notification__importance='high', then=Value(1)),
+                When(notification__importance='medium', then=Value(2)),
+                When(notification__importance='low', then=Value(3)),
+                default=Value(4),
+                output_field=IntegerField(),
+            )
             shop_owner_recent_notifications = NotificationRecipient.objects.filter(
                 shop_owner=shop_owner
-            ).select_related('notification').order_by('-created_at')[:5]
+            ).select_related('notification').annotate(
+                importance_rank=importance_order
+            ).order_by('importance_rank', '-created_at')[:3]
             
             context = {
                 **base_site_context(),

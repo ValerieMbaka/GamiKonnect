@@ -78,6 +78,18 @@ def start_scheduler():
         misfire_grace_time=60 * 30,  # 30 minute grace period
     )
 
+    # Activity cleanup job
+    # Runs daily at 3 AM to delete stale activities and activity logs
+    activity_cleanup_hour = getattr(settings, 'ACTIVITY_CLEANUP_HOUR', 3)
+    sched.add_job(
+        cleanup_stale_activities,
+        trigger=IntervalTrigger(hours=24, start_date=timezone.now().replace(hour=activity_cleanup_hour, minute=0, second=0)),
+        id='activity_cleanup',
+        name='Activity Cleanup — remove stale activities and logs',
+        replace_existing=True,
+        misfire_grace_time=60 * 30,  # 30 minute grace period
+    )
+
     try:
         sched.start()
         logger.info('Background scheduler started successfully.')
@@ -468,3 +480,46 @@ def cleanup_expired_notifications():
     except Exception as e:
         logger.error(f"Notification cleanup failed: {e}")
         return {'deleted_notifications': 0, 'deleted_recipients': 0}
+
+
+# Activity Cleanup
+def cleanup_stale_activities():
+    """
+    Deletes stale activities and activity logs based on their type and age.
+    Called daily by the scheduler.
+    
+    Cleanup rules:
+    - Login/Logout activities: Deleted 3 days after creation
+    - Competition registration activities: Deleted 1 week after creation
+    - Competition creation ActivityLogs: Deleted 1 week after creation
+    - All other activities: Deleted 1 week after creation
+    
+    Returns:
+        Dict with cleanup statistics.
+    """
+    from activities.services import ActivityCleanupService
+    
+    try:
+        stats = ActivityCleanupService.run_full_cleanup(dry_run=False)
+        logger.info(
+            f"Activity cleanup completed. "
+            f"Deleted {stats['total_activities_deleted']} activity(s) and "
+            f"{stats['total_logs_deleted']} activity log(s). "
+            f"(login/logout: {stats['login_logout_deleted']}, "
+            f"comp registrations: {stats['competition_registration_deleted']}, "
+            f"other activities: {stats['other_activities_deleted']}, "
+            f"comp creation logs: {stats['competition_creation_logs_deleted']}, "
+            f"other logs: {stats['other_logs_deleted']})"
+        )
+        return stats
+    except Exception as e:
+        logger.error(f"Activity cleanup failed: {e}")
+        return {
+            'login_logout_deleted': 0,
+            'competition_registration_deleted': 0,
+            'other_activities_deleted': 0,
+            'total_activities_deleted': 0,
+            'competition_creation_logs_deleted': 0,
+            'other_logs_deleted': 0,
+            'total_logs_deleted': 0,
+        }

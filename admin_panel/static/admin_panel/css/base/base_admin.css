@@ -277,6 +277,7 @@
     flex-direction: column;
     transition: width 0.3s var(--smooth), transform 0.3s var(--smooth);
     color: #FFFFFF;
+    overflow: visible;
 }
 
 .admin-sidebar.collapsed {
@@ -536,6 +537,96 @@
     transform: translate(-50%, -50%) scale(1) rotate(0);
 }
 
+
+/* ===== Hover Menu (Right-side flyout for Progression submenu) ===== */
+.has-hover-menu {
+    position: static;
+}
+
+.has-hover-menu .hover-menu-toggle {
+    cursor: pointer;
+}
+
+.has-hover-menu .hover-menu-arrow {
+    margin-left: auto;
+    margin-right: 0;
+    font-size: 11px;
+    transition: transform 0.2s ease;
+    width: auto;
+}
+
+.has-hover-menu:hover .hover-menu-arrow {
+    transform: rotate(90deg);
+}
+
+.nav-hover-menu {
+    position: fixed;
+    left: var(--admin-sidebar-width);
+    min-width: 200px;
+    margin-top: -2px;
+    background: linear-gradient(180deg, var(--primary-dark) 0%, #104E8B 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 8px 0;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: var(--z-dropdown);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.has-hover-menu:hover .nav-hover-menu {
+    opacity: 1;
+    visibility: visible;
+}
+
+.nav-hover-menu .nav-link {
+    margin: 2px 8px;
+    padding: 8px 12px;
+    border-left: 3px solid transparent;
+    white-space: nowrap;
+}
+
+.nav-hover-menu .nav-link i {
+    width: 20px;
+    margin-right: 10px;
+    font-size: var(--text-sm);
+}
+
+.admin-sidebar.collapsed .has-hover-menu .nav-hover-menu {
+    left: var(--admin-sidebar-collapsed);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .nav-hover-menu {
+        position: static;
+        left: auto;
+        top: auto;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        padding-left: 20px;
+        display: none;
+    }
+    
+    .has-hover-menu:hover .nav-hover-menu {
+        display: block;
+    }
+    
+    .nav-hover-menu .nav-link {
+        margin: 2px 0;
+    }
+    
+    .has-hover-menu .hover-menu-arrow {
+        display: none;
+    }
+}
 
 /* Responsive Design*/
 @media (max-width: 992px) {

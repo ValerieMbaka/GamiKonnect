@@ -15,6 +15,8 @@ urlpatterns = [
     path('settings/', views.admin_site_settings, name='site_settings'),
     path('content/', views.admin_content_library, name='content_library'),
     path('notifications/', views.admin_notification_hub, name='notification_hub'),
+    path('notifications/compose/', views.admin_notification_compose, name='notification_compose'),
+    path('notifications/compose/send/', views.admin_notification_compose_send, name='notification_compose_send'),
     path('notifications/send/', views.admin_send_notification, name='notification_send'),
 
     # System Audit (replaces Admin Logs + Gamer Activities)

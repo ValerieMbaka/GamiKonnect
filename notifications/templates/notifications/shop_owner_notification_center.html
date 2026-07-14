@@ -1,7 +1,7 @@
-{% extends 'accounts/gamers/includes/gamer_dashboard_base.html' %}
+{% extends 'accounts/shop_owners/includes/shop_owner_dashboard_base.html' %}
 {% load static %}
 
-{% block title %}Notification Center - {{ project_detail.title }}{% endblock %}
+{% block title %}Notifications - {{ project_detail.title }}{% endblock %}
 
 {% block content %}
 {% csrf_token %}
@@ -14,7 +14,7 @@
         </h1>
         <div class="notif-header-actions">
             {% if total_unread > 0 %}
-                <button class="btn-admin-primary" id="mark-all-read-btn" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border:none; border-radius:10px; background:linear-gradient(135deg, #6c5ce7, #5a4bd1); color:#fff; font-weight:600; font-size:14px; cursor:pointer; transition:all 0.3s ease;">
+                <button class="btn-admin-primary" id="mark-all-read-btn" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border:none; border-radius:10px; background:linear-gradient(135deg, #35A8F0, #7FDBFF); color:#fff; font-weight:600; font-size:14px; cursor:pointer; transition:all 0.3s ease;">
                     <i class="fas fa-check-double"></i> Mark All as Read
                 </button>
             {% endif %}
@@ -58,7 +58,7 @@
                 </select>
             </div>
             <div class="notif-filter-group" style="justify-content:end;">
-                <button type="submit" class="btn-admin-primary" style="display:inline-flex; align-items:center; gap:8px; padding:10px 24px; border:none; border-radius:10px; background:linear-gradient(135deg, #6c5ce7, #5a4bd1); color:#fff; font-weight:600; font-size:14px; cursor:pointer; transition:all 0.3s ease;">
+                <button type="submit" class="btn-admin-primary" style="display:inline-flex; align-items:center; gap:8px; padding:10px 24px; border:none; border-radius:10px; background:linear-gradient(135deg, #35A8F0, #7FDBFF); color:#fff; font-weight:600; font-size:14px; cursor:pointer; transition:all 0.3s ease;">
                     <i class="fas fa-search"></i> Apply Filters
                 </button>
             </div>
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const notificationId = this.getAttribute('data-notification-id');
             const csrftoken = getCSRFToken();
             
-            fetch(`{% url 'notifications:api_mark_read' 0 %}`.replace('0', notificationId), {
+            fetch(`{% url 'notifications:api_shop_owner_mark_read' 0 %}`.replace('0', notificationId), {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrftoken || '',
@@ -178,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Animate the card
                     const card = this.closest('.notif-card');
                     if (card) {
                         card.classList.remove('unread');
@@ -186,18 +185,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         card.style.opacity = '0.5';
                         setTimeout(() => {
                             card.style.opacity = '1';
-                            // Update button to read state
                             const actionsDiv = card.querySelector('.notif-card-actions');
                             if (actionsDiv) {
                                 actionsDiv.innerHTML = '<span class="notif-read-label"><i class="fas fa-check-circle"></i> Read</span>';
                             }
-                            // Remove new badge
                             const badge = card.querySelector('.notif-badge-new');
                             if (badge) badge.remove();
                         }, 300);
                     }
                     
-                    // Update unread count in header
                     const unreadChip = document.querySelector('.notif-stat-chip.unread .stat-chip-num');
                     if (unreadChip) {
                         const newCount = parseInt(unreadChip.textContent) - 1;
@@ -211,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             })
-            .catch(error => console.error('Error marking notification as read:', error));
+            .catch(error => console.error('Error:', error));
         });
     });
 
@@ -221,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
         markAllBtn.addEventListener('click', function() {
             const csrftoken = getCSRFToken();
             
-            fetch('{% url 'notifications:api_mark_all_read' %}', {
+            fetch('{% url 'notifications:api_shop_owner_mark_all_read' %}', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrftoken || '',
@@ -231,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Animate all unread cards
                     document.querySelectorAll('.notif-card.unread').forEach(card => {
                         card.classList.remove('unread');
                         card.style.transition = 'all 0.3s ease';
@@ -247,13 +242,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 300);
                     });
                     
-                    // Remove mark all button and unread chip
                     markAllBtn.remove();
                     const unreadChip = document.querySelector('.notif-stat-chip.unread');
                     if (unreadChip) unreadChip.remove();
                 }
             })
-            .catch(error => console.error('Error marking all as read:', error));
+            .catch(error => console.error('Error:', error));
         });
     }
 });

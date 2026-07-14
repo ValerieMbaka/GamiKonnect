@@ -1,8 +1,14 @@
 import logging
 from django.db import transaction
-from .models import Achievement, GamerAchievement, Activity, ActivityLog
-from competitions.models import CompetitionResult, CompetitionAuditLog
 from django.utils import timezone
+from datetime import timedelta
+from .models import Achievement, GamerAchievement, Activity, ActivityLog
+from competitions.models import Competition, CompetitionResult, CompetitionAuditLog
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
+
+
+logger = logging.getLogger(__name__)
 
 
 def _display_name(account):
@@ -275,8 +281,6 @@ class ActivityFeedService:
             'submit_checkins': 'fas fa-clipboard-check',
         }.get(action, 'fas fa-bell')
 
-logger = logging.getLogger(__name__)
-
 
 class AchievementService:
     
@@ -336,3 +340,255 @@ class AchievementService:
         )
         
         logger.info(f"ACHIEVEMENT UNLOCKED: {gamer.custom_username} earned '{achievement.name}'!")
+
+
+# ---------------------------------------------------------------------------
+# Activity Cleanup Service
+# ---------------------------------------------------------------------------
+
+class ActivityCleanupService:
+    """
+    Handles automatic deletion of stale activities based on their type and age.
+    
+    Cleanup rules:
+    - Login/Logout activities: Deleted 3 days after creation
+    - Competition registration activities: Deleted 1 week after the competition ends
+    - Competition creation ActivityLogs: Deleted 1 week after the competition ends
+    - All other activities: Deleted 1 week after creation
+    """
+
+    @staticmethod
+    def _get_competition_ids_from_activities(activity_qs):
+        """
+        Extract competition IDs from activity metadata where competition_id is stored.
+        Used to determine which competitions have ended.
+        """
+        competition_ids = set()
+        for activity in activity_qs:
+            comp_id = activity.metadata.get('competition_id')
+            if comp_id:
+                competition_ids.add(comp_id)
+        return competition_ids
+
+    @staticmethod
+    def _get_ended_competition_ids(competition_ids):
+        """
+        Given a set of competition IDs, return those that ended more than 1 week ago.
+        Falls back to the competition's created_at if end_time is not set.
+        """
+        if not competition_ids:
+            return set()
+        
+        one_week_ago = timezone.now() - timedelta(days=7)
+        
+        # Try to find competitions that ended more than 1 week ago
+        # Use competition_end_time if available, otherwise fall back to created_at
+        ended_competitions = Competition.objects.filter(
+            id__in=competition_ids,
+        ).filter(
+            # Competition either has an end_time that's more than 1 week ago
+            # OR was created more than 1 week ago (no end_time set)
+            Q(competition_end_time__lt=one_week_ago) | 
+            Q(competition_end_time__isnull=True, created_at__lt=one_week_ago)
+        )
+        
+        return set(str(c.id) for c in ended_competitions)
+
+    @staticmethod
+    def cleanup_activities(dry_run=False):
+        """
+        Main cleanup method. Deletes stale Activity records.
+        
+        Args:
+            dry_run: If True, only counts what would be deleted without deleting.
+        
+        Returns:
+            Dict with cleanup statistics.
+        """
+        now = timezone.now()
+        stats = {
+            'login_logout_deleted': 0,
+            'competition_registration_deleted': 0,
+            'other_activities_deleted': 0,
+            'total_activities_deleted': 0,
+        }
+
+        # 1. Delete login/logout activities older than 3 days
+        three_days_ago = now - timedelta(days=3)
+        login_logout_qs = Activity.objects.filter(
+            activity_type__in=[
+                Activity.ActivityTypes.LOGIN,
+                Activity.ActivityTypes.LOGOUT,
+            ],
+            timestamp__lt=three_days_ago,
+        )
+
+        if dry_run:
+            stats['login_logout_deleted'] = login_logout_qs.count()
+        else:
+            count, _ = login_logout_qs.delete()
+            stats['login_logout_deleted'] = count
+
+        # 2. Delete competition registration activities a week after the competition ends
+        #    We need to find activities whose associated competition ended > 1 week ago
+        all_comp_reg_activities = Activity.objects.filter(
+            activity_type=Activity.ActivityTypes.COMPETITION_REGISTERED,
+        )
+        
+        # Extract competition IDs from metadata
+        comp_ids = ActivityCleanupService._get_competition_ids_from_activities(
+            all_comp_reg_activities
+        )
+        
+        # Find which competitions ended more than 1 week ago
+        ended_comp_ids = ActivityCleanupService._get_ended_competition_ids(comp_ids)
+        
+        if ended_comp_ids:
+            comp_reg_to_delete = all_comp_reg_activities.filter(
+                metadata__competition_id__in=ended_comp_ids
+            )
+        else:
+            comp_reg_to_delete = all_comp_reg_activities.none()
+
+        if dry_run:
+            stats['competition_registration_deleted'] = comp_reg_to_delete.count()
+        else:
+            count, _ = comp_reg_to_delete.delete()
+            stats['competition_registration_deleted'] = count
+
+        # 3. Delete all other activities older than 1 week
+        #    (profile updates, game adds/removes, level ups, achievements, 
+        #     checked-in, competition completed/won, etc.)
+        one_week_ago = now - timedelta(days=7)
+        other_activity_types = [
+            Activity.ActivityTypes.PROFILE_COMPLETED,
+            Activity.ActivityTypes.PROFILE_UPDATED,
+            Activity.ActivityTypes.GAME_ADDED,
+            Activity.ActivityTypes.GAME_REMOVED,
+            Activity.ActivityTypes.COMPETITION_CHECKEDIN,
+            Activity.ActivityTypes.COMPETITION_COMPLETED,
+            Activity.ActivityTypes.COMPETITION_WON,
+            Activity.ActivityTypes.LEVEL_UP,
+            Activity.ActivityTypes.ACHIEVEMENT_EARNED,
+            Activity.ActivityTypes.SYSTEM,
+        ]
+
+        other_qs = Activity.objects.filter(
+            activity_type__in=other_activity_types,
+            timestamp__lt=one_week_ago,
+        )
+
+        if dry_run:
+            stats['other_activities_deleted'] = other_qs.count()
+        else:
+            count, _ = other_qs.delete()
+            stats['other_activities_deleted'] = count
+
+        stats['total_activities_deleted'] = (
+            stats['login_logout_deleted']
+            + stats['competition_registration_deleted']
+            + stats['other_activities_deleted']
+        )
+
+        return stats
+
+    @staticmethod
+    def cleanup_activity_logs(dry_run=False):
+        """
+        Main cleanup method for ActivityLog records.
+        
+        Cleanup rules:
+        - Competition creation logs (action_type=CREATE, target is Competition):
+          Deleted 1 week after the competition ends (or 1 week after creation
+          if the competition has no end time).
+        - All other ActivityLogs: Deleted 1 week after creation.
+        
+        Args:
+            dry_run: If True, only counts what would be deleted without deleting.
+        
+        Returns:
+            Dict with cleanup statistics.
+        """
+        now = timezone.now()
+        stats = {
+            'competition_creation_logs_deleted': 0,
+            'other_logs_deleted': 0,
+            'total_logs_deleted': 0,
+        }
+
+        one_week_ago = now - timedelta(days=7)
+
+        # 1. Delete competition creation ActivityLogs a week after the competition ends.
+        #    These are logs with action_type=CREATE where the target is a Competition.
+        competition_ct = ContentType.objects.get_for_model(Competition)
+        
+        # Get all competition creation logs where the competition ended > 1 week ago
+        # We use a subquery approach: find competitions that ended > 1 week ago
+        # and match their IDs against the target_object_id of the ActivityLogs
+        
+        # Get competitions that ended more than 1 week ago
+        ended_competitions = Competition.objects.filter(
+            Q(competition_end_time__lt=one_week_ago) |
+            Q(competition_end_time__isnull=True, created_at__lt=one_week_ago)
+        ).values_list('id', flat=True)
+        
+        # Convert UUIDs to strings for comparison with ActivityLog's CharField target_object_id
+        ended_comp_id_strings = [str(cid) for cid in ended_competitions]
+        
+        comp_creation_logs = ActivityLog.objects.filter(
+            action_type=ActivityLog.ActionTypes.CREATE,
+            target_content_type=competition_ct,
+            target_object_id__in=ended_comp_id_strings,
+        )
+
+        if dry_run:
+            stats['competition_creation_logs_deleted'] = comp_creation_logs.count()
+        else:
+            count, _ = comp_creation_logs.delete()
+            stats['competition_creation_logs_deleted'] = count
+
+        # 2. Delete all other ActivityLogs older than 1 week
+        #    (excluding the competition creation ones we already handled above)
+        other_logs = ActivityLog.objects.filter(
+            timestamp__lt=one_week_ago,
+        )
+        # Exclude the ones we already processed
+        if ended_comp_id_strings:
+            other_logs = other_logs.exclude(
+                action_type=ActivityLog.ActionTypes.CREATE,
+                target_content_type=competition_ct,
+                target_object_id__in=ended_comp_id_strings,
+            )
+
+        if dry_run:
+            stats['other_logs_deleted'] = other_logs.count()
+        else:
+            count, _ = other_logs.delete()
+            stats['other_logs_deleted'] = count
+
+        stats['total_logs_deleted'] = (
+            stats['competition_creation_logs_deleted']
+            + stats['other_logs_deleted']
+        )
+
+        return stats
+
+    @staticmethod
+    def run_full_cleanup(dry_run=False):
+        """
+        Runs all cleanup operations and returns combined statistics.
+        
+        Args:
+            dry_run: If True, only counts what would be deleted without deleting.
+        
+        Returns:
+            Dict with combined cleanup statistics.
+        """
+        activity_stats = ActivityCleanupService.cleanup_activities(dry_run=dry_run)
+        log_stats = ActivityCleanupService.cleanup_activity_logs(dry_run=dry_run)
+
+        return {
+            **activity_stats,
+            **log_stats,
+            'dry_run': dry_run,
+        }

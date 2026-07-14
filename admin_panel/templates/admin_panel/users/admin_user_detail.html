@@ -38,7 +38,7 @@
                             <p class="hub-cell-subtitle mb-1">
                                 {% if profile_type == 'gamer' %}
                                     <span class="status-badge success">Gamer</span>
-                                    {% if user_obj.is_pwa %}<span class="badge bg-warning-subtle text-warning ms-1">PwD</span>{% endif %}
+                                    {% if user_obj.is_gwds %}<span class="badge bg-warning-subtle text-warning ms-1">PwD</span>{% endif %}
                                 {% else %}
                                     <span class="status-badge neutral">Arena Owner</span>
                                 {% endif %}
@@ -70,7 +70,7 @@
                         <div class="detail-item"><span class="detail-label">Current Level</span><span class="detail-value">{{ user_obj.current_level.name|default:"N/A" }}</span></div>
                         <div class="detail-item"><span class="detail-label">Gender</span><span class="detail-value">{{ user_obj.gender|default:"N/A"|title }}</span></div>
                         <div class="detail-item"><span class="detail-label">Profile Complete</span><span class="detail-value">{% if user_obj.profile_completed %}<span class="status-badge success">Yes</span>{% else %}<span class="status-badge warning">No</span>{% endif %}</span></div>
-                        <div class="detail-item"><span class="detail-label">PwD</span><span class="detail-value">{% if user_obj.is_pwa %}<span class="status-badge warning">Yes</span>{% else %}<span class="status-badge success">No</span>{% endif %}</span></div>
+                        <div class="detail-item"><span class="detail-label">PwD</span><span class="detail-value">{% if user_obj.is_gwds %}<span class="status-badge warning">Yes</span>{% else %}<span class="status-badge success">No</span>{% endif %}</span></div>
                     </div>
                 </div>
             </section>

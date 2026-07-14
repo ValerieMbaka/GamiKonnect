@@ -14,8 +14,14 @@
             <tr>
                 <td><small class="text-muted">{{ log.timestamp|date:"M d, Y H:i:s" }}</small></td>
                 <td>
-                    <strong>{{ log.actor.username|default:log.actor.email }}</strong>
-                    {% if log.actor.is_staff %}<span class="badge bg-danger-subtle text-danger ms-1">Staff</span>{% endif %}
+                    {% with actor=log.actor %}
+                    {% if actor %}
+                        <strong>{{ actor.username|default:actor.email }}</strong>
+                        {% if actor.is_staff %}<span class="badge bg-danger-subtle text-danger ms-1">Staff</span>{% endif %}
+                    {% else %}
+                        <span class="text-muted"><em>System/Automated</em></span>
+                    {% endif %}
+                    {% endwith %}
                 </td>
                 <td><code class="text-primary">{{ log.action_type }}</code></td>
                 <td>{{ log.description }}</td>

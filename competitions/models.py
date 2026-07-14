@@ -436,7 +436,7 @@ class Competition(models.Model):
         if self.gender_rules != 'all':
             gamers = gamers.filter(gender=self.gender_rules)
         if self.is_pwa_only:
-            gamers = gamers.filter(is_pwa=True)
+            gamers = gamers.filter(is_gwds=True)
         if self.shop_id:
             owner_uids = ShopOwner.objects.filter(
                 shops=self.shop

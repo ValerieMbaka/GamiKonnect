@@ -250,7 +250,7 @@ class ShopOwnerAdmin(SafeDateHierarchyAdmin):
 @admin.register(PendingRegistration)
 class PendingRegistrationAdmin(SafeDateHierarchyAdmin):
     list_display = (
-        'email', 'first_name', 'last_name', 'role_badge', 'is_pwd_badge',
+        'email', 'first_name', 'last_name', 'role_badge', 'is_gwds_badge',
         'created_at'
     )
     list_filter = ('role', 'created_at')
@@ -263,7 +263,7 @@ class PendingRegistrationAdmin(SafeDateHierarchyAdmin):
     
     fieldsets = (
         ('Registration Details', {
-            'fields': ('email', 'first_name', 'last_name', 'phone', 'is_pwd', 'role', 'uid')
+            'fields': ('email', 'first_name', 'last_name', 'phone', 'is_gwds', 'role', 'uid')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -286,15 +286,15 @@ class PendingRegistrationAdmin(SafeDateHierarchyAdmin):
         )
     role_badge.short_description = 'Role'
 
-    def is_pwd_badge(self, obj):
+    def is_gwds_badge(self, obj):
         """Display PWD status as colored badge"""
-        label = 'Yes' if obj.is_pwd else 'No'
-        color = '#10b981' if obj.is_pwd else '#6b7280'
+        label = 'Yes' if obj.is_gwds else 'No'
+        color = '#10b981' if obj.is_gwds else '#6b7280'
         return format_html(
             '<span style="background:{};color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}</span>',
             color, label
         )
-    is_pwd_badge.short_description = 'PWD'
+    is_gwds_badge.short_description = 'GWDS'
     
     @admin.action(description='✓ Convert to Gamer Account')
     def convert_to_gamer(self, request, queryset):

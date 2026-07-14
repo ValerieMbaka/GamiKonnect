@@ -14,11 +14,13 @@
             <tr>
                 <td><small class="text-muted">{{ activity.timestamp|date:"M d, Y H:i:s" }}</small></td>
                 <td>
-                    <strong>{{ activity.gamer.custom_username|default:activity.gamer.first_name|default:"Unknown" }}</strong>
-                    <span class="badge bg-info-subtle text-info ms-1">Gamer</span>
+                    {% with gamer=activity.gamer %}
+                    <strong>{{ gamer.custom_username|default:gamer.first_name|default:"Unknown" }}</strong>
+                    <span class="badge bg-info-subtle text-info ms-1">{{ gamer|yesno:"Gamer,System" }}</span>
+                    {% endwith %}
                 </td>
-                <td><code class="text-primary">{{ activity.verb|default:activity.action_type }}</code></td>
-                <td>{{ activity.description|default:activity.summary|default:activity.verb|title }}</td>
+                <td><code class="text-primary">{{ activity.activity_type }}</code></td>
+                <td>{{ activity.description }}</td>
             </tr>
             {% endfor %}
         </tbody>

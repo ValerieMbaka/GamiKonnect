@@ -47,42 +47,50 @@
                 <i class="fas fa-sun"></i>
             </button>
 
-            <div class="nav-dropdown">
-                <button class="nav-icon notifications-btn" title="Notifications" data-tooltip="Notifications" id="notification-badge">
-                    <i class="fas fa-bell"></i>
-                    {% if shop_owner_unread_notifications_count and shop_owner_unread_notifications_count > 0 %}
-                        <span class="notification-bubble">{{ shop_owner_unread_notifications_count }}</span>
-                    {% endif %}
-                </button>
-                <div class="nav-dropdown-content notifications-dropdown-content">
-                    <div class="dropdown-header">
-                        <h5>Notifications</h5>
-                    </div>
-                    <div class="notifications-list">
-                        {% if shop_owner_recent_notifications %}
-                            {% for notif_recipient in shop_owner_recent_notifications %}
-                            <div class="notification-item {% if not notif_recipient.is_read %}unread{% endif %}">
-                                <div class="notification-content">
-                                    <div class="notification-title">{{ notif_recipient.notification.title }}</div>
-                                    <div class="notification-message">{{ notif_recipient.notification.message|truncatewords:15 }}</div>
-                                    <div class="notification-meta">
-                                        <span class="notification-category">
-                                            <i class="fas fa-tag"></i> {{ notif_recipient.notification.get_category_display }}
-                                        </span>
-                                        <span class="notification-time">{{ notif_recipient.created_at|timesince }} ago</span>
+                <div class="nav-dropdown">
+                    <button class="nav-icon notifications-btn" title="Notifications" data-tooltip="Notifications" id="notification-badge">
+                        <i class="fas fa-bell"></i>
+                        {% if shop_owner_unread_notifications_count and shop_owner_unread_notifications_count > 0 %}
+                            <span class="notification-bubble">{{ shop_owner_unread_notifications_count }}</span>
+                        {% endif %}
+                    </button>
+                    <div class="nav-dropdown-content notifications-dropdown-content">
+                        <div class="dropdown-header">
+                            <h5><i class="fas fa-bell"></i> Notifications</h5>
+                            <a href="{% url 'notifications:shop_owner_center' %}" class="view-all-link">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="notifications-list">
+                            {% if shop_owner_recent_notifications %}
+                                {% for notif_recipient in shop_owner_recent_notifications %}
+                                <div class="notification-item {% if not notif_recipient.is_read %}unread{% endif %}">
+                                    <div class="notification-content">
+                                        <div class="notification-title">
+                                            {% if notif_recipient.notification.importance == 'critical' %}
+                                                <span class="notif-imp-dot critical" title="Critical"></span>
+                                            {% elif notif_recipient.notification.importance == 'high' %}
+                                                <span class="notif-imp-dot high" title="High"></span>
+                                            {% endif %}
+                                            {{ notif_recipient.notification.title }}
+                                        </div>
+                                        <div class="notification-message">{{ notif_recipient.notification.message|truncatewords:15 }}</div>
+                                        <div class="notification-meta">
+                                            <span class="notification-category">
+                                                <i class="fas fa-tag"></i> {{ notif_recipient.notification.get_category_display }}
+                                            </span>
+                                            <span class="notification-time">{{ notif_recipient.created_at|timesince }} ago</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="empty-state">
-                                <i class="fas fa-bell-slash"></i>
-                                <p>No notifications yet</p>
-                            </div>
-                        {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No notifications yet</p>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <div class="nav-dropdown profile-dropdown">
                 <button class="profile-btn" aria-label="User profile">
@@ -185,6 +193,15 @@
 {#                                <span>Wallet</span>#}
 {#                            </a>#}
 {#                        </li>#}
+	                    <li>
+                            <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if 'notifications' in request.path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'notifications:shop_owner_center' %}" class="nav-link {% if 'notifications' in request.path %}active{% endif %}" data-tooltip="Notifications"{% endif %}>
+                                <i class="fas fa-bell"></i>
+                                <span>Notifications</span>
+                                {% if shop_owner_unread_notifications_count and shop_owner_unread_notifications_count > 0 %}
+                                    <span class="badge">{{ shop_owner_unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
 	                    <li>
                             <a {% if inactive_mode %}href="#" class="nav-link disabled-link {% if 'profile' in request.path %}active{% endif %}" title="Awaiting admin approval"{% else %}href="{% url 'accounts:shop_owner_profile' %}" class="nav-link {% if 'profile' in request.path %}active{% endif %}" data-tooltip="Account"{% endif %}>
                                 <i class="fas fa-user-cog"></i>

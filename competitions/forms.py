@@ -270,7 +270,7 @@ class CompetitionRejectionForm(forms.ModelForm):
 # Competition Registration Form
 class CompetitionRegistrationForm(forms.ModelForm):
     # PWD checkbox — user confirms their PWD status for this registration
-    is_pwa = forms.BooleanField(
+    is_gwds = forms.BooleanField(
         required=False,
         label="I am PWD (Person With Disability or other specified status)",
         help_text="Check this box if applicable to this competition's PWD requirements."
@@ -322,8 +322,8 @@ class CompetitionRegistrationForm(forms.ModelForm):
             raise forms.ValidationError('You are already registered for this competition.')
         
         # PWD requirement check
-        is_pwa_checked = cleaned_data.get('is_pwa', False)
-        if self.competition.is_pwa_only and not is_pwa_checked:
+        is_gwds_checked = cleaned_data.get('is_gwds', False)
+        if self.competition.is_pwa_only and not is_gwds_checked:
             raise forms.ValidationError('This competition is only for PWD. Please confirm your PWD status.')
         
         # Age restriction check (Requirement: Restrict to 18+)
@@ -357,10 +357,10 @@ class CompetitionRegistrationForm(forms.ModelForm):
     
     def save(self, commit=True):
         # Save the PWD status to the gamer's profile
-        is_pwa = self.cleaned_data.get('is_pwa', False)
+        is_gwds = self.cleaned_data.get('is_gwds', False)
         if self.gamer:
-            self.gamer.is_pwa = is_pwa
-            self.gamer.save(update_fields=['is_pwa'])
+            self.gamer.is_gwds = is_gwds
+            self.gamer.save(update_fields=['is_gwds'])
         
         instance = super().save(commit=False)
         instance.competition = self.competition

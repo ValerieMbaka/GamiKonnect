@@ -403,7 +403,7 @@
     justify-content: center;
     font-size: 40px;
     color: rgba(255,255,255,0.4);
-    background: linear-gradient(135deg, var(--primary-color), #7FDBFF);
+    background: linear-gradient(135deg, var(--primary), #7FDBFF);
     min-height: 140px;
 }
 
@@ -424,14 +424,14 @@
 }
 
 .competition-code-row i {
-    color: var(--primary-color);
+    color: var(--primary);
     font-size: 10px;
 }
 
 .competition-code {
     font-family: monospace;
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--primary);
     letter-spacing: 0.5px;
     overflow: hidden;
     text-overflow: ellipsis;

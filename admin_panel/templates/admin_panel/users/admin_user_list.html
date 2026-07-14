@@ -2,197 +2,200 @@
 {% load static %}
 
 {% block title %}User Management | Admin Panel{% endblock %}
+{% block page_title %}User Management{% endblock %}
 
 {% block extra_css %}
-<style>
-.user-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-.user-kpi-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-.user-kpi-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-.user-kpi-icon.blue { background: #e8f0fe; color: #1a73e8; }
-.user-kpi-icon.green { background: #e6f7e6; color: #16a34a; }
-.user-kpi-icon.purple { background: #f3e8ff; color: #7c3aed; }
-.user-kpi-icon.orange { background: #fff3e0; color: #ea580c; }
-.user-kpi-icon.teal { background: #e0f2f1; color: #0d9488; }
-.user-kpi-icon.red { background: #fce4ec; color: #dc2626; }
-.user-kpi-info h4 { margin: 0; font-size: 1.3rem; font-weight: 700; }
-.user-kpi-info p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
-</style>
+<link rel="stylesheet" href="{% static 'admin_panel/css/users/users_management.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="admin-hub-shell">
-    <div class="admin-page-header flex-between mb-4">
-        <div class="header-content">
-            <h1 class="page-title m-0">User Management</h1>
-            <p class="page-subtitle text-muted mt-1">Review gamers and arena owners across the platform.</p>
+<div class="stats-grid">
+    <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+        <div class="gk-stat-card-header">
+            <span class="gk-stat-icon"><i class="fas fa-users"></i></span>
+            <h3 class="gk-stat-title">Roles</h3>
         </div>
-    </div>
-
-    <!-- KPI Cards -->
-    <div class="user-kpi-grid">
-        <div class="user-kpi-card">
-            <div class="user-kpi-icon blue"><i class="fas fa-users"></i></div>
-            <div class="user-kpi-info">
-                <h4>{{ total_users|default:"0" }}</h4>
-                <p>Total Users</p>
+        <div class="gk-stat-body">
+            <div class="gk-stat-row">
+                <span class="gk-stat-label">Gamers</span>
+                <span class="gk-stat-value">
+                    {{ total_gamers|default:"0" }}
+                    <span class="gk-trend-pill gk-trend-up"><i class="fas fa-arrow-up"></i></span>
+                </span>
             </div>
-        </div>
-        <div class="user-kpi-card">
-            <div class="user-kpi-icon green"><i class="fas fa-user-check"></i></div>
-            <div class="user-kpi-info">
-                <h4>{{ total_gamers|default:"0" }}</h4>
-                <p>Gamers</p>
-            </div>
-        </div>
-        <div class="user-kpi-card">
-            <div class="user-kpi-icon purple"><i class="fas fa-store"></i></div>
-            <div class="user-kpi-info">
-                <h4>{{ total_shop_owners|default:"0" }}</h4>
-                <p>Arena Owners</p>
-            </div>
-        </div>
-        <div class="user-kpi-card">
-            <div class="user-kpi-icon teal"><i class="fas fa-venus-mars"></i></div>
-            <div class="user-kpi-info">
-                <h4>{{ male_count|default:"0" }} / {{ female_count|default:"0" }}</h4>
-                <p>M / F</p>
-            </div>
-        </div>
-        <div class="user-kpi-card">
-            <div class="user-kpi-icon orange"><i class="fas fa-wheelchair"></i></div>
-            <div class="user-kpi-info">
-                <h4>{{ pwd_count|default:"0" }}</h4>
-                <p>PwD</p>
-            </div>
-        </div>
-        <div class="user-kpi-card">
-            <div class="user-kpi-icon green"><i class="fas fa-circle"></i></div>
-            <div class="user-kpi-info">
-                <h4>{{ active_count|default:"0" }}</h4>
-                <p>Active (30d)</p>
-            </div>
-        </div>
-        <div class="user-kpi-card">
-            <div class="user-kpi-icon red"><i class="fas fa-circle"></i></div>
-            <div class="user-kpi-info">
-                <h4>{{ inactive_count|default:"0" }}</h4>
-                <p>Inactive</p>
+            <div class="gk-stat-row">
+                <span class="gk-stat-label">Shop / Arena Owners</span>
+                <span class="gk-stat-value">
+                    {{ total_shop_owners|default:"0" }}
+                    <span class="gk-trend-pill gk-trend-down"><i class="fas fa-arrow-down"></i></span>
+                </span>
             </div>
         </div>
     </div>
 
-    <section class="admin-card hub-section hub-table-shell">
-        <div class="hub-table-toolbar">
-            <div>
-                <h2>All Users</h2>
-                <p>Search and filter the platform user base.</p>
-            </div>
-            <form class="hub-filter-form" method="GET">
-                <input type="search" name="q" placeholder="Search by name, email, username..." value="{{ query }}">
-                <select name="gender" onchange="this.form.submit()">
-                    <option value="">All Genders</option>
-                    <option value="male" {% if selected_gender == 'male' %}selected{% endif %}>Male</option>
-                    <option value="female" {% if selected_gender == 'female' %}selected{% endif %}>Female</option>
-                </select>
-                <select name="status" onchange="this.form.submit()">
-                    <option value="">All Status</option>
-                    <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active (30d)</option>
-                    <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
-                </select>
-                <button class="btn-secondary" type="submit">Search</button>
-                {% if query or selected_gender or selected_status %}
-                    <a href="{% url 'admin_panel:user_list' %}" class="btn-link text-danger ms-2"><i class="fas fa-times"></i> Clear</a>
-                {% endif %}
-            </form>
+    <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+        <div class="gk-stat-card-header">
+            <span class="gk-stat-icon"><i class="fas fa-toggle-on"></i></span>
+            <h3 class="gk-stat-title">Status</h3>
         </div>
-        <div class="hub-table-wrap">
-            <table class="hub-data-table">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Gender</th>
-                        <th>Status</th>
-                        <th>Points</th>
-                        <th>Joined</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <td>
-                            <div class="hub-user-cell">
-                                {% if user.profile_picture %}
-                                    <img src="{{ user.profile_picture.url }}" class="hub-avatar" alt="Avatar">
-                                {% else %}
-                                    <img src="{% static 'core/images/gamepad.jpeg' %}" class="hub-avatar" alt="Avatar">
-                                {% endif %}
-                                <div>
-                                    <p class="hub-cell-title">{{ user.first_name|default:user.email }} {{ user.last_name }}</p>
-                                    <p class="hub-cell-subtitle">@{{ user.username }}</p>
-                                </div>
+        <div class="gk-stat-body">
+            <div class="gk-stat-row">
+                <span class="gk-stat-label">Active (30d)</span>
+                <span class="gk-stat-value">
+                    {{ active_count|default:"0" }}
+                    <span class="gk-trend-pill gk-trend-up"><i class="fas fa-arrow-up"></i></span>
+                </span>
+            </div>
+            <div class="gk-stat-row">
+                <span class="gk-stat-label">Inactive</span>
+                <span class="gk-stat-value">
+                    {{ inactive_count|default:"0" }}
+                    <span class="gk-trend-pill gk-trend-down"><i class="fas fa-arrow-down"></i></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+        <div class="gk-stat-card-header">
+            <span class="gk-stat-icon"><i class="fas fa-venus-mars"></i></span>
+            <h3 class="gk-stat-title">Gender</h3>
+        </div>
+        <div class="gk-stat-body">
+            <div class="gk-stat-row">
+                <span class="gk-stat-label">Male</span>
+                <span class="gk-stat-value">
+                    {{ male_count|default:"0" }}
+                    <span class="gk-trend-pill gk-trend-up"><i class="fas fa-arrow-up"></i></span>
+                </span>
+            </div>
+            <div class="gk-stat-row">
+                <span class="gk-stat-label">Female</span>
+                <span class="gk-stat-value">
+                    {{ female_count|default:"0" }}
+                    <span class="gk-trend-pill gk-trend-up"><i class="fas fa-arrow-up"></i></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="gk-stat-card gk-stat-card-single" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
+        <div class="gk-stat-card-header">
+            <span class="gk-stat-icon"><i class="fas fa-wheelchair"></i></span>
+            <h3 class="gk-stat-title">PWD</h3>
+        </div>
+        <div class="gk-stat-body">
+            <div class="gk-stat-row gk-stat-row-single">
+                <span class="gk-stat-label">Registered PWD</span>
+                <span class="gk-stat-value">
+                    {{ pwd_count|default:"0" }}
+                    <span class="gk-trend-pill gk-trend-up"><i class="fas fa-arrow-up"></i></span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-toolbar">
+        <div>
+            <h2>All Users</h2>
+            <p>Search and filter the platform user base.</p>
+        </div>
+        <form class="filter-form" method="GET">
+            <input type="search" name="q" placeholder="Search by name, email, username..." value="{{ query }}">
+            <select name="gender" onchange="this.form.submit()">
+                <option value="">All Genders</option>
+                <option value="male" {% if selected_gender == 'male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if selected_gender == 'female' %}selected{% endif %}>Female</option>
+            </select>
+            <select name="status" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active (30d)</option>
+                <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+            <button class="btn-filter" type="submit">Search</button>
+            {% if query or selected_gender or selected_status %}
+                <a href="{% url 'admin_panel:user_list' %}" class="filter-clear"><i class="fas fa-times"></i> Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                    <th>Points</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="Avatar" class="user-avatar">
+                            {% else %}
+                                <img src="{% static 'core/images/gamepad.jpeg' %}" alt="Avatar" class="user-avatar">
+                            {% endif %}
+                            <div class="user-info">
+                                <span class="user-name">{{ user.first_name|default:user.email }} {{ user.last_name }}</span>
+                                <span class="user-handle">@{{ user.username }}</span>
                             </div>
-                        </td>
-                        <td>{{ user.email }}</td>
-                        <td>
-                            {% if user.role == 'Gamer' %}
-                                <span class="status-badge success">Gamer</span>
-                                {% if user.is_gwds %}<span class="badge bg-warning-subtle text-warning ms-1">PwD</span>{% endif %}
-                            {% else %}
-                                <span class="status-badge neutral">Arena Owner</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ user.gender|default:"—"|title }}</td>
-                        <td>
-                            {% if user.last_login %}
-                                <span class="status-badge success">Active</span>
-                            {% else %}
-                                <span class="status-badge danger">Inactive</span>
-                            {% endif %}
-                        </td>
-                        <td><strong>{{ user.points|default:"0" }}</strong></td>
-                        <td>{{ user.date_joined|date:"M d, Y" }}</td>
-                        <td><a href="{% url 'admin_panel:user_detail' user.id %}" class="btn-link"><i class="fas fa-eye me-1"></i> View</a></td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="8" class="text-center py-4 text-muted">No users found matching your criteria.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+                    </td>
+                    <td class="text-secondary">{{ user.email }}</td>
+                    <td>
+                        {% if user.role == 'Gamer' %}
+                            <span class="badge badge-role">Gamer</span>
+                            {% if user.is_gwds %}<span class="badge badge-pwd">PwD</span>{% endif %}
+                        {% else %}
+                            <span class="badge badge-neutral">Arena Owner</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-secondary">{{ user.gender|default:"—"|title }}</td>
+                    <td>
+                        {% if user.last_login %}
+                            <span class="badge badge-active">Active</span>
+                        {% else %}
+                            <span class="badge badge-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-primary font-weight-bold">{{ user.points|default:"0" }}</td>
+                    <td>
+                        <a href="{% url 'admin_panel:user_detail' user.id %}" class="btn-action">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state">No users found matching your criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if users.has_other_pages %}
+    <div class="pagination-wrapper">
+        <span class="page-info">
+            Page <span class="font-weight-bold">{{ users.number }}</span> of {{ users.paginator.num_pages }}
+        </span>
+        <div class="page-actions">
+            {% if users.has_previous %}
+                <a href="?page={{ users.previous_page_number }}&q={{ query }}&gender={{ selected_gender }}&status={{ selected_status }}" class="btn-page">&laquo; Prev</a>
+            {% endif %}
+
+            {% if users.has_next %}
+                <a href="?page={{ users.next_page_number }}&q={{ query }}&gender={{ selected_gender }}&status={{ selected_status }}" class="btn-page">Next &raquo;</a>
+            {% endif %}
         </div>
-        {% if users.has_other_pages %}
-        <div class="hub-table-toolbar">
-            <p class="m-0 text-muted">Page {{ users.number }} of {{ users.paginator.num_pages }}</p>
-            <div class="d-flex gap-2">
-                {% if users.has_previous %}<a class="btn-secondary" href="?page={{ users.previous_page_number }}&q={{ query }}&gender={{ selected_gender }}&status={{ selected_status }}">Previous</a>{% endif %}
-                {% if users.has_next %}<a class="btn-secondary" href="?page={{ users.next_page_number }}&q={{ query }}&gender={{ selected_gender }}&status={{ selected_status }}">Next</a>{% endif %}
-            </div>
-        </div>
-        {% endif %}
-    </section>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

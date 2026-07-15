@@ -25,48 +25,56 @@
     {# KPI Summary Cards                                                   #}
     {# ------------------------------------------------------------------ #}
     <div class="hub-summary-grid mb-4">
-        <div class="hub-summary-card">
+        <div class="hub-summary-card blue">
             <div class="hub-summary-icon blue"><i class="fas fa-trophy"></i></div>
             <div class="hub-summary-copy">
                 <span class="hub-summary-label">Total Competitions</span>
                 <strong class="hub-summary-value">{{ total_competitions }}</strong>
-                <span class="hub-summary-meta">{% if new_this_week > 0 %}{{ new_this_week }} created this week{% else %}No new competitions this week{% endif %}</span>
+                <span class="hub-summary-meta pill">
+                    <i class="fas fa-arrow-up"></i>
+                    {% if new_this_week > 0 %}{{ new_this_week }} this week{% else %}No new this week{% endif %}
+                </span>
             </div>
         </div>
-        <div class="hub-summary-card">
+        <div class="hub-summary-card warning">
             <div class="hub-summary-icon warning"><i class="fas fa-hourglass-half"></i></div>
             <div class="hub-summary-copy">
                 <span class="hub-summary-label">Pending Review</span>
                 <strong class="hub-summary-value">{{ pending_competitions_count }}</strong>
-                <span class="hub-summary-meta">{% if pending_competitions_count > 0 %}Action needed{% else %}All caught up{% endif %}</span>
+                <span class="hub-summary-meta pill">
+                    {% if pending_competitions_count > 0 %}<i class="fas fa-triangle-exclamation"></i> Action needed{% else %}<i class="fas fa-check"></i> All caught up{% endif %}
+                </span>
             </div>
         </div>
-        <div class="hub-summary-card">
+        <div class="hub-summary-card success">
             <div class="hub-summary-icon success"><i class="fas fa-sack-dollar"></i></div>
             <div class="hub-summary-copy">
                 <span class="hub-summary-label">Total Earnings</span>
                 <strong class="hub-summary-value">KES {{ total_earnings|default:0 }}</strong>
-                <span class="hub-summary-meta">From entry fees & platform cuts</span>
+                <span class="hub-summary-meta pill"><i class="fas fa-arrow-up"></i> Revenue</span>
             </div>
         </div>
-        <div class="hub-summary-card">
+        <div class="hub-summary-card neutral">
             <div class="hub-summary-icon neutral"><i class="fas fa-user-check"></i></div>
             <div class="hub-summary-copy">
                 <span class="hub-summary-label">Total Registrations</span>
                 <strong class="hub-summary-value">{{ total_registrations|default:0 }}</strong>
-                <span class="hub-summary-meta">Gamers signed up across all events</span>
+                <span class="hub-summary-meta pill"><i class="fas fa-arrow-up"></i> Signups</span>
             </div>
         </div>
     </div>
 
     <section class="admin-card hub-section hub-table-shell">
-        <div class="hub-table-toolbar">
-            <div>
+        <div class="hub-table-toolbar hub-filter-toolbar">
+            <div class="hub-filter-heading">
                 <h2>All Competitions</h2>
-                <p>Filter by approval status, prize type, or shop.</p>
+                <p>Search and filter across every competition on GamiKonnect.</p>
             </div>
             <form method="GET" class="hub-filter-form">
-                <input type="search" name="q" placeholder="Search by name, shop, or game..." value="{{ request.GET.q }}">
+                <div class="filter-search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="search" name="q" placeholder="Search by name, shop, or game..." value="{{ request.GET.q }}">
+                </div>
                 <select name="status" onchange="this.form.submit()">
                         <option value="">All Statuses</option>
                         <option value="pending"   {% if request.GET.status == 'pending' %}selected{% endif %}>Pending Review</option>
@@ -89,7 +97,7 @@
                             </option>
                         {% endfor %}
                 </select>
-                <button type="submit" class="btn-secondary"><i class="fas fa-filter"></i> Apply</button>
+                <button type="submit" class="btn-filter-search"><i class="fas fa-search"></i> Search</button>
                 {% if request.GET.q or request.GET.status or request.GET.prize_type or request.GET.shop %}
                 <a href="{% url 'admin_panel:competition_list' %}" class="btn-link"><i class="fas fa-rotate-left"></i> Clear</a>
                 {% endif %}

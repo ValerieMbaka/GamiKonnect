@@ -5,7 +5,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.querySelector('.filter-group input[name="q"]');
+    const searchInput = document.querySelector('.hub-filter-form input[name="q"]');
     if (searchInput) {
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {

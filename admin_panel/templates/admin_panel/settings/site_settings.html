@@ -20,12 +20,12 @@
     <form id="siteSettingsForm" method="POST" action="{% url 'admin_panel:site_settings' %}" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <div class="admin-card master-settings-container mt-4">
+        <div class="settings-card mt-4">
 
         <div class="settings-section">
             <div class="section-header">
                 <h2><i class="fas fa-fingerprint text-primary me-2"></i> Platform Identity</h2>
-                <p class="text-muted">Set your core brand details and SEO metadata.</p>
+                <p>Set your core brand details and SEO metadata.</p>
             </div>
 
             <div class="identity-layout">
@@ -36,7 +36,7 @@
                             <img src="{% if current_logo %}{{ current_logo.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" id="logoPreview" alt="Site Logo">
                         </div>
                         <div class="logo-upload-actions">
-                            <label for="id_logo" class="btn-admin-secondary w-100 justify-content-center mt-3">
+                            <label for="id_logo" class="btn-secondary w-full justify-content-center mt-3">
                                 <i class="fas fa-camera"></i> Change Logo
                             </label>
                             <small class="text-muted d-block mt-2 text-center">250x80px (PNG/SVG)</small>
@@ -73,7 +73,7 @@
         <div class="settings-section">
             <div class="section-header">
                 <h2><i class="fas fa-paint-roller text-purple me-2"></i> Theme Engine</h2>
-                <p class="text-muted">Customize the visual aesthetics of your platform.</p>
+                <p>Customize the visual aesthetics of your platform.</p>
             </div>
 
             <div class="theme-sub-row">
@@ -96,60 +96,80 @@
 
             <div class="theme-sub-row mt-4">
                 <h3 class="sub-section-title">Brand Palette</h3>
-                <div class="color-swatch-grid">
-                    <div class="color-picker-group">
-                        <label>Primary Accent</label>
-                        <div class="color-input-wrapper">
-                            {{ style_form.primary_color }}
-                            <span class="hex-display"></span>
+
+                <div class="theme-engine-layout">
+                    <div class="color-swatch-grid">
+                        <div class="color-picker-group" data-preview-target="accent">
+                            <label>Primary Accent</label>
+                            <div class="color-input-wrapper">
+                                {{ style_form.primary_color }}
+                                <span class="hex-display"></span>
+                            </div>
+                        </div>
+
+                        <div class="color-picker-group" data-preview-target="secondary">
+                            <label>Secondary Accent</label>
+                            <div class="color-input-wrapper">
+                                {{ style_form.secondary_color }}
+                                <span class="hex-display"></span>
+                            </div>
+                        </div>
+
+                        <div class="color-picker-group" data-preview-target="bg">
+                            <label>Background Color</label>
+                            <div class="color-input-wrapper">
+                                {{ style_form.background_color }}
+                                <span class="hex-display"></span>
+                            </div>
+                        </div>
+
+                        <div class="color-picker-group" data-preview-target="text">
+                            <label>Main Text Color</label>
+                            <div class="color-input-wrapper">
+                                {{ style_form.font_color }}
+                                <span class="hex-display"></span>
+                            </div>
+                        </div>
+
+                        <div class="color-picker-group" data-preview-target="btn-bg">
+                            <label>Button Background</label>
+                            <div class="color-input-wrapper">
+                                {{ style_form.button_color }}
+                                <span class="hex-display"></span>
+                            </div>
+                        </div>
+
+                        <div class="color-picker-group" data-preview-target="btn-text">
+                            <label>Button Text Color</label>
+                            <div class="color-input-wrapper">
+                                {{ style_form.button_text_color }}
+                                <span class="hex-display"></span>
+                            </div>
+                        </div>
+
+                        <div class="color-picker-group" data-preview-target="link">
+                            <label>Hyperlink Color</label>
+                            <div class="color-input-wrapper">
+                                {{ style_form.link_color }}
+                                <span class="hex-display"></span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="color-picker-group">
-                        <label>Secondary Accent</label>
-                        <div class="color-input-wrapper">
-                            {{ style_form.secondary_color }}
-                            <span class="hex-display"></span>
-                        </div>
-                    </div>
-
-                    <div class="color-picker-group">
-                        <label>Background Color</label>
-                        <div class="color-input-wrapper">
-                            {{ style_form.background_color }}
-                            <span class="hex-display"></span>
-                        </div>
-                    </div>
-
-                    <div class="color-picker-group">
-                        <label>Main Text Color</label>
-                        <div class="color-input-wrapper">
-                            {{ style_form.font_color }}
-                            <span class="hex-display"></span>
-                        </div>
-                    </div>
-
-                    <div class="color-picker-group">
-                        <label>Button Background</label>
-                        <div class="color-input-wrapper">
-                            {{ style_form.button_color }}
-                            <span class="hex-display"></span>
-                        </div>
-                    </div>
-
-                    <div class="color-picker-group">
-                        <label>Button Text Color</label>
-                        <div class="color-input-wrapper">
-                            {{ style_form.button_text_color }}
-                            <span class="hex-display"></span>
-                        </div>
-                    </div>
-
-                    <div class="color-picker-group">
-                        <label>Hyperlink Color</label>
-                        <div class="color-input-wrapper">
-                            {{ style_form.link_color }}
-                            <span class="hex-display"></span>
+                    <div class="theme-preview-panel">
+                        <div class="theme-preview-label"><span class="live-dot"></span> Live Preview</div>
+                        <div class="theme-preview-inner" id="themePreviewInner">
+                            <div class="preview-top-row">
+                                <span class="preview-brand-chip"><span class="preview-brand-dot"></span> {{ project_detail.title|default:"Your Platform" }}</span>
+                                <span class="preview-tag">New</span>
+                            </div>
+                            <h4 class="preview-heading">Sample Heading</h4>
+                            <p class="preview-body-text">This is how body copy will look against your chosen background and text colors.</p>
+                            <a href="#" class="preview-link" onclick="return false;">A hyperlink example</a>
+                            <div class="preview-button-row">
+                                <button type="button" class="preview-button">Primary Button</button>
+                                <button type="button" class="preview-button ghost">Secondary</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -166,7 +186,7 @@
         </div>
     </form>
 
-    <!-- ===== SECTION 2: Content Library (merged into Site Settings) ===== -->
+    <!-- ===== SECTION 2: Site Content — tabbed, one content type at a time ===== -->
     <div class="mt-5">
         <div class="admin-page-header flex-between mb-4">
             <div class="header-content">
@@ -194,80 +214,95 @@
             </div>
         </section>
 
-        {% for section in content_sections %}
-        <section class="admin-card hub-section">
-            <div class="hub-section-header">
-                <div>
-                    <h2><i class="{{ section.icon }}"></i> {{ section.title }}</h2>
-                    <p>Create a new item or load an existing one for editing.</p>
-                </div>
-                <span class="hub-section-count">{{ section.count }}</span>
+        <div class="settings-card content-tabs-shell">
+            <div class="content-tabs-nav" role="tablist">
+                {% for section in content_sections %}
+                <button type="button"
+                        class="content-tab-btn {% if forloop.first %}active{% endif %}"
+                        data-tab-target="tab-panel-{{ section.key }}"
+                        data-tab-key="{{ section.key }}"
+                        role="tab">
+                    <i class="{{ section.icon }}"></i>
+                    <span>{{ section.title }}</span>
+                    <span class="tab-count">{{ section.count }}</span>
+                </button>
+                {% endfor %}
             </div>
 
-            <div class="hub-section-body">
-                <div class="hub-form-panel">
-                    <form method="post" enctype="multipart/form-data" class="hub-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="content_form_key" value="{{ section.key }}">
-                        {% if section.form.instance.pk %}
-                            <input type="hidden" name="object_id" value="{{ section.form.instance.pk }}">
-                        {% endif %}
+            {% for section in content_sections %}
+            <div class="content-tab-panel {% if forloop.first %}active{% endif %}" id="tab-panel-{{ section.key }}" data-tab-key="{{ section.key }}" role="tabpanel">
+                <div class="content-tab-panel-header">
+                    <div>
+                        <h3><i class="{{ section.icon }}"></i> {{ section.title }}</h3>
+                        <p>Create a new item or load an existing one for editing.</p>
+                    </div>
+                </div>
 
-                        {{ section.form.non_field_errors }}
-                        <div class="hub-form-grid">
-                            {% for field in section.form.visible_fields %}
-                                <div class="hub-field">
-                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                    {{ field }}
-                                    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-                                    {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                <div class="hub-section-body">
+                    <div class="hub-form-panel">
+                        <form method="post" enctype="multipart/form-data" class="hub-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="content_form_key" value="{{ section.key }}">
+                            {% if section.form.instance.pk %}
+                                <input type="hidden" name="object_id" value="{{ section.form.instance.pk }}">
+                            {% endif %}
+
+                            {{ section.form.non_field_errors }}
+                            <div class="hub-form-grid">
+                                {% for field in section.form.visible_fields %}
+                                    <div class="hub-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                                        {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="hub-form-actions">
+                                <span class="hub-form-note">
+                                    {% if section.form.instance.pk %}
+                                        Editing existing item #{{ section.form.instance.pk }}
+                                    {% else %}
+                                        Creating a new {{ section.title|lower }} item
+                                    {% endif %}
+                                </span>
+                                <button type="submit" class="btn-admin-primary">
+                                    <i class="fas fa-save me-2"></i> Save {{ section.title }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="hub-list-panel">
+                        <div class="object-list">
+                            {% for item in section.items %}
+                                <article class="object-card">
+                                    <div>
+                                        <h3>{{ item.summary }}</h3>
+                                        <p>{{ item.detail }}</p>
+                                    </div>
+                                    <div class="object-card-meta">
+                                        {% if item.is_active %}
+                                            <span class="status-badge success">Active</span>
+                                        {% else %}
+                                            <span class="status-badge danger">Inactive</span>
+                                        {% endif %}
+                                        <a class="btn-link" href="?section={{ section.key }}&object_id={{ item.id }}">Edit</a>
+                                    </div>
+                                </article>
+                            {% empty %}
+                                <div class="hub-empty-state">
+                                    <i class="fas fa-folder-open mb-2"></i>
+                                    <p class="mb-0">No records yet for this section.</p>
                                 </div>
                             {% endfor %}
                         </div>
-
-                        <div class="hub-form-actions">
-                            <span class="hub-form-note">
-                                {% if section.form.instance.pk %}
-                                    Editing existing item #{{ section.form.instance.pk }}
-                                {% else %}
-                                    Creating a new {{ section.title|lower }} item
-                                {% endif %}
-                            </span>
-                            <button type="submit" class="btn-admin-primary">
-                                <i class="fas fa-save me-2"></i> Save {{ section.title }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="hub-list-panel">
-                    <div class="object-list">
-                        {% for item in section.items %}
-                            <article class="object-card">
-                                <div>
-                                    <h3>{{ item.summary }}</h3>
-                                    <p>{{ item.detail }}</p>
-                                </div>
-                                <div class="object-card-meta">
-                                    {% if item.is_active %}
-                                        <span class="status-badge success">Active</span>
-                                    {% else %}
-                                        <span class="status-badge danger">Inactive</span>
-                                    {% endif %}
-                                    <a class="btn-link" href="?section={{ section.key }}&object_id={{ item.id }}">Edit</a>
-                                </div>
-                            </article>
-                        {% empty %}
-                            <div class="hub-empty-state">
-                                <i class="fas fa-folder-open mb-2"></i>
-                                <p class="mb-0">No records yet for this section.</p>
-                            </div>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
-        </section>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}

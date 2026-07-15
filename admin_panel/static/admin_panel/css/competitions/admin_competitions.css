@@ -10,34 +10,81 @@
    .hub-summary-value, .hub-summary-meta, plus the "blue" and "neutral"
    icon color variants referenced on this page.
    ------------------------------------------------------------------ */
-.hub-summary-icon.blue {
+/* Card shell: white surface, rounded corners, colored left accent bar */
+.hub-summary-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid transparent;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.hub-summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.hub-summary-card.blue    { border-left-color: #35A8F0; }
+.hub-summary-card.success { border-left-color: #10B981; }
+.hub-summary-card.warning { border-left-color: #F0354B; }
+.hub-summary-card.neutral { border-left-color: #a855f7; }
+
+/* Flat colored icon squares (not gradients) to match reference */
+.hub-summary-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
     background: var(--gradient-primary);
+    color: #fff;
+}
+
+.hub-summary-icon.blue {
+    background: #35A8F0;
+}
+
+.hub-summary-icon.success {
+    background: #10B981;
+}
+
+.hub-summary-icon.warning {
+    background: #F0354B;
 }
 
 .hub-summary-icon.neutral {
-    background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+    background: rgba(168, 85, 247, 0.16);
+    color: #a855f7;
 }
 
 .hub-summary-copy {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     min-width: 0;
 }
 
 .hub-summary-label {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+    line-height: 1.2;
 }
 
 .hub-summary-value {
-    font-size: 1.6rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-primary);
-    line-height: 1.15;
+    line-height: 1.1;
     font-family: var(--font-sans);
     white-space: nowrap;
     overflow: hidden;
@@ -45,12 +92,29 @@
 }
 
 .hub-summary-meta {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Pill-shaped meta badge, e.g. "↑ 3", "Approved", "Action needed" */
+.hub-summary-meta.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-start;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 10px;
+}
+
+.hub-summary-card.blue    .hub-summary-meta.pill { background: rgba(53, 168, 240, 0.12); color: #35A8F0; }
+.hub-summary-card.success .hub-summary-meta.pill { background: rgba(16, 185, 129, 0.12); color: #10B981; }
+.hub-summary-card.warning .hub-summary-meta.pill { background: rgba(240, 53, 75, 0.12);  color: #F0354B; }
+.hub-summary-card.neutral .hub-summary-meta.pill { background: rgba(168, 85, 247, 0.12); color: #a855f7; }
 
 @media (max-width: 1200px) {
     .hub-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -58,6 +122,164 @@
 
 @media (max-width: 640px) {
     .hub-summary-grid { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------
+   Filter Toolbar — clean white bar with pill inputs, matching the
+   "All Users" reference: heading left, controls + Search button right.
+   ------------------------------------------------------------------ */
+.hub-filter-toolbar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 12px;
+    padding: 16px 20px !important;
+    background: #fff;
+}
+
+.hub-filter-heading h2 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.hub-filter-heading p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.hub-filter-form {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.filter-search-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex: 2 1 200px;
+}
+
+.filter-search-wrap i {
+    position: absolute;
+    left: 12px;
+    color: var(--text-muted);
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.hub-filter-form input[type="search"] {
+    width: 100%;
+    min-height: 0 !important;
+    padding: 7px 12px 7px 30px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary) !important;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    transition: border-color .2s ease, background .2s ease;
+}
+
+.hub-filter-form input[type="search"]:focus {
+    outline: none;
+    background: #fff !important;
+    border-color: #35A8F0;
+    box-shadow: 0 0 0 3px rgba(53, 168, 240, 0.15);
+}
+
+.hub-filter-form select {
+    flex: 1 1 140px;
+    min-width: 0;
+    min-height: 0 !important;
+    padding: 7px 12px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary) !important;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease;
+}
+
+.hub-filter-form select:focus {
+    outline: none;
+    background: #fff !important;
+    border-color: #35A8F0;
+}
+
+.btn-filter-search {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    padding: 7px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #35A8F0;
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .2s ease, transform .2s ease;
+}
+
+.btn-filter-search:hover {
+    background: #1e93db;
+    transform: translateY(-1px);
+}
+
+.hub-filter-form .btn-link {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 768px) {
+    .hub-filter-form { flex-direction: column; align-items: stretch; }
+    .filter-search-wrap,
+    .hub-filter-form select,
+    .btn-filter-search { flex: 1 1 100%; width: 100%; }
+}
+
+/* ------------------------------------------------------------------
+   Page Header — pinned with position:absolute rather than relying on
+   flex, since .flex-between isn't defined for this page (it only
+   exists in admin_dashboard.css) and something upstream keeps
+   overriding display:flex on .admin-page-header.
+   ------------------------------------------------------------------ */
+.admin-page-header {
+    position: relative !important;
+    padding-right: 220px;
+    min-height: 90px;
+}
+
+.admin-page-header .header-content {
+    max-width: 100%;
+}
+
+.admin-page-header .header-actions {
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .admin-page-header {
+        padding-right: 0;
+    }
+    .admin-page-header .header-actions {
+        position: static !important;
+        margin-top: 16px;
+    }
 }
 
 /* ------------------------------------------------------------------

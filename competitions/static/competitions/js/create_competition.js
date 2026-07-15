@@ -25,12 +25,12 @@ class CompetitionWizard {
         this.durationDisplay = document.getElementById('durationDisplay');
         this.durationText = document.getElementById('durationText');
         
-       // Age toggle removed - always 18+ enforced by the system
-        this.typePhysical = document.getElementById('typePhysical');
-        this.typeVirtual = document.getElementById('typeVirtual');
-        this.shopField = document.getElementById('shopField');
-        this.virtualLinkField = document.getElementById('virtualLinkField');
-        this.virtualGuidelinesField = document.getElementById('virtualGuidelinesField');
+        // Prize fields
+        this.prizeTypeSelect = document.getElementById('prizeTypeSelect');
+        this.prizeDetailsSection = document.getElementById('prizeDetailsSection');
+        this.moneyPrizeFields = document.getElementById('moneyPrizeFields');
+        this.giftPrizeFields = document.getElementById('giftPrizeFields');
+        
         this.summaryContainer = document.getElementById('summaryContainer');
 
         this.btnPrev = document.getElementById('btnPrev');
@@ -80,27 +80,32 @@ loadDataIsland() {
         this.scheduledTime?.addEventListener('change', () => this.validateSchedule());
         this.endTime?.addEventListener('change', () => this.validateSchedule());
         
-        // Age restriction removed - always 18+ enforced by the system
-        this.typePhysical?.addEventListener('change', () => this.toggleCompType());
-        this.typeVirtual?.addEventListener('change', () => this.toggleCompType());
+        this.prizeTypeSelect?.addEventListener('change', () => this.handlePrizeTypeChange());
     }
 
-    toggleCompType() {
-        const isVirtual = this.typeVirtual?.checked;
-        if (isVirtual) {
-            this.shopField.style.display = 'none';
-            this.virtualLinkField.style.display = 'block';
-            this.virtualGuidelinesField.style.display = 'block';
-            this.shopSelect.removeAttribute('required');
-            this.virtualLinkField.querySelector('input').setAttribute('required', 'required');
-            this.virtualGuidelinesField.querySelector('textarea').setAttribute('required', 'required');
-        } else {
-            this.shopField.style.display = 'block';
-            this.virtualLinkField.style.display = 'none';
-            this.virtualGuidelinesField.style.display = 'none';
-            this.shopSelect.setAttribute('required', 'required');
-            this.virtualLinkField.querySelector('input').removeAttribute('required');
-            this.virtualGuidelinesField.querySelector('textarea').removeAttribute('required');
+    handlePrizeTypeChange() {
+        const type = this.prizeTypeSelect?.value;
+        if (!type || type === 'points') {
+            this.prizeDetailsSection.style.display = 'none';
+            this.moneyPrizeFields.style.display = 'none';
+            this.giftPrizeFields.style.display = 'none';
+            
+            this.moneyPrizeFields.querySelectorAll('input').forEach(i => i.removeAttribute('required'));
+            this.giftPrizeFields.querySelector('textarea')?.removeAttribute('required');
+        } else if (type === 'money') {
+            this.prizeDetailsSection.style.display = 'block';
+            this.moneyPrizeFields.style.display = 'block';
+            this.giftPrizeFields.style.display = 'none';
+            
+            this.moneyPrizeFields.querySelector('input[name="prize_money_total"]').setAttribute('required', 'required');
+            this.giftPrizeFields.querySelector('textarea')?.removeAttribute('required');
+        } else if (type === 'gift') {
+            this.prizeDetailsSection.style.display = 'block';
+            this.moneyPrizeFields.style.display = 'none';
+            this.giftPrizeFields.style.display = 'block';
+            
+            this.moneyPrizeFields.querySelectorAll('input').forEach(i => i.removeAttribute('required'));
+            this.giftPrizeFields.querySelector('textarea').setAttribute('required', 'required');
         }
     }
 
@@ -164,7 +169,7 @@ loadDataIsland() {
         
         const fields = [
             { label: 'Name', name: 'name' },
-            { label: 'Type', name: 'is_virtual', transform: (v) => v === 'true' ? 'Virtual' : 'Physical' },
+            { label: 'Venue', name: 'shop', transform: () => this.shopSelect.options[this.shopSelect.selectedIndex].text },
             { label: 'Game', name: 'game', transform: () => this.gameSelect.options[this.gameSelect.selectedIndex].text },
             { label: 'Platform', name: 'platform', transform: () => this.platformSelect.options[this.platformSelect.selectedIndex].text },
             { label: 'Start Time', name: 'scheduled_time' },
@@ -177,10 +182,17 @@ loadDataIsland() {
             }},
         ];
 
-        if (formData.get('is_virtual') === 'true') {
-            fields.push({ label: 'Platform Link', name: 'platform_or_shop_link' });
-        } else {
-            fields.push({ label: 'Venue', name: 'shop', transform: () => this.shopSelect.options[this.shopSelect.selectedIndex].text });
+        const prizeType = formData.get('prize_type');
+        if (prizeType === 'money') {
+            fields.push({ label: 'Total Prize Money', name: 'prize_money_total', transform: (v) => `KES ${v}` });
+            fields.push({ label: '1st/2nd/3rd %', name: 'prize_money_1st_pct', transform: (v) => {
+                const p1 = formData.get('prize_money_1st_pct') || '0';
+                const p2 = formData.get('prize_money_2nd_pct') || '0';
+                const p3 = formData.get('prize_money_3rd_pct') || '0';
+                return `${p1}% / ${p2}% / ${p3}%`;
+            }});
+        } else if (prizeType === 'gift') {
+            fields.push({ label: 'Gifts', name: 'prize_gift_description' });
         }
 
         fields.forEach(f => {

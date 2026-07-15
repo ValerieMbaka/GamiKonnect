@@ -24,6 +24,9 @@ class AdminCompetitionWizard {
         this.typePhysical = document.getElementById('typePhysical');
         this.typeVirtual = document.getElementById('typeVirtual');
         this.shopField = document.getElementById('shopField');
+        this.shopSelect = this.form.querySelector('[name="shop"]');
+        this.gameSelect = this.form.querySelector('[name="game"]');
+        this.platformSelect = this.form.querySelector('[name="platform"]');
         this.virtualLinkField = document.getElementById('virtualLinkField');
         this.virtualGuidelinesField = document.getElementById('virtualGuidelinesField');
 
@@ -49,6 +52,7 @@ class AdminCompetitionWizard {
 
         this.typePhysical?.addEventListener('change', () => this.toggleCompType());
         this.typeVirtual?.addEventListener('change', () => this.toggleCompType());
+        this.shopSelect?.addEventListener('change', () => this.loadShopResources());
 
         this.prizeTypeSelect?.addEventListener('change', () => this.updatePrizeFields());
 
@@ -90,6 +94,46 @@ class AdminCompetitionWizard {
             panel.style.display = key === value ? 'block' : 'none';
         });
         if (this.prizeHint) this.prizeHint.style.display = value ? 'none' : 'block';
+    }
+
+    async loadShopResources() {
+        const shopId = this.shopSelect?.value;
+        const url = this.form.dataset.resourcesUrl;
+        
+        if (!shopId || !url) {
+            // Reset selects if no shop chosen
+            this.updateSelectOptions(this.gameSelect, []);
+            this.updateSelectOptions(this.platformSelect, []);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${url}?shop_id=${shopId}`);
+            if (!response.ok) throw new Error('Failed to fetch resources');
+            
+            const data = await response.json();
+            
+            this.updateSelectOptions(this.gameSelect, data.games);
+            this.updateSelectOptions(this.platformSelect, data.platforms);
+        } catch (error) {
+            console.error('Error loading shop resources:', error);
+        }
+    }
+
+    updateSelectOptions(select, items) {
+        if (!select) return;
+        
+        // Keep the first option (placeholder)
+        const firstOption = select.options[0];
+        select.innerHTML = '';
+        if (firstOption) select.appendChild(firstOption);
+        
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            select.appendChild(option);
+        });
     }
 
     // --- Navigation ---

@@ -128,7 +128,6 @@
                     <th>User</th>
                     <th>Email</th>
                     <th>Role</th>
-                    <th>Gender</th>
                     <th>Status</th>
                     <th>Points</th>
                     <th>Actions</th>
@@ -159,7 +158,6 @@
                             <span class="badge badge-neutral">Arena Owner</span>
                         {% endif %}
                     </td>
-                    <td class="text-secondary">{{ user.gender|default:"—"|title }}</td>
                     <td>
                         {% if user.last_login %}
                             <span class="badge badge-active">Active</span>
@@ -174,7 +172,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="empty-state">No users found matching your criteria.</td>
+                    <td colspan="6" class="empty-state">No users found matching your criteria.</td>
                 </tr>
                 {% endfor %}
             </tbody>

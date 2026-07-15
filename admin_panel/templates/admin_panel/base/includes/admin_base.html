@@ -228,6 +228,12 @@
                                 </li>
                             </ul>
                         </li>
+                        <li>
+                            <a href="{% url 'admin_panel:staff_list' %}" class="nav-link {% if 'staff' in request.path %}active{% endif %}" data-tooltip="Staff Management">
+                                <i class="fas fa-user-shield"></i>
+                                <span>Staff</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
@@ -241,12 +247,6 @@
                             <a href="{% url 'admin_panel:site_settings' %}" class="nav-link {% if 'settings' in request.path %}active{% endif %}" data-tooltip="Site Settings">
                                 <i class="fas fa-sliders-h"></i>
                                 <span>Site Settings</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'admin_panel:staff_list' %}" class="nav-link {% if 'staff' in request.path %}active{% endif %}" data-tooltip="Staff Management">
-                                <i class="fas fa-user-shield"></i>
-                                <span>Staff</span>
                             </a>
                         </li>
                         <li>

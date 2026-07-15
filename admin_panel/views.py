@@ -121,6 +121,8 @@ def admin_dashboard(request):
     # Revenue by Category (Last 4 months)
     rev_labels = []
     rev_competitions = []
+    rev_ads = []
+    rev_subscriptions = []
     rev_arena_fees = []
     for i in range(3, -1, -1):
         month_ago = timezone.now() - timedelta(days=i * 30)
@@ -133,8 +135,11 @@ def admin_dashboard(request):
             created_at__month=month_ago.month,
         ).aggregate(Sum('amount'))['amount__sum'] or 0
         rev_competitions.append(float(comp_rev))
-        # Arena fees (placeholder - 30% of competition revenue as estimated arena fees)
-        rev_arena_fees.append(float(comp_rev) * 0.3 if comp_rev else 0)
+        
+        # Placeholders for other categories as they might not have models yet
+        rev_ads.append(float(comp_rev) * 0.1) # Placeholder 10%
+        rev_subscriptions.append(float(comp_rev) * 0.15) # Placeholder 15%
+        rev_arena_fees.append(float(comp_rev) * 0.2) # Placeholder 20%
 
     # APScheduler Jobs Monitoring
     from competitions.scheduler import get_scheduler
@@ -164,6 +169,8 @@ def admin_dashboard(request):
             'activity_data': activity_data,
             'rev_labels': rev_labels,
             'rev_competitions': rev_competitions,
+            'rev_ads': rev_ads,
+            'rev_subscriptions': rev_subscriptions,
             'rev_arena_fees': rev_arena_fees,
         }),
         'admin_unread_notifications_count': NotificationRecipient.objects.filter(
@@ -1054,6 +1061,26 @@ def admin_competition_create(request):
         'pending_competitions_count': Competition.objects.filter(status='pending').count(),
     }
     return render(request, 'admin_panel/competitions/admin_competition_create.html', context)
+
+
+@admin_required
+def get_shop_resources(request):
+    shop_id = request.GET.get('shop_id')
+    if not shop_id:
+        return JsonResponse({'error': 'Missing shop_id'}, status=400)
+
+    try:
+        shop = Shop.objects.get(id=shop_id, is_approved=True)
+    except Shop.DoesNotExist:
+        return JsonResponse({'error': 'Shop not found'}, status=404)
+
+    games = list(shop.games_available.filter(is_active=True).values('id', 'name'))
+    platforms = list(Platform.objects.filter(shop_consoles__shop=shop).values('id', 'name'))
+
+    return JsonResponse({
+        'games': games,
+        'platforms': platforms
+    })
 
 
 @admin_required

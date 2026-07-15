@@ -9,22 +9,16 @@ class CompetitionCreateForm(forms.ModelForm):
         model = Competition
         fields = [
             'name', 'description', 'game', 'platform', 'shop',
-            'is_virtual', 'platform_or_shop_link', 'guidelines',
             'scheduled_time', 'competition_end_time',
             'entry_fee', 'max_participants', 'team_size',
             'gender_rules', 'is_pwa_only', 'rules', 'prize_type',
+            'prize_money_total', 'prize_money_1st_pct', 'prize_money_2nd_pct', 'prize_money_3rd_pct',
+            'prize_gift_description',
         ]
         widgets = {
             'description': forms.Textarea(attrs={
                 'rows': 4,
                 'placeholder': 'Describe the competition...',
-            }),
-            'platform_or_shop_link': forms.TextInput(attrs={
-                'placeholder': 'e.g. Discord, Twitch, or Shop link',
-            }),
-            'guidelines': forms.Textarea(attrs={
-                'rows': 3,
-                'placeholder': 'Specific guidelines for participants...',
             }),
             'scheduled_time': forms.DateTimeInput(attrs={
                 'type': 'datetime-local',
@@ -56,6 +50,11 @@ class CompetitionCreateForm(forms.ModelForm):
                 ('money', 'Cash + Points'),
                 ('gift', 'Gift + Points'),
             ]),
+            'prize_money_total': forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': 'Total Cash Prize'}),
+            'prize_money_1st_pct': forms.NumberInput(attrs={'min': '0', 'max': '100', 'placeholder': '1st Place %'}),
+            'prize_money_2nd_pct': forms.NumberInput(attrs={'min': '0', 'max': '100', 'placeholder': '2nd Place %'}),
+            'prize_money_3rd_pct': forms.NumberInput(attrs={'min': '0', 'max': '100', 'placeholder': '3rd Place %'}),
+            'prize_gift_description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Describe the gifts for top 3 positions...'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -79,7 +78,6 @@ class CompetitionCreateForm(forms.ModelForm):
         cleaned_data = super().clean()
         scheduled_time = cleaned_data.get('scheduled_time')
         competition_end_time = cleaned_data.get('competition_end_time')
-        is_virtual = cleaned_data.get('is_virtual')
 
         # Competition must be scheduled at least 2 hours 45 minutes in the future
         if scheduled_time:
@@ -91,29 +89,36 @@ class CompetitionCreateForm(forms.ModelForm):
                     f"Earliest allowed time: {min_start_time.strftime('%I:%M %p')}"
                 )
 
-        # Virtual competition validations
-        if is_virtual:
-            if not cleaned_data.get('platform_or_shop_link'):
-                self.add_error('platform_or_shop_link', 'Platform or shop link is required for virtual competitions.')
-            if not cleaned_data.get('guidelines'):
-                self.add_error('guidelines', 'Guidelines are required for virtual competitions.')
-        else:
-            # Physical competition: shop is required and must have the platform
-            shop = cleaned_data.get('shop')
-            platform = cleaned_data.get('platform')
-            if not shop:
-                self.add_error('shop', 'Shop is required for physical competitions.')
-            if shop and platform:
-                if not shop.consoles.filter(console_type=platform).exists():
-                    self.add_error('platform', 'The selected platform is not available at this shop.')
-            
-            # Game must be available at the selected shop
-            game = cleaned_data.get('game')
-            if shop and game:
-                if not shop.games_available.filter(pk=game.pk).exists():
-                    self.add_error('game', 'The selected game is not available at this shop.')
+        # Physical competition: shop is required and must have the platform
+        shop = cleaned_data.get('shop')
+        platform = cleaned_data.get('platform')
+        if not shop:
+            self.add_error('shop', 'Shop is required for physical competitions.')
+        if shop and platform:
+            if not shop.consoles.filter(console_type=platform).exists():
+                self.add_error('platform', 'The selected platform is not available at this shop.')
+        
+        # Game must be available at the selected shop
+        game = cleaned_data.get('game')
+        if shop and game:
+            if not shop.games_available.filter(pk=game.pk).exists():
+                self.add_error('game', 'The selected game is not available at this shop.')
 
         prize_type = cleaned_data.get('prize_type')
+        if prize_type == 'money':
+            if not cleaned_data.get('prize_money_total'):
+                self.add_error('prize_money_total', 'Please specify the total prize money.')
+            
+            p1 = cleaned_data.get('prize_money_1st_pct') or 0
+            p2 = cleaned_data.get('prize_money_2nd_pct') or 0
+            p3 = cleaned_data.get('prize_money_3rd_pct') or 0
+            
+            if p1 + p2 + p3 > 100:
+                self.add_error('prize_money_1st_pct', 'Total percentages cannot exceed 100%.')
+        
+        elif prize_type == 'gift':
+            if not cleaned_data.get('prize_gift_description'):
+                self.add_error('prize_gift_description', 'Please describe the gifts for the winners.')
         if not prize_type:
             self.add_error('prize_type', 'Please select a prize type.')
         elif prize_type:
@@ -479,6 +484,21 @@ class CompetitionAdminCreateForm(forms.ModelForm):
         self.fields['game'].queryset = Game.objects.filter(is_active=True)
         self.fields['shop'].queryset = Shop.objects.filter(is_approved=True)
 
+        # If data is provided, adjust querysets for game and platform to allow validation
+        if 'shop' in self.data:
+            try:
+                shop_id = int(self.data.get('shop'))
+                shop = Shop.objects.get(id=shop_id, is_approved=True)
+                self.fields['game'].queryset = shop.games_available.filter(is_active=True)
+                from games.models import Platform
+                self.fields['platform'].queryset = Platform.objects.filter(shop_consoles__shop=shop)
+            except (ValueError, TypeError, Shop.DoesNotExist):
+                pass
+        elif self.instance.pk and getattr(self.instance, 'shop', None):
+            self.fields['game'].queryset = self.instance.shop.games_available.filter(is_active=True)
+            from games.models import Platform
+            self.fields['platform'].queryset = Platform.objects.filter(shop_consoles__shop=self.instance.shop)
+
     def clean(self):
         cleaned_data = super().clean()
         scheduled_time = cleaned_data.get('scheduled_time')
@@ -526,6 +546,22 @@ class CompetitionAdminCreateForm(forms.ModelForm):
         if competition_end_time and scheduled_time:
             if competition_end_time <= scheduled_time:
                 self.add_error('competition_end_time', 'Competition end time must be after the start time.')
+
+        # Physical competition: shop is required and must have the platform/game
+        if not is_virtual:
+            shop = cleaned_data.get('shop')
+            platform = cleaned_data.get('platform')
+            game = cleaned_data.get('game')
+            
+            if not shop:
+                self.add_error('shop', 'Shop is required for physical competitions.')
+            
+            if shop:
+                if platform and not shop.consoles.filter(console_type=platform).exists():
+                    self.add_error('platform', 'The selected platform is not available at this shop.')
+                
+                if game and not shop.games_available.filter(pk=game.pk).exists():
+                    self.add_error('game', 'The selected game is not available at this shop.')
 
         # Prize type validations
         if not prize_type:

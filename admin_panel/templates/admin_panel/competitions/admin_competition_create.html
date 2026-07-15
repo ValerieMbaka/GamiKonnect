@@ -55,7 +55,7 @@
                 </div>
             {% endif %}
 
-            <form method="post" class="competition-create-form" id="adminCreateCompForm" novalidate>
+            <form method="post" class="competition-create-form" id="adminCreateCompForm" novalidate data-resources-url="{% url 'admin_panel:get_shop_resources' %}">
                 {% csrf_token %}
 
                 {# ===================== STEP 1: BASICS ===================== #}

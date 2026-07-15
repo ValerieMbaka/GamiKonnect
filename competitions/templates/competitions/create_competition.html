@@ -60,18 +60,6 @@
                         <div class="invalid-feedback d-block" id="err-name"></div>
                     </div>
 
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label fw-semibold d-block">Competition Type</label>
-                        <div class="form-check form-check-inline mt-2">
-                            <input class="form-check-input" type="radio" name="is_virtual" id="typePhysical" value="false" checked>
-                            <label class="form-check-label" for="typePhysical">Physical (In-Arena)</label>
-                        </div>
-                        <div class="form-check form-check-inline mt-2">
-                            <input class="form-check-input" type="radio" name="is_virtual" id="typeVirtual" value="true">
-                            <label class="form-check-label" for="typeVirtual">Virtual (Online)</label>
-                        </div>
-                    </div>
-
                     <div class="col-md-6 mb-4" id="shopField">
                         <label class="form-label fw-semibold">Venue (Arena) <span class="text-danger">*</span></label>
                         <div class="select-wrapper">
@@ -84,18 +72,6 @@
                         </div>
                         <div class="invalid-feedback d-block" id="err-shop"></div>
                     </div>
-
-                    <div class="col-md-6 mb-4" id="virtualLinkField" style="display:none;">
-                        <label class="form-label fw-semibold">Platform/Shop Link <span class="text-danger">*</span></label>
-                        <input type="text" name="platform_or_shop_link" class="form-control form-control-lg premium-input" placeholder="e.g. Discord, Twitch, or Shop link">
-                        <div class="invalid-feedback d-block" id="err-platform_or_shop_link"></div>
-                    </div>
-                </div>
-
-                <div class="mb-4" id="virtualGuidelinesField" style="display:none;">
-                    <label class="form-label fw-semibold">Guidelines <span class="text-danger">*</span></label>
-                    <textarea name="guidelines" class="form-control form-control-lg premium-input" rows="3" placeholder="Specific guidelines for the virtual competition..."></textarea>
-                    <div class="invalid-feedback d-block" id="err-guidelines"></div>
                 </div>
 
                 <div class="mb-4">
@@ -184,7 +160,7 @@
                     <div class="col-md-4 mb-4">
                         <label class="form-label fw-semibold">Prize Type <span class="text-danger">*</span></label>
                         <div class="select-wrapper">
-                            <select name="prize_type" class="form-select form-select-lg premium-input" required>
+                            <select name="prize_type" id="prizeTypeSelect" class="form-select form-select-lg premium-input" required>
                                 <option value="">Select prize type...</option>
                                 <option value="points">Points Only</option>
                                 <option value="money">Cash + Points</option>
@@ -192,6 +168,46 @@
                             </select>
                         </div>
                         <div class="invalid-feedback d-block" id="err-prize_type"></div>
+                    </div>
+                </div>
+
+                {# Prize Details (Conditional) #}
+                <div id="prizeDetailsSection" style="display:none;">
+                    <h5 class="step-section-title mt-2"><i class="fas fa-trophy text-warning"></i> Prize Allocation</h5>
+                    
+                    {# Money Prize Fields #}
+                    <div id="moneyPrizeFields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-semibold">Total Prize Money (KES) <span class="text-danger">*</span></label>
+                                <input type="number" name="prize_money_total" class="form-control form-control-lg premium-input" min="0" step="0.01" placeholder="e.g. 5000">
+                                <div class="invalid-feedback d-block" id="err-prize_money_total"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <label class="form-label fw-semibold">1st Place %</label>
+                                <input type="number" name="prize_money_1st_pct" class="form-control form-control-lg premium-input" min="0" max="100" placeholder="e.g. 50">
+                                <div class="invalid-feedback d-block" id="err-prize_money_1st_pct"></div>
+                            </div>
+                            <div class="col-md-4 mb-4">
+                                <label class="form-label fw-semibold">2nd Place %</label>
+                                <input type="number" name="prize_money_2nd_pct" class="form-control form-control-lg premium-input" min="0" max="100" placeholder="e.g. 30">
+                            </div>
+                            <div class="col-md-4 mb-4">
+                                <label class="form-label fw-semibold">3rd Place %</label>
+                                <input type="number" name="prize_money_3rd_pct" class="form-control form-control-lg premium-input" min="0" max="100" placeholder="e.g. 20">
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Gift Prize Fields #}
+                    <div id="giftPrizeFields" style="display:none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Gift Description <span class="text-danger">*</span></label>
+                            <textarea name="prize_gift_description" class="form-control premium-input" rows="3" placeholder="Describe the gifts for the top 3 winners..."></textarea>
+                            <div class="invalid-feedback d-block" id="err-prize_gift_description"></div>
+                        </div>
                     </div>
                 </div>
 

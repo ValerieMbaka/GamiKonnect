@@ -614,15 +614,7 @@ def shop_owner_competition_create(request):
                     competition = form.save(commit=False)
                     competition.created_by = shop_owner
                     competition.age_restricted = True
-
-                    if competition.is_virtual and not competition.shop_id:
-                        default_shop = shop_owner.shops.filter(is_approved=True).first()
-                        if not default_shop:
-                            return JsonResponse({
-                                'success': False,
-                                'message': 'You need at least one approved arena to deploy a virtual competition.',
-                            }, status=400)
-                        competition.shop = default_shop
+                    competition.is_virtual = False  # Shop owners can only create physical competitions
 
                     competition.registration_opens_at = (
                         competition.scheduled_time - timezone.timedelta(hours=1)

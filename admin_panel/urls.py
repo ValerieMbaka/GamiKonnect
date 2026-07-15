@@ -36,6 +36,7 @@ urlpatterns = [
 
     # Competition Management
     path('competitions/create/', views.admin_competition_create, name='competition_create'),
+    path('competitions/resources/', views.get_shop_resources, name='get_shop_resources'),
     path('competitions/', views.admin_competition_list, name='competition_list'),
     path('competitions/<slug:slug>/', views.admin_competition_detail, name='competition_detail'),
     path('competitions/<slug:slug>/approve/', views.admin_competition_approve, name='competition_approve'),

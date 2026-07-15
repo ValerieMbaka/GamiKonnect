@@ -163,22 +163,53 @@ class AdminDashboardController {
         if (!canvas) return;
 
         new Chart(canvas.getContext('2d'), {
-            type: 'doughnut',
+            type: 'bar',
             data: {
-                labels: ['Direct', 'Search', 'Social', 'Referral'],
-                datasets: [{
-                    data: [38, 27, 21, 14],
-                    backgroundColor: [this.colors.primary, this.colors.success, this.colors.purple, this.colors.warning],
-                    borderWidth: 0
-                }]
+                labels: this.chartData.rev_labels || [],
+                datasets: [
+                    {
+                        label: 'Competitions',
+                        data: this.chartData.rev_competitions || [],
+                        backgroundColor: this.colors.primary,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Ads',
+                        data: this.chartData.rev_ads || [],
+                        backgroundColor: this.colors.success,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Subscriptions',
+                        data: this.chartData.rev_subscriptions || [],
+                        backgroundColor: this.colors.purple,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Arena Fees',
+                        data: this.chartData.rev_arena_fees || [],
+                        backgroundColor: this.colors.warning,
+                        borderRadius: 4
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '75%',
                 plugins: {
-                    legend: { position: 'bottom' },
+                    legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true } },
                     tooltip: this.getTooltipConfig()
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: this.gridColor, drawBorder: false },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    }
                 }
             }
         });

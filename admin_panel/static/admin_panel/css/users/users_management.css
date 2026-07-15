@@ -1,4 +1,15 @@
 /* =========================================
+   Box-sizing reset (scoped to this page's stylesheet)
+   Prevents padding/border from pushing elements past
+   their container width and causing horizontal overflow.
+   ========================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* =========================================
    Top Summary Stat Cards
    ========================================= */
 .stats-grid {
@@ -6,6 +17,8 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
     margin-bottom: 30px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .gk-stat-card {
@@ -20,6 +33,8 @@
     flex-direction: column;
     gap: 12px;
     min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -32,6 +47,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
 }
 
 .gk-stat-icon {
@@ -57,6 +73,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
 }
 
 .gk-stat-body {
@@ -64,6 +82,7 @@
     flex-direction: row;
     flex: 1;
     gap: 10px;
+    min-width: 0;
 }
 
 .gk-stat-row {
@@ -263,6 +282,12 @@
     gap: 16px;
     padding: 20px;
     border-bottom: 1px solid var(--border-color, #eef0f4);
+    width: 100%;
+    max-width: 100%;
+}
+
+.table-toolbar > div {
+    min-width: 0;
 }
 
 .table-toolbar h2 {
@@ -290,7 +315,8 @@
     border-radius: 8px;
     border: 1px solid var(--border-color, #eef0f4);
     font-size: 0.85rem;
-    min-width: 220px;
+    flex: 1 1 200px;
+    max-width: 320px;
     background: var(--bg-card, #ffffff);
     color: var(--text-dark, #181c32);
 }

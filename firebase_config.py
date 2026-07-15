@@ -15,7 +15,7 @@ def initialize_firebase():
             return firebase_admin.get_app()
         
         # Use the service account key file you uploaded
-        cred_path = os.path.join(settings.BASE_DIR, 'gamikonnect-34d65-firebase-adminsdk-fbsvc-b1f2efe7f4.json')
+        cred_path = os.path.join(settings.BASE_DIR, 'gamikonnect-34d65-firebase-adminsdk-fbsvc-d3e3498b9f.json')
         
         if not os.path.exists(cred_path):
             logger.error(f"Firebase credentials file not found at: {cred_path}")

@@ -61,6 +61,7 @@ venv/
 
 # Keys and credentials
 /django-4c5e9-firebase-adminsdk.json
+/google-services.json
 /debug_accounts.py
 
 

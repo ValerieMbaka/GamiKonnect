@@ -15,7 +15,7 @@ def initialize_firebase():
             return firebase_admin.get_app()
         
         # Use the service account key file you uploaded
-        cred_path = os.path.join(settings.BASE_DIR, 'django-4c5e9-firebase-adminsdk.json')
+        cred_path = os.path.join(settings.BASE_DIR, 'google-services.json')
         
         if not os.path.exists(cred_path):
             logger.error(f"Firebase credentials file not found at: {cred_path}")

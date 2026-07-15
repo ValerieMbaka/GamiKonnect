@@ -4,43 +4,7 @@
 {% block title %}Staff Management | Admin Panel{% endblock %}
 
 {% block extra_css %}
-<style>
-.staff-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-.staff-kpi-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: box-shadow 0.2s ease;
-}
-.staff-kpi-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-.staff-kpi-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-.staff-kpi-icon.blue { background: #e8f0fe; color: #1a73e8; }
-.staff-kpi-icon.purple { background: #f3e8ff; color: #7c3aed; }
-.staff-kpi-icon.green { background: #e6f7e6; color: #16a34a; }
-.staff-kpi-icon.orange { background: #fff3e0; color: #ea580c; }
-.staff-kpi-info h4 { margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
-.staff-kpi-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-</style>
+<link rel="stylesheet" href="{% static 'admin_panel/css/staff/staff_management.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -53,34 +17,37 @@
     </div>
 
     <!-- KPI Cards -->
-    <div class="staff-kpi-grid">
-        <div class="staff-kpi-card">
-            <div class="staff-kpi-icon blue"><i class="fas fa-user-shield"></i></div>
-            <div class="staff-kpi-info">
-                <h4>{{ staff_count|default:"0" }}</h4>
-                <p>Total Staff</p>
+    <div class="stats-grid">
+        <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-user-shield"></i></span>
+                <h3 class="gk-stat-title">Total Staff</h3>
             </div>
+            <div class="gk-stat-value-solo">{{ staff_count|default:"0" }}</div>
         </div>
-        <div class="staff-kpi-card">
-            <div class="staff-kpi-icon purple"><i class="fas fa-crown"></i></div>
-            <div class="staff-kpi-info">
-                <h4>{{ admin_count|default:"0" }}</h4>
-                <p>Superusers</p>
+
+        <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-crown"></i></span>
+                <h3 class="gk-stat-title">Superusers</h3>
             </div>
+            <div class="gk-stat-value-solo">{{ admin_count|default:"0" }}</div>
         </div>
-        <div class="staff-kpi-card">
-            <div class="staff-kpi-icon green"><i class="fas fa-check-circle"></i></div>
-            <div class="staff-kpi-info">
-                <h4>{{ staff_active_count|default:"0" }}</h4>
-                <p>Active</p>
+
+        <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-check-circle"></i></span>
+                <h3 class="gk-stat-title">Active</h3>
             </div>
+            <div class="gk-stat-value-solo">{{ staff_active_count|default:"0" }}</div>
         </div>
-        <div class="staff-kpi-card">
-            <div class="staff-kpi-icon orange"><i class="fas fa-clock"></i></div>
-            <div class="staff-kpi-info">
-                <h4>{{ staff_inactive_count|default:"0" }}</h4>
-                <p>Inactive</p>
+
+        <div class="gk-stat-card" style="--card-accent: var(--danger, #f1416c); --card-tint: rgba(241, 65, 108, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-clock"></i></span>
+                <h3 class="gk-stat-title">Inactive</h3>
             </div>
+            <div class="gk-stat-value-solo">{{ staff_inactive_count|default:"0" }}</div>
         </div>
     </div>
 

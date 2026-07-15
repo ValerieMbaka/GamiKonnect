@@ -1,7 +1,7 @@
 {% if activities %}
 <div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
+    <table class="admin-table">
+        <thead>
             <tr>
                 <th>Timestamp</th>
                 <th>Actor</th>
@@ -12,15 +12,19 @@
         <tbody>
             {% for activity in activities %}
             <tr>
-                <td><small class="text-muted">{{ activity.timestamp|date:"M d, Y H:i:s" }}</small></td>
+                <td class="text-secondary">{{ activity.timestamp|date:"M d, Y H:i:s" }}</td>
                 <td>
                     {% with gamer=activity.gamer %}
-                    <strong>{{ gamer.custom_username|default:gamer.first_name|default:"Unknown" }}</strong>
-                    <span class="badge bg-info-subtle text-info ms-1">{{ gamer|yesno:"Gamer,System" }}</span>
+                    <span class="font-weight-bold">{{ gamer.custom_username|default:gamer.first_name|default:"Unknown" }}</span>
+                    {% if gamer %}
+                        <span class="badge badge-gamer">Gamer</span>
+                    {% else %}
+                        <span class="badge badge-system">System</span>
+                    {% endif %}
                     {% endwith %}
                 </td>
-                <td><code class="text-primary">{{ activity.activity_type }}</code></td>
-                <td>{{ activity.description }}</td>
+                <td><span class="badge-code">{{ activity.activity_type }}</span></td>
+                <td class="text-secondary">{{ activity.description }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -28,19 +32,21 @@
 </div>
 
 {% if activities.has_other_pages %}
-<nav aria-label="Page navigation" class="mt-4">
-    <ul class="pagination justify-content-center">
+<div class="pagination-wrapper">
+    <span class="page-info">
+        Page <span class="font-weight-bold">{{ activities.number }}</span> of {{ activities.paginator.num_pages }}
+    </span>
+    <div class="page-actions">
         {% if activities.has_previous %}
-            <li class="page-item"><a class="page-link" href="?tab=gamer_activities&gamer_page={{ activities.previous_page_number }}">&laquo;</a></li>
+            <a href="?tab=gamer_activities&gamer_page={{ activities.previous_page_number }}" class="btn-page">&laquo; Prev</a>
         {% endif %}
-        <li class="page-item active"><span class="page-link">{{ activities.number }}</span></li>
         {% if activities.has_next %}
-            <li class="page-item"><a class="page-link" href="?tab=gamer_activities&gamer_page={{ activities.next_page_number }}">&raquo;</a></li>
+            <a href="?tab=gamer_activities&gamer_page={{ activities.next_page_number }}" class="btn-page">Next &raquo;</a>
         {% endif %}
-    </ul>
-</nav>
+    </div>
+</div>
 {% endif %}
 
 {% else %}
-<p class="text-center py-4 text-muted">No gamer activities recorded.</p>
+<p class="empty-state">No gamer activities recorded.</p>
 {% endif %}

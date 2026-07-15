@@ -1,0 +1,303 @@
+/* =========================================
+   Box-sizing reset (scoped to this page's stylesheet)
+   ========================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   KPI Summary Cards
+   ========================================= */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.gk-stat-card {
+    position: relative;
+    background: var(--bg-card, #ffffff);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #eef0f4);
+    border-left: 4px solid var(--card-accent, var(--primary, #009ef7));
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    max-width: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gk-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, 0.07));
+}
+
+.gk-stat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.gk-stat-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    background: var(--card-tint, rgba(0, 158, 247, 0.12));
+    color: var(--card-accent, var(--primary, #009ef7));
+}
+
+.gk-stat-title {
+    font-size: 0.75rem;
+    color: var(--text-muted, #a1a5b7);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin: 0;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.gk-stat-value-solo {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--text-dark, #181c32);
+    line-height: 1.1;
+}
+
+/* =========================================
+   Tab Navigation
+   ========================================= */
+.audit-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background: var(--bg-secondary, #f5f8fa);
+    padding: 6px;
+    border-radius: 12px;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.audit-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted, #5e6278);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.audit-tab:hover {
+    color: var(--text-dark, #181c32);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.audit-tab.active {
+    background: var(--bg-card, #ffffff);
+    color: var(--primary, #009ef7);
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+.audit-tab .count-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.06);
+    color: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.audit-tab.active .count-pill {
+    background: rgba(0, 158, 247, 0.12);
+}
+
+/* =========================================
+   Tables
+   ========================================= */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: var(--bg-secondary, #fcfcfc);
+    color: var(--text-muted, #a1a5b7);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color, #eef0f4);
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color, #eef0f4);
+    vertical-align: middle;
+    font-size: 0.88rem;
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table tr:hover {
+    background-color: var(--bg-secondary, #f8f9fa);
+    transition: background-color 0.15s ease;
+}
+
+.text-secondary {
+    color: var(--text-muted, #7e8299);
+}
+
+.font-weight-bold {
+    font-weight: 600;
+    color: var(--text-dark, #181c32);
+}
+
+/* =========================================
+   Badges
+   ========================================= */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-code {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--bg-secondary, #f5f8fa);
+    color: var(--primary, #009ef7);
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.badge-staff {
+    background-color: #fff5f8;
+    color: var(--danger, #f1416c);
+    margin-left: 6px;
+}
+
+.badge-gamer {
+    background-color: #f1faff;
+    color: var(--primary, #009ef7);
+    margin-left: 6px;
+}
+
+.badge-system {
+    background-color: var(--bg-secondary, #f5f8fa);
+    color: var(--text-muted, #5e6278);
+    margin-left: 6px;
+}
+
+.badge-success {
+    background-color: #e8fff3;
+    color: var(--success, #50cd89);
+}
+
+.badge-neutral {
+    background-color: var(--bg-secondary, #f5f8fa);
+    color: var(--text-muted, #5e6278);
+}
+
+/* =========================================
+   Pagination & Empty State
+   ========================================= */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted, #a1a5b7);
+    font-size: 0.95rem;
+}
+
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 4px 4px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.page-info {
+    color: var(--text-muted, #7e8299);
+    font-size: 0.9rem;
+}
+
+.page-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-page {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background-color: var(--bg-secondary, #f5f8fa);
+    color: var(--text-muted, #5e6278);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-page:hover {
+    background-color: var(--primary, #009ef7);
+    color: #ffffff;
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+@media (max-width: 992px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .stats-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .gk-stat-card {
+        padding: 14px 16px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 12px 14px;
+    }
+}

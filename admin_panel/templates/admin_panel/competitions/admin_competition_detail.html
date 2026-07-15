@@ -69,261 +69,277 @@
         <div class="admin-detail-main">
 
             {# Core Details #}
-            <section class="dashboard-island elevated-island mb-4">
-                <h3 class="island-title"><i class="fas fa-info-circle"></i> Competition Details</h3>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <span class="detail-label">Game</span>
-                        <span class="detail-value">{{ competition.game.name }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Platform</span>
-                        <span class="detail-value">{{ competition.platform.name }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Shop</span>
-                        <span class="detail-value">{{ competition.shop.name }}, {{ competition.shop.city }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Scheduled Start</span>
-                        <span class="detail-value">{{ competition.scheduled_time|date:"N j, Y · g:i A" }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Scheduled End</span>
-                        <span class="detail-value">
-                            {% if competition.competition_end_time %}{{ competition.competition_end_time|date:"N j, Y · g:i A" }}{% else %}<span class="text-muted">Not set</span>{% endif %}
-                        </span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Max Participants</span>
-                        <span class="detail-value">{{ competition.max_participants }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Registered</span>
-                        <span class="detail-value">{{ registered_count }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Entry Fee</span>
-                        <span class="detail-value">
-                            {% if competition.entry_fee and competition.entry_fee > 0 %}KES {{ competition.entry_fee }}{% else %}Free{% endif %}
-                        </span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Age Restricted</span>
-                        <span class="detail-value">{% if competition.age_restricted %}Yes (18+){% else %}No{% endif %}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Registration Opens</span>
-                        <span class="detail-value">
-                            {% if competition.registration_opens_at %}{{ competition.registration_opens_at|date:"N j, Y · g:i A" }}{% else %}<span class="text-muted">Not set</span>{% endif %}
-                        </span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Registration Closes</span>
-                        <span class="detail-value">
-                            {% if competition.registration_closes_at %}{{ competition.registration_closes_at|date:"N j, Y · g:i A" }}{% else %}<span class="text-muted">Not set</span>{% endif %}
-                        </span>
-                    </div>
+            <section class="admin-card mb-4">
+                <div class="hub-section-header">
+                    <div><h2><i class="fas fa-info-circle"></i> Competition Details</h2></div>
                 </div>
+                <div class="admin-card-body">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Game</span>
+                            <span class="detail-value">{{ competition.game.name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Platform</span>
+                            <span class="detail-value">{{ competition.platform.name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Shop</span>
+                            <span class="detail-value">{{ competition.shop.name }}, {{ competition.shop.city }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Scheduled Start</span>
+                            <span class="detail-value">{{ competition.scheduled_time|date:"N j, Y · g:i A" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Scheduled End</span>
+                            <span class="detail-value">
+                                {% if competition.competition_end_time %}{{ competition.competition_end_time|date:"N j, Y · g:i A" }}{% else %}<span class="text-muted">Not set</span>{% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Max Participants</span>
+                            <span class="detail-value">{{ competition.max_participants }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Registered</span>
+                            <span class="detail-value">{{ registered_count }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Entry Fee</span>
+                            <span class="detail-value">
+                                {% if competition.entry_fee and competition.entry_fee > 0 %}KES {{ competition.entry_fee }}{% else %}Free{% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Age Restricted</span>
+                            <span class="detail-value">{% if competition.age_restricted %}Yes (18+){% else %}No{% endif %}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Registration Opens</span>
+                            <span class="detail-value">
+                                {% if competition.registration_opens_at %}{{ competition.registration_opens_at|date:"N j, Y · g:i A" }}{% else %}<span class="text-muted">Not set</span>{% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Registration Closes</span>
+                            <span class="detail-value">
+                                {% if competition.registration_closes_at %}{{ competition.registration_closes_at|date:"N j, Y · g:i A" }}{% else %}<span class="text-muted">Not set</span>{% endif %}
+                            </span>
+                        </div>
+                    </div>
 
-                {% if competition.description %}
-                <div class="detail-section mt-4">
-                    <span class="detail-label">Description</span>
-                    <p class="detail-text">{{ competition.description }}</p>
-                </div>
-                {% endif %}
-
-                {% if competition.rules %}
-                <div class="detail-section mt-3">
-                    <span class="detail-label">Rules</span>
-                    <p class="detail-text">{{ competition.get_full_rules|linebreaks }}</p>
-                </div>
-                {% endif %}
-
-                <div class="detail-section mt-3">
-                    <span class="detail-label">Auto-Generated Timeline</span>
-                    {% with timeline=competition.generated_timeline %}
-                    <div class="timeline-grid" style="margin-top: 1rem;">
-                        <div class="timeline-item">
-                            <div class="timeline-time"><strong>{{ timeline.check_in_start|date:"M d, Y · g:i A" }}</strong></div>
-                            <div class="timeline-event"><i class="fas fa-sign-in-alt"></i> Check-in Begins</div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-time"><strong>{{ timeline.competition_start|date:"M d, Y · g:i A" }}</strong></div>
-                            <div class="timeline-event"><i class="fas fa-play-circle"></i> Competition Starts</div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-time"><strong>{{ timeline.competition_end|date:"M d, Y · g:i A" }}</strong></div>
-                            <div class="timeline-event"><i class="fas fa-stop-circle"></i> Competition Ends</div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-time"><strong>{{ timeline.results_submit_min|date:"M d, g:i A" }} - {{ timeline.results_submit_max|date:"M d, g:i A" }}</strong></div>
-                            <div class="timeline-event"><i class="fas fa-file-upload"></i> Results Submission Window (10-45 min after end)</div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-time"><strong>{{ timeline.prize_allocation_min|date:"M d" }} - {{ timeline.prize_allocation_max|date:"M d" }}</strong></div>
-                            <div class="timeline-event"><i class="fas fa-gift"></i> Prize Allocation Window (1-48 hours after end)</div>
-                        </div>
+                    {% if competition.description %}
+                    <div class="detail-section mt-4">
+                        <span class="detail-label">Description</span>
+                        <p class="detail-text">{{ competition.description }}</p>
                     </div>
-                    {% endwith %}
-                </div>
+                    {% endif %}
 
-                {% if competition.rejection_reason %}
-                <div class="detail-section mt-3">
-                    <span class="detail-label" style="color:#F0354B;">Rejection Reason</span>
-                    <p class="detail-text" style="color:#F0354B;">{{ competition.rejection_reason }}</p>
+                    {% if competition.rules %}
+                    <div class="detail-section mt-3">
+                        <span class="detail-label">Rules</span>
+                        <p class="detail-text">{{ competition.get_full_rules|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="detail-section mt-3">
+                        <span class="detail-label">Auto-Generated Timeline</span>
+                        {% with timeline=competition.generated_timeline %}
+                        <div class="timeline-grid" style="margin-top: 1rem;">
+                            <div class="timeline-item">
+                                <div class="timeline-time"><strong>{{ timeline.check_in_start|date:"M d, Y · g:i A" }}</strong></div>
+                                <div class="timeline-event"><i class="fas fa-sign-in-alt"></i> Check-in Begins</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-time"><strong>{{ timeline.competition_start|date:"M d, Y · g:i A" }}</strong></div>
+                                <div class="timeline-event"><i class="fas fa-play-circle"></i> Competition Starts</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-time"><strong>{{ timeline.competition_end|date:"M d, Y · g:i A" }}</strong></div>
+                                <div class="timeline-event"><i class="fas fa-stop-circle"></i> Competition Ends</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-time"><strong>{{ timeline.results_submit_min|date:"M d, g:i A" }} - {{ timeline.results_submit_max|date:"M d, g:i A" }}</strong></div>
+                                <div class="timeline-event"><i class="fas fa-file-upload"></i> Results Submission Window (10-45 min after end)</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-time"><strong>{{ timeline.prize_allocation_min|date:"M d" }} - {{ timeline.prize_allocation_max|date:"M d" }}</strong></div>
+                                <div class="timeline-event"><i class="fas fa-gift"></i> Prize Allocation Window (1-48 hours after end)</div>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    </div>
+
+                    {% if competition.rejection_reason %}
+                    <div class="detail-section mt-3">
+                        <span class="detail-label" style="color:var(--danger);">Rejection Reason</span>
+                        <p class="detail-text" style="color:var(--danger);">{{ competition.rejection_reason }}</p>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </section>
 
             {# Prize Details #}
             {% if competition.prize_type %}
-            <section class="dashboard-island elevated-island mb-4">
-                <h3 class="island-title"><i class="fas fa-gift"></i> Prize Configuration</h3>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <span class="detail-label">Prize Type</span>
-                        <span class="detail-value">{{ competition.get_prize_type_display }}</span>
+            <section class="admin-card mb-4">
+                <div class="hub-section-header">
+                    <div><h2><i class="fas fa-gift"></i> Prize Configuration</h2></div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Prize Type</span>
+                            <span class="detail-value">{{ competition.get_prize_type_display }}</span>
+                        </div>
+                        {% if competition.prize_type == 'points' %}
+                            <div class="detail-item"><span class="detail-label">1st Place</span><span class="detail-value">{{ competition.points_1st }} XP</span></div>
+                            <div class="detail-item"><span class="detail-label">2nd Place</span><span class="detail-value">{{ competition.points_2nd }} XP</span></div>
+                            <div class="detail-item"><span class="detail-label">3rd Place</span><span class="detail-value">{{ competition.points_3rd }} XP</span></div>
+                            {% if competition.points_4_to_10 %}<div class="detail-item"><span class="detail-label">4th–10th</span><span class="detail-value">{{ competition.points_4_to_10 }} XP</span></div>{% endif %}
+                            {% if competition.points_beyond_10 %}<div class="detail-item"><span class="detail-label">11th+</span><span class="detail-value">{{ competition.points_beyond_10 }} XP</span></div>{% endif %}
+                        {% elif competition.prize_type == 'money' %}
+                            <div class="detail-item"><span class="detail-label">Total Pool</span><span class="detail-value">KES {{ competition.prize_money_total }}</span></div>
+                            {% if competition.prize_money_1st_pct %}<div class="detail-item"><span class="detail-label">1st Place</span><span class="detail-value">{{ competition.prize_money_1st_pct }}%</span></div>{% endif %}
+                            {% if competition.prize_money_2nd_pct %}<div class="detail-item"><span class="detail-label">2nd Place</span><span class="detail-value">{{ competition.prize_money_2nd_pct }}%</span></div>{% endif %}
+                            {% if competition.prize_money_3rd_pct %}<div class="detail-item"><span class="detail-label">3rd Place</span><span class="detail-value">{{ competition.prize_money_3rd_pct }}%</span></div>{% endif %}
+                        {% elif competition.prize_type == 'gift' %}
+                            <div class="detail-item detail-item--full"><span class="detail-label">Gift Description</span><span class="detail-value">{{ competition.prize_gift_description }}</span></div>
+                        {% endif %}
                     </div>
-                    {% if competition.prize_type == 'points' %}
-                        <div class="detail-item"><span class="detail-label">1st Place</span><span class="detail-value">{{ competition.points_1st }} XP</span></div>
-                        <div class="detail-item"><span class="detail-label">2nd Place</span><span class="detail-value">{{ competition.points_2nd }} XP</span></div>
-                        <div class="detail-item"><span class="detail-label">3rd Place</span><span class="detail-value">{{ competition.points_3rd }} XP</span></div>
-                        {% if competition.points_4_to_10 %}<div class="detail-item"><span class="detail-label">4th–10th</span><span class="detail-value">{{ competition.points_4_to_10 }} XP</span></div>{% endif %}
-                        {% if competition.points_beyond_10 %}<div class="detail-item"><span class="detail-label">11th+</span><span class="detail-value">{{ competition.points_beyond_10 }} XP</span></div>{% endif %}
-                    {% elif competition.prize_type == 'money' %}
-                        <div class="detail-item"><span class="detail-label">Total Pool</span><span class="detail-value">KES {{ competition.prize_money_total }}</span></div>
-                        {% if competition.prize_money_1st_pct %}<div class="detail-item"><span class="detail-label">1st Place</span><span class="detail-value">{{ competition.prize_money_1st_pct }}%</span></div>{% endif %}
-                        {% if competition.prize_money_2nd_pct %}<div class="detail-item"><span class="detail-label">2nd Place</span><span class="detail-value">{{ competition.prize_money_2nd_pct }}%</span></div>{% endif %}
-                        {% if competition.prize_money_3rd_pct %}<div class="detail-item"><span class="detail-label">3rd Place</span><span class="detail-value">{{ competition.prize_money_3rd_pct }}%</span></div>{% endif %}
-                    {% elif competition.prize_type == 'gift' %}
-                        <div class="detail-item detail-item--full"><span class="detail-label">Gift Description</span><span class="detail-value">{{ competition.prize_gift_description }}</span></div>
-                    {% endif %}
                 </div>
             </section>
             {% endif %}
 
             {# Registrations #}
             {% if registrations %}
-            <section class="dashboard-island elevated-island mb-4">
-                <h3 class="island-title">
-                    <i class="fas fa-users"></i> Registered Gamers
+            <section class="admin-card mb-4">
+                <div class="hub-section-header">
+                    <div><h2><i class="fas fa-users"></i> Registered Gamers</h2></div>
                     <span class="island-badge">{{ registered_count }}</span>
-                </h3>
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th>Gamer</th>
-                            <th>Registered At</th>
-                            <th>Check-in</th>
-                            <th>Participation</th>
-                            <th>Code Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for reg in registrations %}
-                        <tr>
-                            <td>
-                                <strong>{{ reg.gamer.custom_username|default:reg.gamer.first_name }}</strong>
-                                <br><small class="text-muted">{{ reg.gamer.email }}</small>
-                            </td>
-                            <td>{{ reg.registered_at|date:"N j, Y · g:i A" }}</td>
-                            <td>
-                                {% if reg.checked_in %}
-                                    <span class="status-badge completed">
-                                        <i class="fas fa-check-circle"></i> Checked In
-                                    </span>
-                                    <br><small class="text-muted">{{ reg.checked_in_at|date:"g:i A" }}</small>
-                                {% else %}
-                                    <span class="status-badge pending_review">Not Checked In</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if reg.participation_hours %}
-                                    {{ reg.participation_hours }} hrs
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if reg.code_expired %}
-                                    <span class="badge badge-outline">Expired</span>
-                                {% else %}
-                                    <span class="badge badge-green">Active</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                </div>
+                <div class="admin-card-body p-0">
+                    <div class="hub-table-wrap">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Gamer</th>
+                                <th>Registered At</th>
+                                <th>Check-in</th>
+                                <th>Participation</th>
+                                <th>Code Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reg in registrations %}
+                            <tr>
+                                <td>
+                                    <strong>{{ reg.gamer.custom_username|default:reg.gamer.first_name }}</strong>
+                                    <br><small class="text-muted">{{ reg.gamer.email }}</small>
+                                </td>
+                                <td>{{ reg.registered_at|date:"N j, Y · g:i A" }}</td>
+                                <td>
+                                    {% if reg.checked_in %}
+                                        <span class="status-badge completed">
+                                            <i class="fas fa-check-circle"></i> Checked In
+                                        </span>
+                                        <br><small class="text-muted">{{ reg.checked_in_at|date:"g:i A" }}</small>
+                                    {% else %}
+                                        <span class="status-badge pending_review">Not Checked In</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if reg.participation_hours %}
+                                        {{ reg.participation_hours }} hrs
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if reg.code_expired %}
+                                        <span class="badge badge-outline">Expired</span>
+                                    {% else %}
+                                        <span class="badge badge-green">Active</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
             </section>
             {% endif %}
 
             {# Results #}
             {% if results %}
-            <section class="dashboard-island elevated-island mb-4">
-                <h3 class="island-title">
-                    <i class="fas fa-list-ol"></i> Competition Results
+            <section class="admin-card mb-4">
+                <div class="hub-section-header">
+                    <div><h2><i class="fas fa-list-ol"></i> Competition Results</h2></div>
                     {% if competition.status == 'pending_prize_verification' %}
-                    <span class="island-badge island-badge--warning">Awaiting Verification</span>
+                    <span class="island-badge island-badge--warning">Pending Verification</span>
                     {% elif competition.status == 'completed' %}
                     <span class="island-badge island-badge--success">Verified</span>
                     {% endif %}
-                </h3>
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Gamer</th>
-                            <th>Points Awarded</th>
-                            <th>No-show</th>
-                            <th>Auto-allocated</th>
-                            <th>Verified</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for result in results %}
-                        <tr {% if result.is_no_show %}style="opacity:0.55;"{% endif %}>
-                            <td>
-                                {% if result.is_no_show %}<span class="text-muted">—</span>
-                                {% elif result.rank == 1 %}🥇
-                                {% elif result.rank == 2 %}🥈
-                                {% elif result.rank == 3 %}🥉
-                                {% else %}<strong>#{{ result.rank }}</strong>{% endif %}
-                            </td>
-                            <td>
-                                <strong>{{ result.gamer.custom_username|default:result.gamer.first_name }}</strong>
-                                <br><small class="text-muted">{{ result.gamer.email }}</small>
-                            </td>
-                            <td>
-                                {% if result.is_no_show %}<span class="text-muted">0</span>
-                                {% else %}<strong>{{ result.points_awarded }} XP</strong>{% endif %}
-                            </td>
-                            <td>
-                                {% if result.is_no_show %}
-                                    <span class="status-badge rejected">Yes</span>
-                                {% else %}
-                                    <span class="text-muted">No</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if result.auto_allocated %}
-                                    <span class="badge badge-blue">Auto</span>
-                                {% else %}
-                                    <span class="text-muted">Manual</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if result.verified %}
-                                    <span class="status-badge completed"><i class="fas fa-check"></i> Yes</span>
-                                {% else %}
-                                    <span class="status-badge pending_review">Pending</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                </div>
+                <div class="admin-card-body p-0">
+                    <div class="hub-table-wrap">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Gamer</th>
+                                <th>Points Awarded</th>
+                                <th>No-show</th>
+                                <th>Auto-allocated</th>
+                                <th>Verified</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr {% if result.is_no_show %}style="opacity:0.55;"{% endif %}>
+                                <td>
+                                    {% if result.is_no_show %}<span class="text-muted">—</span>
+                                    {% elif result.rank == 1 %}🥇
+                                    {% elif result.rank == 2 %}🥈
+                                    {% elif result.rank == 3 %}🥉
+                                    {% else %}<strong>#{{ result.rank }}</strong>{% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ result.gamer.custom_username|default:result.gamer.first_name }}</strong>
+                                    <br><small class="text-muted">{{ result.gamer.email }}</small>
+                                </td>
+                                <td>
+                                    {% if result.is_no_show %}<span class="text-muted">0</span>
+                                    {% else %}<strong>{{ result.points_awarded }} XP</strong>{% endif %}
+                                </td>
+                                <td>
+                                    {% if result.is_no_show %}
+                                        <span class="status-badge rejected">Yes</span>
+                                    {% else %}
+                                        <span class="text-muted">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if result.auto_allocated %}
+                                        <span class="badge badge-blue">Auto</span>
+                                    {% else %}
+                                        <span class="text-muted">Manual</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if result.verified %}
+                                        <span class="status-badge completed"><i class="fas fa-check"></i> Yes</span>
+                                    {% else %}
+                                        <span class="status-badge pending_review">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
             </section>
             {% endif %}
 
@@ -477,7 +493,7 @@
             <form id="approveForm">
                 {% csrf_token %}
 
-                <p class="text-muted mb-3">Set the prize details and registration window before approving. All fields marked <span style="color:#F0354B;">*</span> are required.</p>
+                <p class="text-muted mb-3">Set the prize details and registration window before approving. All fields marked <span style="color:var(--danger);">*</span> are required.</p>
 
                 {# Entry Fee #}
                 <div class="form-group mb-3">
@@ -490,13 +506,13 @@
                 {# Registration Window #}
                 <div class="form-grid mb-3">
                     <div class="form-group">
-                        <label>Registration Opens <span style="color:#F0354B;">*</span></label>
+                        <label>Registration Opens <span style="color:var(--danger);">*</span></label>
                         <input type="datetime-local" name="registration_opens_at" class="form-control" required
                                value="{% if competition.registration_opens_at %}{{ competition.registration_opens_at|date:"Y-m-d\\TH:i" }}{% endif %}">
                         <div class="error-msg" id="ap-err-registration_opens_at"></div>
                     </div>
                     <div class="form-group">
-                        <label>Registration Closes <span style="color:#F0354B;">*</span></label>
+                        <label>Registration Closes <span style="color:var(--danger);">*</span></label>
                         <input type="datetime-local" name="registration_closes_at" class="form-control" required
                                value="{% if competition.registration_closes_at %}{{ competition.registration_closes_at|date:"Y-m-d\\TH:i" }}{% endif %}">
                         <div class="error-msg" id="ap-err-registration_closes_at"></div>
@@ -505,7 +521,7 @@
 
                 {# Prize Type #}
                 <div class="form-group mb-3">
-                    <label>Prize Type <span style="color:#F0354B;">*</span></label>
+                    <label>Prize Type <span style="color:var(--danger);">*</span></label>
                     <select name="prize_type" id="approvePrizeType" class="form-control" onchange="adminComp.onPrizeTypeChange(this)" required>
                         <option value="">Select prize type...</option>
                         <option value="points" {% if competition.prize_type == 'points' %}selected{% endif %}>XP Points</option>
@@ -519,17 +535,17 @@
                 <div id="pointsFields" style="display:none;">
                     <div class="form-grid mb-3">
                         <div class="form-group">
-                            <label>1st Place XP <span style="color:#F0354B;">*</span></label>
+                            <label>1st Place XP <span style="color:var(--danger);">*</span></label>
                             <input type="number" name="points_1st" class="form-control" min="0" placeholder="e.g. 500" value="{{ competition.points_1st }}">
                             <div class="error-msg" id="ap-err-points_1st"></div>
                         </div>
                         <div class="form-group">
-                            <label>2nd Place XP <span style="color:#F0354B;">*</span></label>
+                            <label>2nd Place XP <span style="color:var(--danger);">*</span></label>
                             <input type="number" name="points_2nd" class="form-control" min="0" placeholder="e.g. 300" value="{{ competition.points_2nd }}">
                             <div class="error-msg" id="ap-err-points_2nd"></div>
                         </div>
                         <div class="form-group">
-                            <label>3rd Place XP <span style="color:#F0354B;">*</span></label>
+                            <label>3rd Place XP <span style="color:var(--danger);">*</span></label>
                             <input type="number" name="points_3rd" class="form-control" min="0" placeholder="e.g. 150" value="{{ competition.points_3rd }}">
                             <div class="error-msg" id="ap-err-points_3rd"></div>
                         </div>
@@ -549,7 +565,7 @@
                 {# Money Prize Fields #}
                 <div id="moneyFields" style="display:none;">
                     <div class="form-group mb-3">
-                        <label>Total Prize Pool (KES) <span style="color:#F0354B;">*</span></label>
+                        <label>Total Prize Pool (KES) <span style="color:var(--danger);">*</span></label>
                         <input type="number" name="prize_money_total" class="form-control" min="0" step="0.01" value="{{ competition.prize_money_total }}">
                         <div class="error-msg" id="ap-err-prize_money_total"></div>
                     </div>
@@ -572,7 +588,7 @@
                 {# Gift Prize Fields #}
                 <div id="giftFields" style="display:none;">
                     <div class="form-group mb-3">
-                        <label>Gift Description <span style="color:#F0354B;">*</span></label>
+                        <label>Gift Description <span style="color:var(--danger);">*</span></label>
                         <textarea name="prize_gift_description" class="form-control" rows="3"
                                   placeholder="Describe the gift and how it is distributed across top 3...">{{ competition.prize_gift_description }}</textarea>
                         <div class="error-msg" id="ap-err-prize_gift_description"></div>
@@ -603,7 +619,7 @@
             <form id="rejectForm">
                 {% csrf_token %}
                 <div class="form-group mb-3">
-                    <label>Rejection Reason <span style="color:#F0354B;">*</span></label>
+                    <label>Rejection Reason <span style="color:var(--danger);">*</span></label>
                     <textarea name="rejection_reason" id="rejectionReason" class="form-control" rows="4"
                               placeholder="Provide a clear reason so the arena owner knows what to fix..." required></textarea>
                     <div class="error-msg" id="rej-err-rejection_reason"></div>
@@ -631,7 +647,7 @@
             <form id="suspendForm">
                 {% csrf_token %}
                 <div class="form-group mb-3">
-                    <label>Suspension Reason <span style="color:#F0354B;">*</span></label>
+                    <label>Suspension Reason <span style="color:var(--danger);">*</span></label>
                     <textarea name="suspension_reason" id="suspensionReason" class="form-control" rows="4" required
                               placeholder="Explain why this competition is being suspended..."></textarea>
                     <div class="error-msg" id="sus-err-suspension_reason"></div>

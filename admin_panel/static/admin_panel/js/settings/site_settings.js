@@ -7,19 +7,22 @@ class AdminSettingsController {
 
     cacheDOM() {
         this.form = document.getElementById('siteSettingsForm');
-        // Target the actual file input hidden inside Django's rendered output
         this.fileInput = document.querySelector('.django-hidden-file-input input[type="file"]');
         this.logoPreview = document.getElementById('logoPreview');
         this.colorPickers = document.querySelectorAll('.color-input-wrapper input[type="color"]');
-        this.saveBtn = document.getElementById('saveSettingsBtn');
+        this.saveButtons = document.querySelectorAll('#saveSettingsBtn, #saveThemeBtn');
         this.djangoInputs = document.querySelectorAll('input[type="text"], input[type="number"], select, textarea');
         this.previewEl = document.getElementById('themePreviewInner');
-        this.tabButtons = document.querySelectorAll('.content-tab-btn');
-        this.tabPanels = document.querySelectorAll('.content-tab-panel');
+
+        this.pageTabButtons = document.querySelectorAll('.page-tab-btn');
+        this.pageTabPanels = document.querySelectorAll('.page-tab-panel');
+
+        this.modalBackdrop = document.getElementById('modalBackdrop');
+        this.modalOpenTriggers = document.querySelectorAll('[data-modal-open]');
+        this.modalCloseTriggers = document.querySelectorAll('[data-modal-close]');
+        this.modalPanels = document.querySelectorAll('.modal-panel');
     }
 
-    // Maps each color-picker-group's data-preview-target to the CSS custom
-    // property read by site_settings.css on #themePreviewInner.
     static PREVIEW_VAR_MAP = {
         accent: '--preview-accent',
         secondary: '--preview-secondary',
@@ -31,106 +34,114 @@ class AdminSettingsController {
     };
 
     init() {
-        // Apply custom classes to Django's text inputs
-        this.djangoInputs.forEach(el => {
-            el.classList.add('form-control');
-        });
+        this.djangoInputs.forEach(el => el.classList.add('form-control'));
 
-        // Initialize Hex Displays + seed the live preview with current values
         this.colorPickers.forEach(picker => {
             const hexDisplay = picker.nextElementSibling;
-            if (hexDisplay) {
-                hexDisplay.textContent = picker.value.toUpperCase();
-            }
+            if (hexDisplay) hexDisplay.textContent = picker.value.toUpperCase();
             this.applyPreviewColor(picker);
         });
 
-        this.initTabs();
+        this.initDeepLink();
     }
 
     bindEvents() {
-        // Intercept file selection for live preview
         if (this.fileInput) {
             this.fileInput.addEventListener('change', (e) => this.handleLogoPreview(e));
         }
 
-        // Live Hex updates + live theme preview
         this.colorPickers.forEach(picker => {
             picker.addEventListener('input', (e) => {
                 const hexDisplay = e.target.nextElementSibling;
-                if (hexDisplay) {
-                    hexDisplay.textContent = e.target.value.toUpperCase();
-                }
+                if (hexDisplay) hexDisplay.textContent = e.target.value.toUpperCase();
                 this.applyPreviewColor(e.target);
             });
         });
 
-        // Loading state on save
-        if (this.form && this.saveBtn) {
+        if (this.form) {
             this.form.addEventListener('submit', () => this.handleSubmission());
         }
 
-        // Content Library tabs
-        this.tabButtons.forEach(btn => {
-            btn.addEventListener('click', () => this.activateTab(btn.dataset.tabKey));
+        // Page-level tabs (Site Brand / Site Content)
+        this.pageTabButtons.forEach(btn => {
+            btn.addEventListener('click', () => this.activatePageTab(btn.dataset.pageTab));
+        });
+
+        // Modal open triggers
+        this.modalOpenTriggers.forEach(btn => {
+            btn.addEventListener('click', () => this.openModal(btn.dataset.modalOpen));
+        });
+
+        // Modal close triggers (buttons inside modals)
+        this.modalCloseTriggers.forEach(btn => {
+            btn.addEventListener('click', () => this.closeAllModals());
+        });
+
+        if (this.modalBackdrop) {
+            this.modalBackdrop.addEventListener('click', () => this.closeAllModals());
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') this.closeAllModals();
         });
     }
 
-    initTabs() {
-        if (!this.tabButtons.length) return;
+    activatePageTab(key) {
+        this.pageTabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.pageTab === key));
+        this.pageTabPanels.forEach(panel => panel.classList.toggle('active', panel.dataset.pagePanel === key));
+    }
 
-        // Deep-link support: ?section=<key> activates that tab (existing
-        // "Edit" links from list items already use this query param).
+    openModal(id) {
+        const panel = document.getElementById(id);
+        if (!panel) return;
+        this.closeAllModals();
+        panel.classList.add('active');
+        if (this.modalBackdrop) this.modalBackdrop.classList.add('active');
+    }
+
+    closeAllModals() {
+        this.modalPanels.forEach(panel => panel.classList.remove('active'));
+        if (this.modalBackdrop) this.modalBackdrop.classList.remove('active');
+    }
+
+    initDeepLink() {
+        // Existing "Edit" links from content lists use ?section=<key>&object_id=<id>.
+        // If present, switch to the Site Content tab and open that content type's modal.
         const params = new URLSearchParams(window.location.search);
         const requestedSection = params.get('section');
+        if (!requestedSection) return;
 
-        if (requestedSection && [...this.tabButtons].some(b => b.dataset.tabKey === requestedSection)) {
-            this.activateTab(requestedSection);
-        }
-    }
+        const modalId = `modalContent-${requestedSection}`;
+        if (!document.getElementById(modalId)) return;
 
-    activateTab(key) {
-        this.tabButtons.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tabKey === key);
-        });
-        this.tabPanels.forEach(panel => {
-            panel.classList.toggle('active', panel.dataset.tabKey === key);
-        });
+        this.activatePageTab('content');
+        this.openModal(modalId);
     }
 
     applyPreviewColor(picker) {
         if (!this.previewEl) return;
-
         const group = picker.closest('.color-picker-group');
         const target = group ? group.dataset.previewTarget : null;
         const cssVar = target ? AdminSettingsController.PREVIEW_VAR_MAP[target] : null;
-
-        if (cssVar) {
-            this.previewEl.style.setProperty(cssVar, picker.value);
-        }
+        if (cssVar) this.previewEl.style.setProperty(cssVar, picker.value);
     }
 
     handleLogoPreview(e) {
         const file = e.target.files[0];
-        
         if (file && file.type.startsWith('image/')) {
             const reader = new FileReader();
-            
             reader.onload = (event) => {
-                if (this.logoPreview) {
-                    this.logoPreview.src = event.target.result;
-                }
+                if (this.logoPreview) this.logoPreview.src = event.target.result;
             };
-            
             reader.readAsDataURL(file);
         }
     }
 
     handleSubmission() {
-        if (this.saveBtn) {
-            this.saveBtn.style.pointerEvents = 'none';
-            this.saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Deploying Configuration...';
-        }
+        this.saveButtons.forEach(btn => {
+            btn.style.pointerEvents = 'none';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Deploying Configuration...';
+        });
     }
 }
 

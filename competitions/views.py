@@ -635,7 +635,7 @@ def shop_owner_competition_create(request):
                     CompetitionService.deploy_competition(
                         competition,
                         performed_by=shop_owner,
-                        performed_by_label=shop_owner.custom_username or str(shop_owner),
+                        performed_by_label=shop_owner.get_full_name() or str(shop_owner),
                     )
 
                     try:
@@ -735,7 +735,7 @@ def shop_owner_competition_edit(request, slug):
                     CompetitionService.deploy_competition(
                         competition,
                         performed_by=shop_owner,
-                        performed_by_label=shop_owner.custom_username or str(shop_owner),
+                        performed_by_label=shop_owner.get_full_name() or str(shop_owner),
                     )
 
                     try:

@@ -28,6 +28,41 @@ def global_site_context(request):
         'pusher_cluster': getattr(settings, 'PUSHER_CLUSTER', '') or os.environ.get('PUSHER_CLUSTER', ''),
     }
 
+def user_role_context(request):
+    """
+    Injects gamer and shop_owner objects globally based on session.
+    Fixes the 'blank on refresh' issue by ensuring database-backed objects
+    are always available in templates if a valid session exists.
+    """
+    context = {}
+    role = request.session.get('role')
+    user_id = request.session.get('user_id')
+
+    if user_id and role:
+        from accounts.models import Gamer, ShopOwner
+        from notifications.models import NotificationRecipient
+
+        if role == 'gamer':
+            try:
+                gamer = Gamer.objects.get(id=user_id)
+                context['gamer'] = gamer
+                context['gamer_unread_notifications_count'] = NotificationRecipient.objects.filter(
+                    gamer=gamer, is_read=False
+                ).count()
+            except Gamer.DoesNotExist:
+                pass
+        elif role == 'shop_owner':
+            try:
+                shop_owner = ShopOwner.objects.get(id=user_id)
+                context['shop_owner'] = shop_owner
+                context['shop_owner_unread_notifications_count'] = NotificationRecipient.objects.filter(
+                    shop_owner=shop_owner, is_read=False
+                ).count()
+            except ShopOwner.DoesNotExist:
+                pass
+    
+    return context
+
 def admin_competition_context(request):
     if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
         from competitions.models import Competition

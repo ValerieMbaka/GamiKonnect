@@ -38,9 +38,9 @@
                         <td><code>{{ tx.receipt_number|default:"PENDING" }}</code></td>
                         <td>
                             <div class="hub-payment-cell">
-                                <img src="{% static 'core/images/gamepad.jpeg' %}" class="hub-avatar" alt="Gamer avatar">
+                                <img src="{% if tx.gamer.profile_picture %}{{ tx.gamer.profile_picture.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="hub-avatar" alt="Gamer avatar">
                                 <div>
-                                    <p class="hub-cell-title">{{ tx.gamer.first_name|default:tx.gamer.email }}</p>
+                                    <p class="hub-cell-title">{% if tx.gamer.custom_username %}{{ tx.gamer.custom_username }}{% elif tx.gamer.first_name %}{{ tx.gamer.first_name }}{% else %}{{ tx.gamer.email }}{% endif %}</p>
                                     <p class="hub-cell-subtitle">{{ tx.gamer.email }}</p>
                                 </div>
                             </div>

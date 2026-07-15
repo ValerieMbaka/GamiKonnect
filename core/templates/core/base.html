@@ -82,9 +82,15 @@
                     {% if request.session.user_id %}
                         <li class="nav-item me-2">
                             {% if request.session.role == 'gamer' %}
-                                <a class="nav-link" href="{% url 'accounts:gamer_dashboard' %}"><i class="fas fa-th-large me-1"></i> Dashboard</a>
+                                <a class="nav-link" href="{% url 'accounts:gamer_dashboard' %}">
+                                    <img src="{% if gamer.profile_picture %}{{ gamer.profile_picture.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" alt="Avatar" width="20" height="20" class="rounded-circle me-1">
+                                    {{ gamer.custom_username|default:gamer.first_name|default:'Dashboard' }}
+                                </a>
                             {% elif request.session.role == 'shop_owner' %}
-                                <a class="nav-link" href="{% url 'accounts:shop_owner_dashboard' %}"><i class="fas fa-th-large me-1"></i> Dashboard</a>
+                                <a class="nav-link" href="{% url 'accounts:shop_owner_dashboard' %}">
+                                    <img src="{% if shop_owner.logo %}{{ shop_owner.logo.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" alt="Avatar" width="20" height="20" class="rounded-circle me-1">
+                                    {{ shop_owner.arena_name|default:'Dashboard' }}
+                                </a>
                             {% endif %}
                         </li>
                         <li class="nav-item me-0">

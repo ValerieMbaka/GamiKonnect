@@ -1,6 +1,7 @@
 import logging
 from django.dispatch import Signal, receiver
 from django.db.models.signals import post_save
+from django.contrib.auth.signals import user_logged_in
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from .models import ActivityLog, Level, Activity
@@ -25,6 +26,24 @@ def log_security_event(sender, actor, description, meta_data=None, **kwargs):
         action_type=ActivityLog.ActionTypes.SECURITY,
         description=description,
         meta_data=meta_data
+    )
+
+
+@receiver(user_logged_in)
+def log_user_login(sender, request, user, **kwargs):
+    # For regular Django users (Admin)
+    from accounts.models import Account
+    actor = None
+    if isinstance(user, Account):
+        actor = user
+    elif hasattr(user, 'email'):
+        actor = Account.objects.filter(email=user.email).first()
+
+    ActivityLog.objects.create(
+        actor=actor,
+        action_type=ActivityLog.ActionTypes.SECURITY,
+        description=f"User logged in: {user.email if hasattr(user, 'email') else user}",
+        meta_data={'ip': request.META.get('REMOTE_ADDR'), 'user_agent': request.META.get('HTTP_USER_AGENT')}
     )
 
 

@@ -285,6 +285,7 @@ def initiate_payment(request):
                     'amount': registration.competition.entry_fee,
                     'checkout_request_id': reference,
                     'status': 'PENDING',
+                    'category': 'COMPETITION',
                     'is_simulated': False,
                 },
             )

@@ -124,6 +124,7 @@ TEMPLATES = [
                 'core.context_processor.site_style',
                 'core.context_processor.firebase_config',
                 'core.context_processor.global_site_context',
+                'core.context_processor.user_role_context',
                 'core.context_processor.admin_competition_context',
                 'core.context_processor.admin_notification_context',
             ],

@@ -11,10 +11,24 @@ class MpesaTransaction(models.Model):
         ('REFUND_PENDING', 'Refund Pending'),
         ('REFUND_FAILED', 'Refund Failed'),
     )
+
+    CATEGORY_CHOICES = (
+        ('COMPETITION', 'Competition Registration'),
+        ('AD', 'Advertisement'),
+        ('SUBSCRIPTION', 'Community Subscription'),
+        ('ARENA_FEE', 'Arena/Shop Fee'),
+    )
     
     gamer = models.ForeignKey(Gamer, on_delete=models.SET_NULL, null=True, related_name='transactions')
     phone_number = models.CharField(max_length=15)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    category = models.CharField(
+        max_length=20,
+        choices=CATEGORY_CHOICES,
+        default='COMPETITION',
+        help_text="Category of this payment for revenue tracking."
+    )
     
     # Safaricom's unique tracker for the prompt session
     checkout_request_id = models.CharField(max_length=100, unique=True)

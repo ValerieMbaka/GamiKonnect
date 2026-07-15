@@ -81,7 +81,7 @@
                         <tr>
                             <td>
                                 <div class="hub-user-cell">
-                                    <img src="{% static 'core/images/gamepad.jpeg' %}" class="hub-avatar" alt="Avatar">
+                                    <img src="{% if staff.admin_profile.avatar %}{{ staff.admin_profile.avatar.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" class="hub-avatar" alt="Avatar">
                                     <div>
                                         <p class="hub-cell-title">{{ staff.get_full_name|default:staff.username }}</p>
                                         <p class="hub-cell-subtitle">@{{ staff.username }}</p>

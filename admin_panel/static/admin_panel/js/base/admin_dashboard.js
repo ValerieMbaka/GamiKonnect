@@ -38,9 +38,7 @@ class AdminDashboardController {
 
     initCharts() {
         this.renderSiteActivityChart();
-        this.renderPlatformDistributionChart();
         this.renderRevenueChart();
-        this.renderTrafficSourcesChart(); // New Chart
     }
 
     renderSiteActivityChart() {
@@ -121,44 +119,6 @@ class AdminDashboardController {
     }
 
     renderRevenueChart() {
-        const canvas = document.getElementById('revenueChart');
-        if (!canvas) return;
-
-        new Chart(canvas.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['Shop Fees', 'Tournaments', 'Subscriptions', 'Ads'],
-                datasets: [{
-                    label: 'Revenue ($)',
-                    data: this.chartData.revenue_data || [],
-                    backgroundColor: this.colors.primary,
-                    borderRadius: 6,
-                    barPercentage: 0.5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: this.getTooltipConfig()
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: this.gridColor, drawBorder: false },
-                        border: { display: false }
-                    },
-                    x: {
-                        grid: { display: false },
-                        border: { display: false }
-                    }
-                }
-            }
-        });
-    }
-
-    renderTrafficSourcesChart() {
         const canvas = document.getElementById('trafficSourcesChart');
         if (!canvas) return;
 
@@ -197,14 +157,19 @@ class AdminDashboardController {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true } },
+                    legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, padding: 20 } },
                     tooltip: this.getTooltipConfig()
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         grid: { color: this.gridColor, drawBorder: false },
-                        border: { display: false }
+                        border: { display: false },
+                        ticks: {
+                            callback: function(value) {
+                                return 'KES ' + value.toLocaleString();
+                            }
+                        }
                     },
                     x: {
                         grid: { display: false },

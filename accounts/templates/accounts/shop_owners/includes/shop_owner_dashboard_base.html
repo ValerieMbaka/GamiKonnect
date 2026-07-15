@@ -94,7 +94,7 @@
 
             <div class="nav-dropdown profile-dropdown">
                 <button class="profile-btn" aria-label="User profile">
-                    <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="profile-avatar" alt="User Avatar">
+                    <img src="{% if shop_owner.logo %}{{ shop_owner.logo.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" class="profile-avatar" alt="User Avatar">
                     <span class="username">
                         {{ shop_owner.first_name }} {{ shop_owner.last_name }}
                     </span>
@@ -102,7 +102,7 @@
                 </button>
                 <div class="nav-dropdown-content profile-dropdown-content">
                     <div class="profile-header">
-                        <img src="{% if shop_owner_avatar %}{{ shop_owner_avatar.url }}{% else %}{% static 'core/images/player.jpeg' %}{% endif %}" class="dropdown-avatar" alt="User Avatar">
+                        <img src="{% if shop_owner.logo %}{{ shop_owner.logo.url }}{% else %}{% static 'core/images/gamepad.jpeg' %}{% endif %}" class="dropdown-avatar" alt="User Avatar">
                         <div class="profile-info">
                             <h4>{{ shop_owner.first_name }} {{ shop_owner.last_name }}</h4>
                             <small>Arena Owner</small>

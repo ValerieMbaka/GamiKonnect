@@ -114,9 +114,20 @@ def admin_dashboard(request):
     activity_data = []
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
-        count = ActivityLog.objects.filter(timestamp__date=day).count()
+        # Combine login counts from both ActivityLog (Admins/ShopOwners) and Activity (Gamers)
+        admin_logins = ActivityLog.objects.filter(
+            timestamp__date=day,
+            action_type=ActivityLog.ActionTypes.SECURITY,
+            description__icontains='logged in'
+        ).count()
+        
+        gamer_logins = Activity.objects.filter(
+            timestamp__date=day,
+            activity_type=Activity.ActivityTypes.LOGIN
+        ).count()
+        
         activity_labels.append(day.strftime('%a'))
-        activity_data.append(count)
+        activity_data.append(admin_logins + gamer_logins)
 
     # Revenue by Category (Last 4 months)
     rev_labels = []
@@ -124,22 +135,25 @@ def admin_dashboard(request):
     rev_ads = []
     rev_subscriptions = []
     rev_arena_fees = []
+    
     for i in range(3, -1, -1):
-        month_ago = timezone.now() - timedelta(days=i * 30)
-        month_str = month_ago.strftime('%b')
+        # Calculate start and end of the month
+        target_date = today - timedelta(days=i * 30)
+        month_str = target_date.strftime('%b')
         rev_labels.append(month_str)
-        # Competition payments
-        comp_rev = MpesaTransaction.objects.filter(
-            status='SUCCESS',
-            created_at__year=month_ago.year,
-            created_at__month=month_ago.month,
-        ).aggregate(Sum('amount'))['amount__sum'] or 0
-        rev_competitions.append(float(comp_rev))
         
-        # Placeholders for other categories as they might not have models yet
-        rev_ads.append(float(comp_rev) * 0.1) # Placeholder 10%
-        rev_subscriptions.append(float(comp_rev) * 0.15) # Placeholder 15%
-        rev_arena_fees.append(float(comp_rev) * 0.2) # Placeholder 20%
+        # Base queryset for successful transactions in that month
+        month_transactions = MpesaTransaction.objects.filter(
+            status='SUCCESS',
+            created_at__year=target_date.year,
+            created_at__month=target_date.month
+        )
+        
+        # Aggregate by category
+        rev_competitions.append(float(month_transactions.filter(category='COMPETITION').aggregate(Sum('amount'))['amount__sum'] or 0))
+        rev_ads.append(float(month_transactions.filter(category='AD').aggregate(Sum('amount'))['amount__sum'] or 0))
+        rev_subscriptions.append(float(month_transactions.filter(category='SUBSCRIPTION').aggregate(Sum('amount'))['amount__sum'] or 0))
+        rev_arena_fees.append(float(month_transactions.filter(category='ARENA_FEE').aggregate(Sum('amount'))['amount__sum'] or 0))
 
     # APScheduler Jobs Monitoring
     from competitions.scheduler import get_scheduler

@@ -33,7 +33,7 @@
                 </div>
                 <div class="kpi-bottom">
                     <h3 class="kpi-value">{{ total_gamers|default:"0" }}</h3>
-                    <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> {{ total_gamers|default:0 }}</span>
+                    <span class="kpi-trend positive"><i class="fas fa-user-check"></i> Registered</span>
                 </div>
             </div>
 
@@ -55,7 +55,10 @@
                 </div>
                 <div class="kpi-bottom">
                     <h3 class="kpi-value">{{ total_competitions|default:"0" }}</h3>
-                    <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> {{ total_competitions|default:0 }}</span>
+                    <span class="kpi-trend {% if pending_competitions_count > 0 %}warning{% else %}positive{% endif %}">
+                        <i class="fas {% if pending_competitions_count > 0 %}fa-clock{% else %}fa-check{% endif %}"></i> 
+                        {{ pending_competitions_count }} Pending Review
+                    </span>
                 </div>
             </div>
 
@@ -65,8 +68,8 @@
                     <span class="kpi-label">Earnings</span>
                 </div>
                 <div class="kpi-bottom">
-                    <h3 class="kpi-value">KES {{ total_earnings|floatformat:0|default:"0" }}</h3>
-                    <span class="kpi-trend positive"><i class="fas fa-arrow-up"></i> Revenue</span>
+                    <h3 class="kpi-value">KES {{ total_earnings|floatformat:2|default:"0.00" }}</h3>
+                    <span class="kpi-trend positive"><i class="fas fa-chart-line"></i> Total Revenue</span>
                 </div>
             </div>
         </div>
@@ -89,8 +92,8 @@
             <div class="admin-card chart-container-card">
                 <div class="card-header styled-header flex-between">
                     <div>
-                        <h2 class="m-0">Revenue by Category</h2>
-                        <small class="text-muted">Competitions & Arena Fees</small>
+                        <h2 class="m-0">Revenue Distribution</h2>
+                        <small class="text-muted">By Category (Last 4 Months)</small>
                     </div>
                 </div>
                 <div class="card-body">

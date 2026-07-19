@@ -61,11 +61,5 @@ venv/
 
 # Keys and credentials
 /django-4c5e9-firebase-adminsdk.json
-/google-services.json
 /debug_accounts.py
-
-
-GEMINI.md
-REQUIREMENTS.md
-/gamikonnect-34d65-firebase-adminsdk-fbsvc-b1f2efe7f4.json
 /gamikonnect-34d65-firebase-adminsdk-fbsvc-d3e3498b9f.json

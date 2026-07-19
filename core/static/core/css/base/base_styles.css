@@ -190,7 +190,7 @@ a:visited:hover {
 /* Hero Section */
 .hero-section {
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.7)),
-              url('../images/games.jpeg') no-repeat center center;
+              url('../../images/games.jpeg') no-repeat center center;
     background-size: cover;
     min-height: 80vh;
     display: flex;

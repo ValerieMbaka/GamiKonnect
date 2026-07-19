@@ -287,7 +287,7 @@ def register_view(request):
         'role': role,
         'role_label': "Gamer"
     }
-    return render(request, 'accounts/register.html', context)
+    return render(request, 'accounts/auth/register.html', context)
 
 
 @csrf_exempt
@@ -385,7 +385,7 @@ def register_submit(request):
 def login_view(request):
     request.session.pop('show_resend', None)
     context = base_site_context()
-    return render(request, 'accounts/login.html', context)
+    return render(request, 'accounts/auth/login.html', context)
 
 
 @csrf_exempt
@@ -636,7 +636,7 @@ def forgot_password(request):
     to receive a password reset link via Firebase.
     """
     context = base_site_context()
-    return render(request, 'accounts/forgot_password.html', context)
+    return render(request, 'accounts/auth/forgot_password.html', context)
 
 
 # Password and Account management

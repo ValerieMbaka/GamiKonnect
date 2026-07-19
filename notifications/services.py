@@ -197,7 +197,8 @@ def send_notification_email(notification, user):
         subject = f"[{notification.get_category_display()}] {notification.title}"
         
         # Render HTML template
-        html_content = render_to_string('notifications/email_templates/notification.html', context)
+        html_content = render_to_string(
+            'notifications/email_templates/../accounts/templates/accounts/email_templates/notifications/notification.html', context)
         plain_message = strip_tags(html_content)
         
         send_mail(

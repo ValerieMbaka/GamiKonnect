@@ -4,8 +4,8 @@
 {% block title %} Sign Up · {{ project_detail.title }} {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'accounts/css/auth_common.css' %}">
-	<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/auth/auth_common.css' %}">
+	<link rel="stylesheet" href="{% static 'accounts/css/auth/register.css' %}">
 {% endblock %}
 
 {% block body %}
@@ -83,7 +83,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-    <script type="module" src="{% static 'core/js/firebase-init.js' %}"></script>
-    <script src="{% static 'core/js/auth_common.js' %}"></script>
-    <script src="{% static 'accounts/js/register.js' %}"></script>
+    <script type="module" src="{% static 'core/js/base/firebase-init.js' %}"></script>
+    <script src="{% static 'core/js/base/auth_common.js' %}"></script>
+    <script src="{% static 'accounts/js/auth/register.js' %}"></script>
 {% endblock %}

@@ -63,6 +63,7 @@ urlpatterns = [
     path('payments/<int:transaction_id>/', views.admin_payment_detail, name='payment_detail'),
 
     # Progression
+    path('progression/', views.admin_progression_hub, name='progression_hub'),
     path('progression/levels/', views.admin_level_list, name='level_list'),
     path('progression/levels/save/', views.admin_level_save, name='level_save'),
     path('progression/achievements/', views.admin_achievement_list, name='achievement_list'),

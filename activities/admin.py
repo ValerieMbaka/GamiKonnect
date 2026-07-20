@@ -53,7 +53,7 @@ class ActivityAdmin(SafeDateHierarchyAdmin):
                 obj.gamer.id,
                 obj.gamer.email
             )
-        return '—'
+        return format_html('—')
     gamer_link.short_description = 'Gamer'
     
     def gamer_link_display(self, obj):
@@ -99,7 +99,7 @@ class ActivityAdmin(SafeDateHierarchyAdmin):
         """Show indicator if metadata exists"""
         if obj.metadata:
             return format_html('<span style="color:#10b981;font-weight:bold;">{}</span>', '✓ Has Data')
-        return '—'
+        return format_html('—')
     has_metadata_indicator.short_description = 'Metadata'
     
     def metadata_display(self, obj):
@@ -113,7 +113,7 @@ class ActivityAdmin(SafeDateHierarchyAdmin):
                 )
             except Exception:
                 return str(obj.metadata)
-        return '—'
+        return format_html('—')
     metadata_display.short_description = 'Metadata'
     
     def has_add_permission(self, request):
@@ -205,7 +205,7 @@ class ActivityLogAdmin(SafeDateHierarchyAdmin):
                 '<a href="/admin/accounts/gamer/{}/change/">{}</a>',
                 obj.gamer.id, obj.gamer.email
             )
-        return '—'
+        return format_html('—')
     gamer_link.short_description = 'Gamer'
     
     def gamer_link_display(self, obj):
@@ -230,7 +230,7 @@ class ActivityLogAdmin(SafeDateHierarchyAdmin):
                 )
             except Exception:
                 return str(obj.meta_data)
-        return '—'
+        return format_html('—')
     meta_data_display.short_description = 'Metadata'
     
     def has_add_permission(self, request):
@@ -279,7 +279,7 @@ class LevelAdmin(admin.ModelAdmin):
         """Show indicator if badge exists"""
         if obj.badge_image:
             return format_html('<span style="color:#10b981;font-weight:bold;">{}</span>', '✓')
-        return '—'
+        return format_html('—')
     has_badge_indicator.short_description = 'Badge'
     
     def badge_preview(self, obj):
@@ -289,7 +289,7 @@ class LevelAdmin(admin.ModelAdmin):
                 '<img src="{}" style="max-width:100px;max-height:100px;border-radius:4px;" />',
                 obj.badge_image.url
             )
-        return '—'
+        return format_html('—')
     badge_preview.short_description = 'Badge Preview'
 
 
@@ -329,7 +329,7 @@ class AchievementAdmin(admin.ModelAdmin):
         """Show indicator if badge exists"""
         if obj.badge_image:
             return format_html('<span style="color:#10b981;font-weight:bold;">{}</span>', '✓')
-        return '—'
+        return format_html('—')
     has_badge_indicator.short_description = 'Badge'
     
     def badge_preview(self, obj):
@@ -339,7 +339,7 @@ class AchievementAdmin(admin.ModelAdmin):
                 '<img src="{}" style="max-width:100px;max-height:100px;border-radius:4px;" />',
                 obj.badge_image.url
             )
-        return '—'
+        return format_html('—')
     badge_preview.short_description = 'Badge Preview'
 
 

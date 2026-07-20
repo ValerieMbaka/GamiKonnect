@@ -84,10 +84,12 @@ class GamerAdmin(SafeDateHierarchyAdmin):
         """Display profile completion status as badge"""
         if obj.profile_completed:
             return format_html(
-                '<span style="background:#10b981;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">✓ Complete</span>'
+                '<span style="background:#10b981;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}</span>',
+                '✓ Complete'
             )
         return format_html(
-            '<span style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">⚠ Incomplete</span>'
+            '<span style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}</span>',
+            '⚠ Incomplete'
         )
     profile_completed_badge.short_description = 'Profile'
     

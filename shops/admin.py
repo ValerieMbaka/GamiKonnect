@@ -64,10 +64,12 @@ class ShopAdmin(SafeDateHierarchyAdmin):
         """Display approval status as badge"""
         if obj.is_approved:
             return format_html(
-                '<span style="background:#10b981;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">✓ Approved</span>'
+                '<span style="background:#10b981;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">{}</span>',
+                '✓ Approved'
             )
         return format_html(
-            '<span style="background:#f59e0b;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">⏳ Pending</span>'
+            '<span style="background:#f59e0b;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">{}</span>',
+            '⏳ Pending'
         )
     approval_badge.short_description = 'Status'
     

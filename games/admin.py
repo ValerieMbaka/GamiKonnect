@@ -250,21 +250,24 @@ class GameAdmin(SafeDateHierarchyAdmin):
         """Display genres as badges"""
         genres = obj.genres.all()
         if not genres:
-            return '—'
-        return format_html(' '.join([
-            f'<span style="background:#8b5cf6;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px;margin-right:2px;display:inline-block;">{g.name}</span>'
+            return format_html('—')
+        badges = [
+            format_html('<span style="background:#8b5cf6;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px;margin-right:2px;display:inline-block;">{}</span>', g.name)
             for g in genres
-        ]))
+        ]
+        return mark_safe(' '.join(badges))
     genres_display.short_description = 'Genres'
     
     def status_badge(self, obj):
         """Display active status as badge"""
         if obj.is_active:
             return format_html(
-                '<span style="background:#10b981;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">▶ Active</span>'
+                '<span style="background:#10b981;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}</span>',
+                '▶ Active'
             )
         return format_html(
-            '<span style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">⏸ Inactive</span>'
+            '<span style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}</span>',
+            '⏸ Inactive'
         )
     status_badge.short_description = 'Status'
     
@@ -272,10 +275,12 @@ class GameAdmin(SafeDateHierarchyAdmin):
         """Display verification status as badge"""
         if obj.is_verified:
             return format_html(
-                '<span style="background:#10b981;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">✓ Verified</span>'
+                '<span style="background:#10b981;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}</span>',
+                '✓ Verified'
             )
         return format_html(
-            '<span style="background:#f59e0b;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">⏳ Unverified</span>'
+            '<span style="background:#f59e0b;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;">{}</span>',
+            '⏳ Unverified'
         )
     verification_badge.short_description = 'Verification'
     
@@ -286,7 +291,7 @@ class GameAdmin(SafeDateHierarchyAdmin):
                 '<img src="{}" style="max-width:150px;max-height:150px;border-radius:4px;" />',
                 obj.image.url
             )
-        return '—'
+        return format_html('—')
     image_preview.short_description = 'Image Preview'
     
     def platform_categories_list_display(self, obj):

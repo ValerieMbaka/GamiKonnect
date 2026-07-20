@@ -39,7 +39,8 @@ class MpesaTransactionAdmin(SafeDateHierarchyAdmin):
                 obj.receipt_number
             )
         return format_html(
-            '<span style="background:#f59e0b;color:#fff;padding:3px 8px;border-radius:3px;font-weight:600;">Pending</span>'
+            '<span style="background:#f59e0b;color:#fff;padding:3px 8px;border-radius:3px;font-weight:600;">{}</span>',
+            'Pending'
         )
     receipt_number_or_pending.short_description = 'Receipt Number'
     

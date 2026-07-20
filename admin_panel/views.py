@@ -1478,6 +1478,36 @@ def admin_payment_detail(request, transaction_id):
 
 # Progression Management
 @admin_required
+def admin_progression_hub(request):
+    """
+    Tabbed progression hub combining Levels, Achievements, and Gamer Stats.
+    """
+    levels = Level.objects.all().order_by('order')
+    achievements = Achievement.objects.all().order_by('category', 'target_value', 'name')
+    query = request.GET.get('q', '').strip()
+    stats_qs = GamerStats.objects.select_related('gamer').order_by('-updated_at')
+    if query:
+        stats_qs = stats_qs.filter(
+            Q(gamer__custom_username__icontains=query) | Q(gamer__first_name__icontains=query) |
+            Q(gamer__last_name__icontains=query) | Q(gamer__email__icontains=query)
+        )
+    paginator = Paginator(stats_qs, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'levels': levels,
+        'achievements': achievements,
+        'category_choices': Achievement.CATEGORY_CHOICES,
+        'stats': page_obj,
+        'query': query,
+        'total_gamers_with_stats': stats_qs.count(),
+        'pending_competitions_count': Competition.objects.filter(status='pending').count(),
+    }
+    return render(request, 'admin_panel/progression/admin_progression_hub.html', context)
+
+
+@admin_required
 def admin_level_list(request):
     levels = Level.objects.all().order_by('order')
     context = {

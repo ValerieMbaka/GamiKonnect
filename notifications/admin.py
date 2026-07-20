@@ -201,8 +201,9 @@ class NotificationRecipientAdmin(admin.ModelAdmin):
         """Display read/unread status."""
         if obj.is_read:
             return format_html(
-                '<span style="color: green; font-weight: bold;">✅ Read</span><br>'
+                '<span style="color: green; font-weight: bold;">{}</span><br>'
                 '<small>{}</small>',
+                '✅ Read',
                 obj.read_at.strftime('%Y-%m-%d %H:%M') if obj.read_at else ''
             )
         return format_html('<span style="color: gray;">{}</span>', '○ Unread')
@@ -353,5 +354,5 @@ class NotificationScheduleAdmin(admin.ModelAdmin):
         elif delta == 0:
             return format_html('<span style="color: orange;">{}</span>', 'Today')
         else:
-            return f"In {delta} days"
+            return format_html('In {} days', delta)
     days_until.short_description = 'Days Until Send'

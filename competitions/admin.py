@@ -117,10 +117,7 @@ class CompetitionAdmin(admin.ModelAdmin):
         colour = colours.get(obj.status, '#6c757d')
         label = obj.get_status_display()
         return format_html(
-            '<span style="'
-            'background:{};color:#fff;padding:3px 10px;'
-            'border-radius:12px;font-size:11px;font-weight:600;'
-            '">{}</span>',
+            '<span style="background:{};color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">{}</span>',
             colour, label
         )
 
@@ -195,10 +192,7 @@ class CompetitionRegistrationAdmin(admin.ModelAdmin):
         colour = colours.get(obj.payment_status, '#6c757d')
         label = obj.get_payment_status_display()
         return format_html(
-            '<span style="'
-            'background:{};color:#fff;padding:3px 10px;'
-            'border-radius:12px;font-size:11px;font-weight:600;'
-            '">{}</span>',
+            '<span style="background:{};color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">{}</span>',
             colour, label
         )
 

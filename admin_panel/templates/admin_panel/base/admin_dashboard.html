@@ -75,34 +75,6 @@
         </div>
     </section>
 
-    <section id="dashboard-analytics-section" class="dashboard-block-section">
-        <div class="dashboard-dual-column-grid">
-            <div class="admin-card chart-container-card">
-                <div class="card-header styled-header flex-between">
-                    <div>
-                        <h2 class="m-0">Site Activity</h2>
-                        <small class="text-muted">Daily Logins (Last 7 Days)</small>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <canvas id="siteActivityChart"></canvas>
-                </div>
-            </div>
-
-            <div class="admin-card chart-container-card">
-                <div class="card-header styled-header flex-between">
-                    <div>
-                        <h2 class="m-0">Revenue Distribution</h2>
-                        <small class="text-muted">By Category (Last 4 Months)</small>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <canvas id="trafficSourcesChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section id="dashboard-community-section" class="dashboard-block-section">
         <div class="dashboard-dual-column-grid">
             <div class="admin-card data-list-card">
@@ -176,6 +148,34 @@
                         </li>
                         {% endfor %}
                     </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+	<section id="dashboard-analytics-section" class="dashboard-block-section">
+        <div class="dashboard-dual-column-grid">
+            <div class="admin-card chart-container-card">
+                <div class="card-header styled-header flex-between">
+                    <div>
+                        <h2 class="m-0">Site Activity</h2>
+                        <small class="text-muted">Daily Logins (Last 7 Days)</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="siteActivityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="admin-card chart-container-card">
+                <div class="card-header styled-header flex-between">
+                    <div>
+                        <h2 class="m-0">Revenue Distribution</h2>
+                        <small class="text-muted">By Category (Last 4 Months)</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="trafficSourcesChart"></canvas>
                 </div>
             </div>
         </div>

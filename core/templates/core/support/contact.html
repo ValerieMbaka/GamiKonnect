@@ -67,7 +67,11 @@
                             <div class="card-body p-4">
                                 <h3 class="h4 mb-4">Send us a Message</h3>
 
-                                <form id="contactForm" class="contact-form">
+                                <form id="contactForm" class="contact-form" data-submit-url="{% url 'core:contact_submit' %}">
+                                    <div style="display: none !important;">
+                                        <label for="website_url">Leave this field empty</label>
+                                        <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+                                    </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="firstName" class="form-label">First Name *</label>

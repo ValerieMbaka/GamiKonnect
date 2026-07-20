@@ -106,10 +106,13 @@ def is_rate_limited(action, identifier, max_attempts, window_seconds):
 def registration_email_rate_limited(request, email):
     client_ip = get_client_ip(request)
 
-    if is_rate_limited('register-email', email, REGISTER_EMAIL_MAX_ATTEMPTS, REGISTER_EMAIL_WINDOW_SECONDS):
+    # Stricter IP-based rate limiting for registration attempts
+    # Limit to 3 registrations per IP per hour
+    if is_rate_limited('register-ip', client_ip, 3, 3600):
+        logger.warning(f"Registration IP rate limit exceeded: {client_ip}")
         return True
 
-    if is_rate_limited('register-ip', client_ip, REGISTER_IP_MAX_ATTEMPTS, REGISTER_IP_WINDOW_SECONDS):
+    if is_rate_limited('register-email', email, REGISTER_EMAIL_MAX_ATTEMPTS, REGISTER_EMAIL_WINDOW_SECONDS):
         return True
 
     return False
@@ -301,8 +304,22 @@ def register_submit(request):
             phone = (request.POST.get('phone_number') or '').strip()
             role = 'gamer'
 
+            # Honey-pot bot detection
+            if request.POST.get('username_field'):
+                logger.warning(f"Bot detected: Honey-pot field filled. IP: {get_client_ip(request)}")
+                return JsonResponse({'success': False, 'message': 'Registration successful. Please check your email.'})
+
             if not uid or not email or not first_name or not last_name or not phone:
                 return JsonResponse({'success': False, 'message': 'All required fields must be provided'})
+
+            # Email validation (basic regex + common spam domains check)
+            email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_regex, email):
+                return JsonResponse({'success': False, 'message': 'Invalid email format'})
+            
+            spam_domains = ['mailinator.com', '10minutemail.com', 'temp-mail.org', 'guerrillamail.com']
+            if any(domain in email for domain in spam_domains):
+                return JsonResponse({'success': False, 'message': 'Please use a permanent email address.'})
 
             if registration_email_rate_limited(request, email):
                 return JsonResponse({

@@ -27,6 +27,11 @@
                 {% csrf_token %}
                 <input type="hidden" id="firebase_uid" name="uid">
 
+                <div style="display: none !important;">
+                    <label for="username_field">Leave this field empty</label>
+                    <input type="text" id="username_field" name="username_field" tabindex="-1" autocomplete="off">
+                </div>
+
                 <div class="name-fields-container">
                     <div class="form-group name-field">
                         <label for="first_name">First Name</label>

@@ -159,7 +159,14 @@ def error_500(request):
 @csrf_exempt
 def contact_submit(request):
     # Handle contact form submission and email support.
-    
+
+    # Honey-pot bot detection
+    if request.POST.get('website_url'):
+        return JsonResponse({
+            'success': True,
+            'message': 'Thank you! Your message has been sent successfully.'
+        })
+
     name = f"{request.POST.get('first_name', '').strip()} {request.POST.get('last_name', '').strip()}".strip()
     email = request.POST.get('email', '').strip()
     subject_type = request.POST.get('subject', '').strip() or 'other'
@@ -171,6 +178,15 @@ def contact_submit(request):
             'success': False,
             'message': 'Please fill in all required fields.'
         }, status=400)
+
+    # Email validation (basic regex + common spam domains check)
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_regex, email):
+        return JsonResponse({'success': False, 'message': 'Invalid email format'}, status=400)
+    
+    spam_domains = ['mailinator.com', '10minutemail.com', 'temp-mail.org', 'guerrillamail.com']
+    if any(domain in email for domain in spam_domains):
+        return JsonResponse({'success': False, 'message': 'Please use a permanent email address.'}, status=400)
     
     # Build email subject and body
     email_subject = f"[Contact] {subject_type.title()} - {name}"

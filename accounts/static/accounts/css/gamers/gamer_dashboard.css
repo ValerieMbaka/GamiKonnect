@@ -76,7 +76,7 @@
 
 /* Profile Header */
 .profile-header-wrapper {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     position: relative;
     background: var(--gradient-primary);
     border-radius: var(--border-radius);
@@ -84,9 +84,34 @@
     box-shadow: var(--shadow-md);
 }
 
+/* ------------------------------------------------------------------
+   Tightened spacing: header -> tabs -> first card.
+   Uses !important + sibling selectors because the oversized gaps come
+   from ancestor/base layout spacing outside this stylesheet, not from
+   margins declared here — this guarantees the override lands.
+   ------------------------------------------------------------------ */
+.profile-header-wrapper + .profile-tabs-container {
+    margin-top: 0 !important;
+}
+
+.profile-tabs-container {
+    margin-top: 0;
+}
+
+.profile-tabs-container + .profile-tab-content,
+.profile-tabs-container ~ .profile-tab-content {
+    margin-top: 12px !important;
+    padding-top: 0 !important;
+}
+
+.profile-tab-content > .profile-card:first-child,
+.profile-tab-content > section:first-child {
+    margin-top: 0 !important;
+}
+
 .profile-header-grid {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: minmax(220px, 260px) 1fr;
     gap: 20px;
     align-items: start;
 }
@@ -96,7 +121,8 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    min-width: min(200px, 100%);
+    width: 100%;
+    min-width: 0;
     justify-content: flex-start;
 }
 
@@ -145,6 +171,8 @@
 .profile-name-wrapper {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 10px;
 }
 
@@ -153,6 +181,9 @@
     font-size: 1.8rem;
     font-weight: 700;
     color: var(--text-light);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.15;
 }
 
 .verified-badge {
@@ -308,49 +339,111 @@
 .action-btn span { font-size: 0.95rem !important; color: var(--text-primary) !important; font-weight: 600 !important; position: relative !important; z-index: 1 !important; }
 .action-btn:hover span { color: var(--primary) !important; }
 
-/* Activities */
-.activity-feed { display: flex; flex-direction: column; gap: 20px; }
+/* ------------------------------------------------------------------
+   Recent Activities — timeline style
+   ------------------------------------------------------------------ */
+.activity-feed {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding-left: 2px;
+}
+
+.activity-feed::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--border-light);
+}
+
 .activity-item {
-    display: flex; gap: 15px; padding: 20px; border-radius: var(--border-radius-sm);
-    background: var(--bg-primary); box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); transition: var(--transition);
+    display: flex;
+    gap: 16px;
+    position: relative;
+    background: none;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    transition: var(--transition);
 }
+
 .activity-item:hover {
-    transform: translateY(-3px); box-shadow: var(--shadow-md); background: var(--bg-secondary); border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    transform: none;
+    box-shadow: none;
+    background: none;
+    border: none;
 }
-.activity-icon { width: 50px; height: 50px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
-.activity-icon img { width: 100%; height: 100%; object-fit: cover; }
-.activity-content { flex: 1; }
-.activity-title { font-size: 1rem; margin: 0 0 5px; color: var(--text-primary); }
-.activity-meta { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; }
+
+.activity-item:hover .activity-title { color: var(--primary); }
+
+.activity-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: visible;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.activity-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Rotating accent per entry, matching the palette used across the
+   other overview widgets (blue / amber / green) */
+.activity-item:nth-child(3n+1) .activity-icon { border-color: var(--primary); color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, var(--bg-primary)); }
+.activity-item:nth-child(3n+2) .activity-icon { border-color: var(--warning); color: var(--warning); background: color-mix(in srgb, var(--warning) 12%, var(--bg-primary)); }
+.activity-item:nth-child(3n+3) .activity-icon { border-color: var(--success); color: var(--success); background: color-mix(in srgb, var(--success) 12%, var(--bg-primary)); }
+
+.activity-content { flex: 1; padding-top: 6px; min-width: 0; }
+.activity-title { font-size: 0.9rem; font-weight: 700; margin: 0 0 4px; color: var(--text-primary); transition: var(--transition); }
+.activity-meta { font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 0; }
 
 /* ------------------------------------------------------------------
    Upcoming Events widget
    ------------------------------------------------------------------ */
-.upcoming-events-list { display: flex; flex-direction: column; gap: 12px; }
+.upcoming-events-list { display: flex; flex-direction: column; gap: 20px; }
 
 .upcoming-event-item {
-    display: flex; align-items: center; gap: 14px; padding: 12px;
-    border-radius: var(--border-radius-sm); background: var(--bg-primary);
-    border: 1px solid var(--border-light); transition: var(--transition);
+    display: flex; align-items: center; gap: 16px; padding: 0;
+    border-radius: 0; background: none; border: none; transition: var(--transition);
 }
 
-.upcoming-event-item:hover {
-    transform: translateY(-2px); box-shadow: var(--shadow-md);
-    border-color: color-mix(in srgb, var(--primary) 30%, transparent);
-}
+.upcoming-event-item:hover { transform: translateX(3px); box-shadow: none; border: none; }
+.upcoming-event-item:hover .upcoming-event-info h4 { color: var(--primary); }
 
 .upcoming-event-date {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 46px; height: 46px; border-radius: 10px; flex-shrink: 0;
+    width: 58px; height: 60px; border-radius: 14px; flex-shrink: 0;
     background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary);
 }
 
-.upcoming-event-day { font-size: 1rem; font-weight: 800; line-height: 1; }
-.upcoming-event-month { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; margin-top: 1px; }
+.upcoming-event-day { font-size: 1.3rem; font-weight: 800; line-height: 1; }
+.upcoming-event-month { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.03em; }
 
 .upcoming-event-info { min-width: 0; }
-.upcoming-event-info h4 { margin: 0 0 4px; font-size: 0.9rem; color: var(--text-primary); overflow-wrap: anywhere; }
-.upcoming-event-info p { margin: 0; font-size: 0.78rem; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.upcoming-event-info h4 { margin: 0 0 4px; font-size: 0.94rem; font-weight: 700; color: var(--text-primary); overflow-wrap: anywhere; transition: var(--transition); }
+.upcoming-event-info p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+
+/* Rotating accent per entry — blue / amber / green */
+.upcoming-event-item:nth-child(3n+1) .upcoming-event-date { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+.upcoming-event-item:nth-child(3n+2) .upcoming-event-date { background: color-mix(in srgb, var(--warning) 16%, transparent); color: var(--warning); }
+.upcoming-event-item:nth-child(3n+3) .upcoming-event-date { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
 
 .empty-state-inline {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -360,33 +453,63 @@
 .empty-state-inline p { margin: 0; font-size: 0.84rem; }
 
 /* ------------------------------------------------------------------
+   Recent Achievements widget
+   ------------------------------------------------------------------ */
+.achievements-list { display: flex; flex-direction: column; gap: 20px; }
+
+.achievement-item { display: flex; align-items: center; gap: 16px; }
+
+.achievement-badge {
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 58px; height: 60px; border-radius: 14px;
+    background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary);
+    font-size: 1.4rem; overflow: hidden;
+}
+
+.achievement-badge img { width: 100%; height: 100%; object-fit: contain; }
+
+.achievement-details { min-width: 0; }
+.achievement-title { margin: 0 0 4px; font-size: 0.94rem; font-weight: 700; color: var(--text-primary); overflow-wrap: anywhere; }
+.achievement-date { margin: 0 0 4px; font-size: 0.78rem; color: var(--text-secondary); }
+.achievement-xp {
+    display: inline-block; font-size: 0.72rem; font-weight: 800;
+    padding: 2px 9px; border-radius: 999px;
+    background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success);
+}
+
+/* Rotating accent per entry — blue / amber / green */
+.achievement-item:nth-child(3n+1) .achievement-badge { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+.achievement-item:nth-child(3n+2) .achievement-badge { background: color-mix(in srgb, var(--warning) 16%, transparent); color: var(--warning); }
+.achievement-item:nth-child(3n+3) .achievement-badge { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+
+/* ------------------------------------------------------------------
    Top Games widget (dummy data for now)
    ------------------------------------------------------------------ */
-.top-games-list { display: flex; flex-direction: column; gap: 10px; }
+.top-games-list { display: flex; flex-direction: column; gap: 20px; }
 
-.top-game-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-    border-radius: var(--border-radius-sm); background: var(--bg-primary);
-    border: 1px solid var(--border-light); transition: var(--transition);
-}
-
-.top-game-item:hover { border-color: color-mix(in srgb, var(--primary) 30%, transparent); background: var(--bg-secondary); }
-
-.top-game-rank {
-    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--gradient-primary); color: var(--text-light);
-    font-size: 0.72rem; font-weight: 800;
-}
+.top-game-item { display: flex; align-items: center; gap: 16px; }
 
 .top-game-icon {
-    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: color-mix(in srgb, var(--primary) 10%, transparent); color: var(--primary); font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;
+    width: 58px; height: 60px; border-radius: 14px;
+    background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); font-size: 1.2rem;
 }
 
-.top-game-info h4 { margin: 0 0 2px; font-size: 0.86rem; color: var(--text-primary); }
-.top-game-info p { margin: 0; font-size: 0.74rem; color: var(--text-secondary); }
+.top-game-rank {
+    position: absolute; top: -6px; right: -6px;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--text-primary); color: var(--bg-primary);
+    font-size: 0.66rem; font-weight: 800; box-shadow: var(--shadow-sm);
+}
+
+.top-game-info h4 { margin: 0 0 4px; font-size: 0.94rem; font-weight: 700; color: var(--text-primary); }
+.top-game-info p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); }
+
+/* Rotating accent per entry — blue / amber / green */
+.top-game-item:nth-child(3n+1) .top-game-icon { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+.top-game-item:nth-child(3n+2) .top-game-icon { background: color-mix(in srgb, var(--warning) 16%, transparent); color: var(--warning); }
+.top-game-item:nth-child(3n+3) .top-game-icon { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
 
 /* Dashboard Cards (Games/Achievements) */
 .featured-game-card {
@@ -443,6 +566,69 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------------
+   Component Card Headers — Quick Actions / Recent Activities /
+   Upcoming Events / Recent Achievements / Top Games, etc.
+   (previously unstyled: flat white bar, plain bold text, no accent)
+   ------------------------------------------------------------------ */
+.component-card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    padding: 14px 20px !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, var(--bg-primary)) 0%, var(--bg-primary) 100%) !important;
+    border-bottom: 1px solid var(--border-light) !important;
+}
+
+.component-card-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.component-card-header h2 i {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    background: var(--gradient-primary);
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.component-card-header h2 span .badge {
+    margin-left: 4px;
+}
+
+.view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.view-all-link:hover {
+    background: var(--primary);
+    color: var(--text-light);
+    transform: translateY(-1px);
 }
 
 /* ------------------------------------------------------------------

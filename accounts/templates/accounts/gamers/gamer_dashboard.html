@@ -196,12 +196,6 @@
                         <span>Leaderboard</span>
                     </a>
 
-                    <a href="{% url 'accounts:gamer_public_profile' %}" class="action-btn btn btn-light btn-shimmer" data-tooltip="View your public profile">
-	                    <div class="action-icon">
-		                    <i class="fas fa-user"></i>
-	                    </div>
-                        <span>View Profile</span>
-                    </a>
                     {% if not profile_complete %}
                     <button class="action-btn btn btn-primary btn-shimmer complete-profile-action" id="openProfileModalBtn2" data-tooltip="Complete your profile">
                         <div class="action-icon">
@@ -314,24 +308,21 @@
                     {# NOTE: dummy placeholder data — wire to real per-game stats when available #}
                     <div class="top-games-list">
                         <div class="top-game-item">
-                            <span class="top-game-rank">1</span>
-                            <div class="top-game-icon"><i class="fas fa-gamepad"></i></div>
+                            <div class="top-game-icon"><i class="fas fa-gamepad"></i><span class="top-game-rank">1</span></div>
                             <div class="top-game-info">
                                 <h4>EA Sports FC 26</h4>
                                 <p>18h played · 62% win rate</p>
                             </div>
                         </div>
                         <div class="top-game-item">
-                            <span class="top-game-rank">2</span>
-                            <div class="top-game-icon"><i class="fas fa-gamepad"></i></div>
+                            <div class="top-game-icon"><i class="fas fa-gamepad"></i><span class="top-game-rank">2</span></div>
                             <div class="top-game-info">
                                 <h4>Call of Duty: MW3</h4>
                                 <p>12h played · 54% win rate</p>
                             </div>
                         </div>
                         <div class="top-game-item">
-                            <span class="top-game-rank">3</span>
-                            <div class="top-game-icon"><i class="fas fa-gamepad"></i></div>
+                            <div class="top-game-icon"><i class="fas fa-gamepad"></i><span class="top-game-rank">3</span></div>
                             <div class="top-game-info">
                                 <h4>Tekken 8</h4>
                                 <p>7h played · 48% win rate</p>

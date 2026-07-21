@@ -21,37 +21,6 @@
         </div>
     </div>
 
-    <section class="stats-grid">
-        <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
-            <div class="gk-stat-card-header">
-                <span class="gk-stat-icon"><i class="fas fa-medal"></i></span>
-                <span class="gk-stat-label">Total levels</span>
-            </div>
-            <div class="gk-stat-value">{{ levels|length }}</div>
-        </div>
-        <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
-            <div class="gk-stat-card-header">
-                <span class="gk-stat-icon"><i class="fas fa-arrow-up"></i></span>
-                <span class="gk-stat-label">Top XP requirement</span>
-            </div>
-            <div class="gk-stat-value">{{ levels.last.min_xp|default:0 }}</div>
-        </div>
-        <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
-            <div class="gk-stat-card-header">
-                <span class="gk-stat-icon"><i class="fas fa-layer-group"></i></span>
-                <span class="gk-stat-label">Starting order</span>
-            </div>
-            <div class="gk-stat-value">{{ levels.first.order|default:0 }}</div>
-        </div>
-        <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
-            <div class="gk-stat-card-header">
-                <span class="gk-stat-icon"><i class="fas fa-shield-alt"></i></span>
-                <span class="gk-stat-label">Visual progression</span>
-            </div>
-            <div class="gk-stat-value">Badge-ready</div>
-        </div>
-    </section>
-
     <section class="admin-card hub-section hub-table-shell">
         <div class="hub-table-wrap">
             <table class="hub-data-table">

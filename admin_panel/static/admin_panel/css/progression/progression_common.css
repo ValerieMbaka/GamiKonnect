@@ -85,8 +85,13 @@
     font-weight: 500;
 }
 
+.stats-grid.stats-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 @media (max-width: 992px) {
     .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stats-grid.stats-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 576px) {
@@ -280,6 +285,155 @@
     .search-toolbar .search-actions { width: 100%; }
     .search-toolbar .btn-search-submit,
     .search-toolbar .btn-search-reset { flex: 1; text-align: center; }
+}
+
+/* ------------------------------------------------------------------
+   Table Containment — wide tables (Achievements: 8 cols, Player
+   Progression: 14 cols) must scroll *within* their own wrapper, not
+   stretch the page. Without an explicit width ceiling here, a table
+   wider than the viewport pushes .admin-hub-shell itself wider,
+   which drags the KPI cards and everything else off-screen too.
+   ------------------------------------------------------------------ */
+.admin-hub-shell {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.hub-table-shell {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.hub-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.hub-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* ------------------------------------------------------------------
+   Hub Header Action Group — the contextual Seed / Add controls in
+   the top-right of the Progression Hub. "Contextual" means their
+   label/target swap based on whichever tab (Levels / Achievements /
+   Player Progression) is currently active — see
+   admin_progression_hub.js. Seed is a split button: the main face
+   runs the contextually-relevant seed command, the caret opens a
+   menu with all seed options so any of them stay reachable from any
+   tab.
+   ------------------------------------------------------------------ */
+.hub-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.hub-split-btn {
+    display: inline-flex;
+    position: relative;
+}
+
+.hub-split-btn .btn-seed-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px 0 0 8px;
+    border: 1px solid var(--primary, #009ef7);
+    border-right: none;
+    background: transparent;
+    color: var(--primary, #009ef7);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.hub-split-btn .btn-seed-main:hover {
+    background: var(--primary, #009ef7);
+    color: #ffffff;
+}
+
+.hub-split-btn .btn-seed-caret {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    border-radius: 0 8px 8px 0;
+    border: 1px solid var(--primary, #009ef7);
+    background: transparent;
+    color: var(--primary, #009ef7);
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.hub-split-btn .btn-seed-caret:hover {
+    background: var(--primary, #009ef7);
+    color: #ffffff;
+}
+
+.hub-split-btn .dropdown-menu {
+    min-width: 200px;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color, #eef0f4);
+    box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, 0.1));
+}
+
+.hub-split-btn .dropdown-item {
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-dark, #181c32);
+    cursor: pointer;
+}
+
+.hub-split-btn .dropdown-item:hover {
+    background: var(--bg-secondary, #f5f8fa);
+    color: var(--primary, #009ef7);
+}
+
+.hub-header-actions .btn-hub-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary, #009ef7);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.hub-header-actions .btn-hub-add:hover {
+    opacity: 0.9;
+}
+
+.hub-header-actions .btn-hub-add.is-hidden {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .hub-header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    .hub-split-btn,
+    .hub-header-actions .btn-hub-add {
+        flex: 1 1 auto;
+    }
 }
 
 /* ------------------------------------------------------------------

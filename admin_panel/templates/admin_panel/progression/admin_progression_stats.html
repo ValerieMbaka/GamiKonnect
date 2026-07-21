@@ -17,37 +17,6 @@
         </div>
     </div>
 
-    <section class="stats-grid">
-        <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
-            <div class="gk-stat-card-header">
-                <span class="gk-stat-icon"><i class="fas fa-users"></i></span>
-                <span class="gk-stat-label">Gamers tracked</span>
-            </div>
-            <div class="gk-stat-value">{{ total_gamers_with_stats }}</div>
-        </div>
-        <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
-            <div class="gk-stat-card-header">
-                <span class="gk-stat-icon"><i class="fas fa-database"></i></span>
-                <span class="gk-stat-label">Rule source data</span>
-            </div>
-            <div class="gk-stat-value">Live</div>
-        </div>
-        <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
-            <div class="gk-stat-card-header">
-                <span class="gk-stat-icon"><i class="fas fa-bolt"></i></span>
-                <span class="gk-stat-label">No heavy count queries</span>
-            </div>
-            <div class="gk-stat-value">Optimized</div>
-        </div>
-        <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
-            <div class="gk-stat-card-header">
-                <span class="gk-stat-icon"><i class="fas fa-shield-alt"></i></span>
-                <span class="gk-stat-label">Backed by DB records</span>
-            </div>
-            <div class="gk-stat-value">Trusted</div>
-        </div>
-    </section>
-
     <section class="admin-card hub-section mb-4">
         <div class="d-flex flex-wrap gap-2 mb-3 seed-actions">
             <form method="POST" action="{% url 'admin_panel:progression_seed' %}">

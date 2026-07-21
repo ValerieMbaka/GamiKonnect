@@ -18,7 +18,55 @@
             <h1 class="page-title m-0">Progression Hub</h1>
             <p class="page-subtitle text-muted mt-1">Manage levels, achievements, and player progression from one place.</p>
         </div>
+        <div class="hub-header-actions">
+            <!-- Seed split button: main face runs whichever seed command
+                 matches the active tab; caret opens all three options. -->
+            <div class="hub-split-btn">
+                <form method="POST" action="{% url 'admin_panel:progression_seed' %}" id="hubSeedForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="seed_action" id="hubSeedActionInput" value="levels">
+                    <button type="submit" class="btn-seed-main" id="hubSeedMainBtn">
+                        <i class="fas fa-seedling"></i> Run seed_levels
+                    </button>
+                </form>
+                <button type="button" class="btn-seed-caret" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><button type="button" class="dropdown-item" onclick="submitHubSeed('levels')">Run seed_levels</button></li>
+                    <li><button type="button" class="dropdown-item" onclick="submitHubSeed('achievements')">Run seed_achievements</button></li>
+                    <li><button type="button" class="dropdown-item" onclick="submitHubSeed('all')">Run All Seeds</button></li>
+                </ul>
+            </div>
+            <button type="button" class="btn-hub-add" id="hubAddBtn" data-bs-toggle="modal" data-bs-target="#levelModal" onclick="resetLevelForm()">
+                <i class="fas fa-plus"></i> <span id="hubAddBtnLabel">Add New Level</span>
+            </button>
+        </div>
     </div>
+
+    <section class="stats-grid stats-grid-3">
+        <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-layer-group"></i></span>
+                <span class="gk-stat-label">Levels</span>
+            </div>
+            <div class="gk-stat-value">{{ levels|length }}</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-medal"></i></span>
+                <span class="gk-stat-label">Achievements attainable</span>
+            </div>
+            <div class="gk-stat-value">{{ achievements|length }}</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-bolt"></i></span>
+                <span class="gk-stat-label">Maximum XP</span>
+            </div>
+            <div class="gk-stat-value">{{ max_attainable_xp|default:"—" }}</div>
+        </div>
+    </section>
 
     <ul class="nav nav-tabs" id="progressionTabs" role="tablist">
         <li class="nav-item" role="presentation">
@@ -42,50 +90,7 @@
 
         <!-- ===== LEVELS TAB ===== -->
         <div class="tab-pane fade show active" id="levels-pane" role="tabpanel" aria-labelledby="levels-tab">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="text-muted mb-0">Define the level ladder and the XP required to advance.</p>
-                <div class="d-flex gap-2 seed-actions">
-                    <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="seed_action" value="levels">
-                        <button type="submit" class="btn btn-outline-primary btn-sm">Run seed_levels</button>
-                    </form>
-                    <button type="button" class="btn-admin-primary btn-sm" data-bs-toggle="modal" data-bs-target="#levelModal" onclick="resetLevelForm()">
-                        <i class="fas fa-plus"></i> Add New Level
-                    </button>
-                </div>
-            </div>
-
-            <section class="stats-grid">
-                <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-medal"></i></span>
-                        <span class="gk-stat-label">Total levels</span>
-                    </div>
-                    <div class="gk-stat-value">{{ levels|length }}</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-arrow-up"></i></span>
-                        <span class="gk-stat-label">Top XP requirement</span>
-                    </div>
-                    <div class="gk-stat-value">{{ levels.last.min_xp|default:0 }}</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-layer-group"></i></span>
-                        <span class="gk-stat-label">Starting order</span>
-                    </div>
-                    <div class="gk-stat-value">{{ levels.first.order|default:0 }}</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-shield-alt"></i></span>
-                        <span class="gk-stat-label">Visual progression</span>
-                    </div>
-                    <div class="gk-stat-value">Badge-ready</div>
-                </div>
-            </section>
+            <p class="text-muted mb-3">Define the level ladder and the XP required to advance.</p>
 
             <section class="admin-card hub-section hub-table-shell">
                 <div class="hub-table-wrap">
@@ -117,55 +122,7 @@
 
         <!-- ===== ACHIEVEMENTS TAB ===== -->
         <div class="tab-pane fade" id="achievements-pane" role="tabpanel" aria-labelledby="achievements-tab">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="text-muted mb-0">Define progression rewards and unlock conditions.</p>
-                <div class="d-flex gap-2 seed-actions">
-                    <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="seed_action" value="achievements">
-                        <button type="submit" class="btn btn-outline-primary btn-sm">Run seed_achievements</button>
-                    </form>
-                    <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="seed_action" value="all">
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">Run All Seeds</button>
-                    </form>
-                    <button type="button" class="btn-admin-primary btn-sm" data-bs-toggle="modal" data-bs-target="#achievementModal" onclick="resetAchievementForm()">
-                        <i class="fas fa-plus"></i> Add Achievement
-                    </button>
-                </div>
-            </div>
-
-            <section class="stats-grid">
-                <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-award"></i></span>
-                        <span class="gk-stat-label">Total achievements</span>
-                    </div>
-                    <div class="gk-stat-value">{{ achievements|length }}</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-key"></i></span>
-                        <span class="gk-stat-label">Metric-driven unlocks</span>
-                    </div>
-                    <div class="gk-stat-value">Rules Engine</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-badge-check"></i></span>
-                        <span class="gk-stat-label">Available rewards</span>
-                    </div>
-                    <div class="gk-stat-value">Live</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-star"></i></span>
-                        <span class="gk-stat-label">Category progression</span>
-                    </div>
-                    <div class="gk-stat-value">Tiered</div>
-                </div>
-            </section>
+            <p class="text-muted mb-3">Define progression rewards and unlock conditions.</p>
 
             <section class="admin-card hub-section hub-table-shell">
                 <div class="hub-table-wrap">
@@ -210,57 +167,7 @@
 
         <!-- ===== PLAYER PROGRESSION (STATS) TAB ===== -->
         <div class="tab-pane fade" id="stats-pane" role="tabpanel" aria-labelledby="stats-tab">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="text-muted mb-0">Monitor the counters used by the progression rules engine.</p>
-                <div class="d-flex gap-2 seed-actions">
-                    <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="seed_action" value="levels">
-                        <button type="submit" class="btn btn-outline-primary btn-sm">Run seed_levels</button>
-                    </form>
-                    <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="seed_action" value="achievements">
-                        <button type="submit" class="btn btn-outline-primary btn-sm">Run seed_achievements</button>
-                    </form>
-                    <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="seed_action" value="all">
-                        <button type="submit" class="btn btn-primary btn-sm">Run All Seeds</button>
-                    </form>
-                </div>
-            </div>
-
-            <section class="stats-grid">
-                <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-users"></i></span>
-                        <span class="gk-stat-label">Gamers tracked</span>
-                    </div>
-                    <div class="gk-stat-value">{{ total_gamers_with_stats }}</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-database"></i></span>
-                        <span class="gk-stat-label">Rule source data</span>
-                    </div>
-                    <div class="gk-stat-value">Live</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-bolt"></i></span>
-                        <span class="gk-stat-label">No heavy count queries</span>
-                    </div>
-                    <div class="gk-stat-value">Optimized</div>
-                </div>
-                <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
-                    <div class="gk-stat-card-header">
-                        <span class="gk-stat-icon"><i class="fas fa-shield-alt"></i></span>
-                        <span class="gk-stat-label">Backed by DB records</span>
-                    </div>
-                    <div class="gk-stat-value">Trusted</div>
-                </div>
-            </section>
+            <p class="text-muted mb-3">Monitor the counters used by the progression rules engine.</p>
 
             <section class="admin-card hub-section mb-4">
                 <form method="GET" class="search-toolbar">
@@ -487,4 +394,5 @@
 <script src="{% static 'admin_panel/js/progression/progression_common.js' %}"></script>
 <script src="{% static 'admin_panel/js/progression/admin_level_list.js' %}"></script>
 <script src="{% static 'admin_panel/js/progression/admin_achievement_list.js' %}"></script>
+<script src="{% static 'admin_panel/js/progression/admin_progression_hub.js' %}"></script>
 {% endblock %}

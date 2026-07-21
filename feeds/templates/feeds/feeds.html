@@ -21,6 +21,68 @@
         </div>
 	</section>
 
+	<!-- Global Leaderboard — horizontal, top 5, between header and tabs -->
+	<section class="feeds-leaderboard-section">
+        <div class="container">
+            <div class="leaderboard-horizontal">
+                <div class="leaderboard-h-header">
+                    <h4 class="leaderboard-h-title">
+                        <i class="fas fa-crown"></i> Global Leaderboard
+                    </h4>
+                    <span class="leaderboard-h-subtitle">Top 5 players this season</span>
+                </div>
+                <div id="globalLeaderboard" class="lb-h-list">
+                    <!-- Dummy leaderboard data — top 5 only -->
+                    <div class="lb-h-card rank-1">
+                        <div class="lb-h-rank">1</div>
+                        <img src="{% static 'core/images/player2.jpeg' %}" alt="FIFA_Master" class="lb-h-avatar">
+                        <div class="lb-h-info">
+                            <div class="lb-h-name">FIFA_Master</div>
+                            <div class="lb-h-meta">FIFA 25</div>
+                        </div>
+                        <div class="lb-h-points"><i class="fas fa-star"></i> 3120</div>
+                    </div>
+                    <div class="lb-h-card rank-2">
+                        <div class="lb-h-rank">2</div>
+                        <img src="{% static 'core/images/player1.jpeg' %}" alt="GoalMachine" class="lb-h-avatar">
+                        <div class="lb-h-info">
+                            <div class="lb-h-name">GoalMachine</div>
+                            <div class="lb-h-meta">FIFA 25</div>
+                        </div>
+                        <div class="lb-h-points"><i class="fas fa-star"></i> 3005</div>
+                    </div>
+                    <div class="lb-h-card rank-3">
+                        <div class="lb-h-rank">3</div>
+                        <img src="{% static 'core/images/player3.jpeg' %}" alt="COD_Elite" class="lb-h-avatar">
+                        <div class="lb-h-info">
+                            <div class="lb-h-name">COD_Elite</div>
+                            <div class="lb-h-meta">Call of Duty</div>
+                        </div>
+                        <div class="lb-h-points"><i class="fas fa-star"></i> 2950</div>
+                    </div>
+                    <div class="lb-h-card">
+                        <div class="lb-h-rank">4</div>
+                        <img src="{% static 'core/images/player3.jpeg' %}" alt="SkillMovesPro" class="lb-h-avatar">
+                        <div class="lb-h-info">
+                            <div class="lb-h-name">SkillMovesPro</div>
+                            <div class="lb-h-meta">FIFA 25</div>
+                        </div>
+                        <div class="lb-h-points"><i class="fas fa-star"></i> 2875</div>
+                    </div>
+                    <div class="lb-h-card">
+                        <div class="lb-h-rank">5</div>
+                        <img src="{% static 'core/images/player1.jpeg' %}" alt="WarzoneAce" class="lb-h-avatar">
+                        <div class="lb-h-info">
+                            <div class="lb-h-name">WarzoneAce</div>
+                            <div class="lb-h-meta">Call of Duty</div>
+                        </div>
+                        <div class="lb-h-points"><i class="fas fa-star"></i> 2830</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</section>
+
 	<!-- Feeds Tabs -->
 	<nav class="feeds-tabs-container">
         <div class="feeds-tabs-inner d-flex justify-content-between">
@@ -40,183 +102,75 @@
         <div class="container">
             <!-- Feeds Tab Content -->
             <div class="feeds-tab-content active" id="feeds">
-                <div class="row">
-                    <!-- Main Feed -->
-                    <div class="col-lg-7">
-                        <div class="feeds-main">
-                            <!-- Create Post -->
-                            <div class="post-card start-post-card" id="startPostCard">
-                                <div class="start-post-header d-flex align-items-center gap-2">
-                                    <div class="user-avatar">
-                                        {% if current_gamer and current_gamer.profile_picture %}
-                                            <img src="{{ current_gamer.profile_picture.url }}" alt="{{ current_gamer.display_name }}">
-                                        {% else %}
-                                            <img src="{% static 'core/images/player.jpeg' %}" alt="User Avatar">
-                                        {% endif %}
-                                    </div>
-                                    <button type="button" class="start-post-input w-100 text-start" data-bs-toggle="modal" data-bs-target="#createPostModal">Start a post</button>
-                                </div>
-                                <div class="start-post-actions d-flex gap-2 mt-2">
-                                    <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-image"></i> Photo</button>
-                                    <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-video"></i> Video</button>
-                                    <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-pen"></i> Write</button>
-                                </div>
-                            </div>
 
-                            <!-- Feed Posts -->
-							<div class="feed-posts" id="feedPosts">
-                                <div class="text-center py-4 text-muted" id="feedLoading">
-                                    <i class="fas fa-spinner fa-spin"></i> Loading feed...
-                                </div>
+                <!-- Top row: Create Post (left) + Upcoming Events (right) -->
+                <div class="feeds-top-row">
+                    <!-- Create Post -->
+                    <div class="post-card start-post-card" id="startPostCard">
+                        <div class="start-post-header d-flex align-items-center gap-2">
+                            <div class="user-avatar">
+                                {% if current_gamer and current_gamer.profile_picture %}
+                                    <img src="{{ current_gamer.profile_picture.url }}" alt="{{ current_gamer.display_name }}">
+                                {% else %}
+                                    <img src="{% static 'core/images/player.jpeg' %}" alt="User Avatar">
+                                {% endif %}
                             </div>
-
+                            <button type="button" class="start-post-input w-100 text-start" data-bs-toggle="modal" data-bs-target="#createPostModal">Start a post</button>
                         </div>
-                        <div class="load-more-section">
-                            <button class="btn btn-outline-primary load-more-btn">
-                                <i class="fas fa-spinner me-2"></i>Load More Posts
-                            </button>
+                        <div class="start-post-actions d-flex gap-2 mt-2">
+                            <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-image"></i> Photo</button>
+                            <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-video"></i> Video</button>
+                            <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-pen"></i> Write</button>
                         </div>
                     </div>
 
-                    <!-- Leaderboard & Events -->
-                    <div class="col-lg-5">
-                        <div class="feeds-sidebar">
-                            <!-- Leaderboard -->
-                            <div class="leaderboard-aside">
-                                <h4 class="leaderboard-title d-flex align-items-center justify-content-between">
-                                    <span><i class="fas fa-crown me-2 text-warning"></i>Global Leaderboard</span>
-                                </h4>
-                                <div id="globalLeaderboard" class="lb-rows">
-                                    <!-- Dummy leaderboard data -->
-                                    <div class="lb-row">
-                                        <div class="rank">1</div>
-	                                    <img src="{% static 'core/images/player2.jpeg' %}" alt="FIFA_Master" class="avatar-sm">
-	                                    <div class="user-col">
-		                                    <div class="name">FIFA_Master</div>
-		                                    <div class="meta">FIFA 25</div>
-	                                    </div>
-	                                    <div class="points ms-auto"><i class="fas fa-star text-warning me-1"></i>3120 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">2</div>
-                                        <img src="{% static 'core/images/player1.jpeg' %}" alt="GoalMachine" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">GoalMachine</div>
-                                            <div class="meta">FIFA 25</div>
-                                        </div>
-                                        <div class="points ms-auto">3005 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">3</div>
-	                                    <img src="{% static 'core/images/player3.jpeg' %}" alt="COD_Elite" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">COD_Elite</div>
-                                            <div class="meta">Call of Duty</div>
-                                        </div>
-                                        <div class="points ms-auto">2950 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">4</div>
-                                        <img src="{% static 'core/images/player3.jpeg' %}" alt="SkillMovesPro" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">SkillMovesPro</div>
-                                            <div class="meta">FIFA 25</div>
-                                        </div>
-                                        <div class="points ms-auto">2875 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">5</div>
-                                        <img src="{% static 'core/images/player1.jpeg' %}" alt="WarzoneAce" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">WarzoneAce</div>
-                                            <div class="meta">Call of Duty</div>
-                                        </div>
-                                        <div class="points ms-auto">2830 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">6</div>
-                                        <img src="{% static 'core/images/player2.jpeg' %}" alt="SniperWolf" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">SniperWolf</div>
-                                            <div class="meta">Call of Duty</div>
-                                        </div>
-                                        <div class="points ms-auto">2795 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">7</div>
-                                        <img src="{% static 'core/images/player1.jpeg' %}" alt="ValorantQueen" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">ValorantQueen</div>
-                                            <div class="meta">Valorant</div>
-                                        </div>
-                                        <div class="points ms-auto">2680 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">8</div>
-                                        <img src="{% static 'core/images/player2.jpeg' %}" alt="AgentSharp" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">AgentSharp</div>
-                                            <div class="meta">Valorant</div>
-                                        </div>
-                                        <div class="points ms-auto">2540 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">9</div>
-                                        <img src="{% static 'core/images/player3.jpeg' %}" alt="SpikeMaster" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">SpikeMaster</div>
-                                            <div class="meta">Valorant</div>
-                                        </div>
-                                        <div class="points ms-auto">2410 pts</div>
-                                    </div>
-                                    <div class="lb-row">
-                                        <div class="rank">10</div>
-                                        <img src="{% static 'core/images/player.jpeg' %}" alt="You" class="avatar-sm">
-                                        <div class="user-col">
-                                            <div class="name">You</div>
-                                            <div class="meta">Valorant</div>
-                                        </div>
-                                        <div class="points ms-auto">1200 pts</div>
-                                    </div>
+                    <!-- Upcoming Events -->
+                    <div class="upcoming-events">
+                        <h4 class="events-title">Upcoming Events</h4>
+                        <div class="event-list">
+                            <div class="event-item">
+                                <div class="event-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="event-info">
+                                    <h6 class="event-title">Valorant Championship</h6>
+                                    <small class="event-time">Tomorrow, 8:00 PM</small>
                                 </div>
                             </div>
-
-                            <!-- Upcoming Events -->
-                            <div class="upcoming-events">
-                                <h4 class="events-title">Upcoming Events</h4>
-                                <div class="event-list">
-                                    <div class="event-item">
-                                        <div class="event-icon">
-                                            <i class="fas fa-trophy"></i>
-                                        </div>
-                                        <div class="event-info">
-                                            <h6 class="event-title">Valorant Championship</h6>
-                                            <small class="event-time">Tomorrow, 8:00 PM</small>
-                                        </div>
-                                    </div>
-                                    <div class="event-item">
-                                        <div class="event-icon">
-                                            <i class="fas fa-gamepad"></i>
-                                        </div>
-                                        <div class="event-info">
-                                            <h6 class="event-title">FIFA 25 Tournament</h6>
-                                            <small class="event-time">Saturday, 2:00 PM</small>
-                                        </div>
-                                    </div>
-                                    <div class="event-item">
-                                        <div class="event-icon">
-                                            <i class="fas fa-users"></i>
-                                        </div>
-                                        <div class="event-info">
-                                            <h6 class="event-title">Community Meetup</h6>
-                                            <small class="event-time">Sunday, 6:00 PM</small>
-                                        </div>
-                                    </div>
+                            <div class="event-item">
+                                <div class="event-icon">
+                                    <i class="fas fa-gamepad"></i>
+                                </div>
+                                <div class="event-info">
+                                    <h6 class="event-title">FIFA 25 Tournament</h6>
+                                    <small class="event-time">Saturday, 2:00 PM</small>
+                                </div>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="event-info">
+                                    <h6 class="event-title">Community Meetup</h6>
+                                    <small class="event-time">Sunday, 6:00 PM</small>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <!-- Feed Posts — full width -->
+                <div class="feeds-main">
+                    <div class="feed-posts" id="feedPosts">
+                        <div class="text-center py-4 text-muted" id="feedLoading">
+                            <i class="fas fa-spinner fa-spin"></i> Loading feed...
+                        </div>
+                    </div>
+                </div>
+                <div class="load-more-section">
+                    <button class="btn btn-outline-primary load-more-btn">
+                        <i class="fas fa-spinner me-2"></i>Load More Posts
+                    </button>
                 </div>
             </div>
 
@@ -242,7 +196,7 @@
 
                     <div class="members-list-view" id="membersListView">
                         <div class="members-horizontal-list" id="membersHorizontalList">
-                            <!-- Members will load here automatically -->
+                            <!-- Members will load here automatically, as a vertical list -->
                             <div class="text-center py-4 text-muted">
                                 <i class="fas fa-spinner fa-spin"></i> Loading members...
                             </div>
@@ -321,5 +275,4 @@
 
 {% block extra_scripts %}
     <script src="{% static 'feeds/js/feeds.js' %}"></script>
-
 {% endblock %}

@@ -5,13 +5,24 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'admin_panel/css/competitions/admin_competitions.css' %}">
+    <link rel="stylesheet" href="{% static 'admin_panel/css/competitions/admin_competition_detail.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="admin-hub-shell">
+<div class="admin-hub-shell"
+     id="competitionDetailApp"
+     data-slug="{{ competition.slug }}"
+     data-status="{{ competition.status }}"
+     data-approve-url="{% url 'admin_panel:competition_approve' competition.slug %}"
+     data-reject-url="{% url 'admin_panel:competition_reject' competition.slug %}"
+     data-suspend-url="{% url 'admin_panel:competition_suspend' competition.slug %}"
+     data-edit-prizes-url="{% url 'admin_panel:competition_edit_prizes' competition.slug %}"
+     data-edit-results-url="{% url 'admin_panel:competition_edit_results' competition.slug %}"
+     data-confirm-checkins-url="{% url 'admin_panel:competition_confirm_checkins' competition.slug %}"
+     data-verify-results-url="{% url 'admin_panel:competition_verify_results' competition.slug %}">
 
     {# ------------------------------------------------------------------ #}
-    {# Page Header                                                          #}
+    {# Page Header — the single place status-driven actions live          #}
     {# ------------------------------------------------------------------ #}
     <div class="admin-page-header flex-between mb-4">
         <div class="header-content">
@@ -33,32 +44,54 @@
         </div>
         <div class="header-actions flex-gap">
             {% if competition.status == 'pending' %}
-                <button class="btn-success" onclick="adminComp.openApproveModal()">
+                <button class="btn-success" data-action="open-modal" data-modal="approveModal">
                     <i class="fas fa-check"></i> Approve
                 </button>
-                <button class="btn-danger" onclick="adminComp.openRejectModal()">
+                <button class="btn-danger" data-action="open-modal" data-modal="rejectModal">
                     <i class="fas fa-times"></i> Reject
                 </button>
-            {% elif competition.status == 'registration' or competition.status == 'ongoing' %}
-                <button class="btn-primary" onclick="adminComp.openEditPrizesModal()">
+
+            {% elif competition.status == 'registration' %}
+                <button class="btn-primary" data-action="open-modal" data-modal="editPrizesModal">
                     <i class="fas fa-gift"></i> Edit Prizes
                 </button>
-                <button class="btn-danger" onclick="adminComp.openSuspendModal()">
+                <button class="btn-danger" data-action="open-modal" data-modal="suspendModal">
                     <i class="fas fa-ban"></i> Suspend
                 </button>
+
+            {% elif competition.status == 'ongoing' %}
+                <button class="btn-primary" data-action="open-modal" data-modal="editPrizesModal">
+                    <i class="fas fa-gift"></i> Edit Prizes
+                </button>
+                <button class="btn-primary" data-action="confirm-checkins">
+                    <i class="fas fa-user-check"></i> Confirm Check-ins
+                </button>
+                <button class="btn-success" data-action="verify-results">
+                    <i class="fas fa-check-double"></i> Verify &amp; Publish Results
+                </button>
                 {% if results %}
-                <button class="btn-warning" onclick="adminComp.openEditResultsModal()">
+                <button class="btn-warning" data-action="open-edit-results">
                     <i class="fas fa-edit"></i> Edit Results
                 </button>
                 {% endif %}
-                {% if competition.status == 'ongoing' %}
-                <button class="btn-primary" onclick="adminComp.confirmCheckins()">
+                <button class="btn-danger" data-action="open-modal" data-modal="suspendModal">
+                    <i class="fas fa-ban"></i> Suspend
+                </button>
+
+            {% elif competition.status == 'checkin_submitted' %}
+                <button class="btn-primary" data-action="confirm-checkins">
                     <i class="fas fa-user-check"></i> Confirm Check-ins
                 </button>
-                <button class="btn-success" onclick="adminComp.verifyResults()">
-                    <i class="fas fa-check-double"></i> Verify & Publish Results
+
+            {% elif competition.status == 'pending_prize_verification' %}
+                {% if results %}
+                <button class="btn-warning" data-action="open-edit-results">
+                    <i class="fas fa-edit"></i> Edit Results
                 </button>
                 {% endif %}
+                <button class="btn-success" data-action="verify-results">
+                    <i class="fas fa-check-double"></i> Verify &amp; Publish Results
+                </button>
             {% endif %}
         </div>
     </div>
@@ -297,7 +330,7 @@
                         </thead>
                         <tbody>
                             {% for result in results %}
-                            <tr {% if result.is_no_show %}style="opacity:0.55;"{% endif %}>
+                            <tr {% if result.is_no_show %}class="row-muted"{% endif %}>
                                 <td>
                                     {% if result.is_no_show %}<span class="text-muted">—</span>
                                     {% elif result.rank == 1 %}🥇
@@ -345,10 +378,9 @@
 
         </div>
 
-        {# ---- Right Sidebar — Actions & Log --------------------------- #}
+        {# ---- Right Sidebar — Status Info & Timeline (no duplicate actions) #}
         <div class="admin-detail-sidebar">
 
-            {# Action Panel — changes based on status #}
             {% if competition.status == 'pending' %}
             <div class="admin-card action-card mb-4">
                 <div class="action-card-header action-card-header--pending">
@@ -356,13 +388,7 @@
                     <span>Pending Your Review</span>
                 </div>
                 <div class="action-card-body">
-                    <p class="action-card-desc">Review the competition details, set the prize and registration window, then approve or reject.</p>
-                    <button class="btn-success w-full mb-2" onclick="adminComp.openApproveModal()">
-                        <i class="fas fa-check"></i> Approve Competition
-                    </button>
-                    <button class="btn-danger w-full" onclick="adminComp.openRejectModal()">
-                        <i class="fas fa-times"></i> Reject Competition
-                    </button>
+                    <p class="action-card-desc">Review the competition details, set the prize and registration window, then approve or reject using the buttons above.</p>
                 </div>
             </div>
 
@@ -373,13 +399,7 @@
                     <span>Live — Admin Review</span>
                 </div>
                 <div class="action-card-body">
-                    <p class="action-card-desc">This competition is live for gamers. Review prize details, edit allocations, or suspend if necessary. Paid registrations are refunded automatically on suspension.</p>
-                    <button class="btn-primary w-full mb-2" onclick="adminComp.openEditPrizesModal()">
-                        <i class="fas fa-gift"></i> Edit Prize Details
-                    </button>
-                    <button class="btn-danger w-full" onclick="adminComp.openSuspendModal()">
-                        <i class="fas fa-ban"></i> Suspend Competition
-                    </button>
+                    <p class="action-card-desc">This competition is live for gamers. Paid registrations are refunded automatically if you suspend it.</p>
                 </div>
             </div>
 
@@ -404,7 +424,7 @@
                     <span>Check-in List Submitted</span>
                 </div>
                 <div class="action-card-body">
-                    <p class="action-card-desc">The arena owner has submitted the check-in list. Review the attendance above and confirm to allow results submission.</p>
+                    <p class="action-card-desc">The arena owner has submitted the check-in list. Review the attendance above and confirm using the button above to allow results submission.</p>
                     <div class="checkin-summary">
                         <div class="checkin-stat">
                             <span class="checkin-num">{{ checked_in_count }}</span>
@@ -415,9 +435,6 @@
                             <span class="checkin-label">No-shows</span>
                         </div>
                     </div>
-                    <button class="btn-primary w-full" onclick="adminComp.confirmCheckins()">
-                        <i class="fas fa-user-check"></i> Confirm Check-ins
-                    </button>
                 </div>
             </div>
 
@@ -428,10 +445,7 @@
                     <span>Prize Verification Required</span>
                 </div>
                 <div class="action-card-body">
-                    <p class="action-card-desc">Results have been submitted. Confirm that the prize has been or will be distributed to the winners before verifying.</p>
-                    <button class="btn-success w-full" onclick="adminComp.verifyResults()">
-                        <i class="fas fa-check-double"></i> Verify & Publish Results
-                    </button>
+                    <p class="action-card-desc">Results have been submitted. Confirm that the prize has been or will be distributed to the winners before verifying using the button above.</p>
                 </div>
             </div>
 
@@ -481,48 +495,47 @@
 </div>
 
 {# ------------------------------------------------------------------ #}
-{# Approve Modal                                                        #}
+{# Modals — all hidden by default (see admin_competition_detail.css). #}
+{# JS toggles the `.show` class only after the matching button click. #}
 {# ------------------------------------------------------------------ #}
+
+{# Approve Modal #}
 <div class="admin-modal-overlay" id="approveModal">
-    <div class="admin-modal" style="max-width:680px;">
+    <div class="admin-modal admin-modal--md">
         <div class="modal-header">
             <h3><i class="fas fa-check-circle"></i> Approve Competition</h3>
-            <button class="modal-close" onclick="adminComp.closeApproveModal()"><i class="fas fa-times"></i></button>
+            <button type="button" class="modal-close" data-action="close-modal" data-modal="approveModal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
             <form id="approveForm">
                 {% csrf_token %}
 
-                <p class="text-muted mb-3">Set the prize details and registration window before approving. All fields marked <span style="color:var(--danger);">*</span> are required.</p>
+                <p class="text-muted mb-3">Set the prize details and registration window before approving. All fields marked <span class="required-mark">*</span> are required.</p>
 
-                {# Entry Fee #}
                 <div class="form-group mb-3">
                     <label>Entry Fee (KES) — Admin Adjustment</label>
-                      <input type="number" name="entry_fee" class="form-control"
-                          min="0" step="0.01" value="{{ competition.entry_fee|floatformat:2 }}">
+                    <input type="number" name="entry_fee" class="form-control" min="0" step="0.01" value="{{ competition.entry_fee|floatformat:2 }}">
                     <div class="error-msg" id="ap-err-entry_fee"></div>
                 </div>
 
-                {# Registration Window #}
                 <div class="form-grid mb-3">
                     <div class="form-group">
-                        <label>Registration Opens <span style="color:var(--danger);">*</span></label>
+                        <label>Registration Opens <span class="required-mark">*</span></label>
                         <input type="datetime-local" name="registration_opens_at" class="form-control" required
                                value="{% if competition.registration_opens_at %}{{ competition.registration_opens_at|date:"Y-m-d\\TH:i" }}{% endif %}">
                         <div class="error-msg" id="ap-err-registration_opens_at"></div>
                     </div>
                     <div class="form-group">
-                        <label>Registration Closes <span style="color:var(--danger);">*</span></label>
+                        <label>Registration Closes <span class="required-mark">*</span></label>
                         <input type="datetime-local" name="registration_closes_at" class="form-control" required
                                value="{% if competition.registration_closes_at %}{{ competition.registration_closes_at|date:"Y-m-d\\TH:i" }}{% endif %}">
                         <div class="error-msg" id="ap-err-registration_closes_at"></div>
                     </div>
                 </div>
 
-                {# Prize Type #}
                 <div class="form-group mb-3">
-                    <label>Prize Type <span style="color:var(--danger);">*</span></label>
-                    <select name="prize_type" id="approvePrizeType" class="form-control" onchange="adminComp.onPrizeTypeChange(this)" required>
+                    <label>Prize Type <span class="required-mark">*</span></label>
+                    <select name="prize_type" id="approvePrizeType" class="form-control" required>
                         <option value="">Select prize type...</option>
                         <option value="points" {% if competition.prize_type == 'points' %}selected{% endif %}>XP Points</option>
                         <option value="money" {% if competition.prize_type == 'money' %}selected{% endif %}>Cash Prize</option>
@@ -531,21 +544,20 @@
                     <div class="error-msg" id="ap-err-prize_type"></div>
                 </div>
 
-                {# Points Prize Fields #}
-                <div id="pointsFields" style="display:none;">
+                <div id="pointsFields" class="prize-panel">
                     <div class="form-grid mb-3">
                         <div class="form-group">
-                            <label>1st Place XP <span style="color:var(--danger);">*</span></label>
+                            <label>1st Place XP <span class="required-mark">*</span></label>
                             <input type="number" name="points_1st" class="form-control" min="0" placeholder="e.g. 500" value="{{ competition.points_1st }}">
                             <div class="error-msg" id="ap-err-points_1st"></div>
                         </div>
                         <div class="form-group">
-                            <label>2nd Place XP <span style="color:var(--danger);">*</span></label>
+                            <label>2nd Place XP <span class="required-mark">*</span></label>
                             <input type="number" name="points_2nd" class="form-control" min="0" placeholder="e.g. 300" value="{{ competition.points_2nd }}">
                             <div class="error-msg" id="ap-err-points_2nd"></div>
                         </div>
                         <div class="form-group">
-                            <label>3rd Place XP <span style="color:var(--danger);">*</span></label>
+                            <label>3rd Place XP <span class="required-mark">*</span></label>
                             <input type="number" name="points_3rd" class="form-control" min="0" placeholder="e.g. 150" value="{{ competition.points_3rd }}">
                             <div class="error-msg" id="ap-err-points_3rd"></div>
                         </div>
@@ -562,10 +574,9 @@
                     </div>
                 </div>
 
-                {# Money Prize Fields #}
-                <div id="moneyFields" style="display:none;">
+                <div id="moneyFields" class="prize-panel" style="display:none;">
                     <div class="form-group mb-3">
-                        <label>Total Prize Pool (KES) <span style="color:var(--danger);">*</span></label>
+                        <label>Total Prize Pool (KES) <span class="required-mark">*</span></label>
                         <input type="number" name="prize_money_total" class="form-control" min="0" step="0.01" value="{{ competition.prize_money_total }}">
                         <div class="error-msg" id="ap-err-prize_money_total"></div>
                     </div>
@@ -585,10 +596,9 @@
                     </div>
                 </div>
 
-                {# Gift Prize Fields #}
-                <div id="giftFields" style="display:none;">
+                <div id="giftFields" class="prize-panel" style="display:none;">
                     <div class="form-group mb-3">
-                        <label>Gift Description <span style="color:var(--danger);">*</span></label>
+                        <label>Gift Description <span class="required-mark">*</span></label>
                         <textarea name="prize_gift_description" class="form-control" rows="3"
                                   placeholder="Describe the gift and how it is distributed across top 3...">{{ competition.prize_gift_description }}</textarea>
                         <div class="error-msg" id="ap-err-prize_gift_description"></div>
@@ -596,9 +606,9 @@
                 </div>
 
                 <div class="modal-footer mt-4">
-                    <button type="button" class="btn-admin-secondary" onclick="adminComp.closeApproveModal()">Cancel</button>
-                    <button type="button" class="btn-admin-primary" id="approveSubmitBtn" onclick="adminComp.submitApprove()">
-                        <i class="fas fa-check"></i> Approve & Go Live
+                    <button type="button" class="btn-admin-secondary" data-action="close-modal" data-modal="approveModal">Cancel</button>
+                    <button type="button" class="btn-admin-primary" id="approveSubmitBtn" data-action="submit-approve">
+                        <i class="fas fa-check"></i> Approve &amp; Go Live
                     </button>
                 </div>
             </form>
@@ -606,27 +616,25 @@
     </div>
 </div>
 
-{# ------------------------------------------------------------------ #}
-{# Reject Modal                                                         #}
-{# ------------------------------------------------------------------ #}
+{# Reject Modal #}
 <div class="admin-modal-overlay" id="rejectModal">
-    <div class="admin-modal" style="max-width:500px;">
+    <div class="admin-modal admin-modal--sm">
         <div class="modal-header">
             <h3><i class="fas fa-times-circle"></i> Reject Competition</h3>
-            <button class="modal-close" onclick="adminComp.closeRejectModal()"><i class="fas fa-times"></i></button>
+            <button type="button" class="modal-close" data-action="close-modal" data-modal="rejectModal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
             <form id="rejectForm">
                 {% csrf_token %}
                 <div class="form-group mb-3">
-                    <label>Rejection Reason <span style="color:var(--danger);">*</span></label>
+                    <label>Rejection Reason <span class="required-mark">*</span></label>
                     <textarea name="rejection_reason" id="rejectionReason" class="form-control" rows="4"
                               placeholder="Provide a clear reason so the arena owner knows what to fix..." required></textarea>
                     <div class="error-msg" id="rej-err-rejection_reason"></div>
                 </div>
                 <div class="modal-footer mt-4">
-                    <button type="button" class="btn-admin-secondary" onclick="adminComp.closeRejectModal()">Cancel</button>
-                    <button type="button" class="btn-danger" id="rejectSubmitBtn" onclick="adminComp.submitReject()">
+                    <button type="button" class="btn-admin-secondary" data-action="close-modal" data-modal="rejectModal">Cancel</button>
+                    <button type="button" class="btn-danger" id="rejectSubmitBtn" data-action="submit-reject">
                         <i class="fas fa-times"></i> Reject Competition
                     </button>
                 </div>
@@ -637,25 +645,25 @@
 
 {# Suspend Modal #}
 <div class="admin-modal-overlay" id="suspendModal">
-    <div class="admin-modal" style="max-width:500px;">
+    <div class="admin-modal admin-modal--sm">
         <div class="modal-header">
             <h3><i class="fas fa-ban"></i> Suspend Competition</h3>
-            <button class="modal-close" onclick="adminComp.closeSuspendModal()"><i class="fas fa-times"></i></button>
+            <button type="button" class="modal-close" data-action="close-modal" data-modal="suspendModal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
             <p class="text-muted mb-3">Suspending will cancel this competition and automatically refund all paid registrations via Paystack.</p>
             <form id="suspendForm">
                 {% csrf_token %}
                 <div class="form-group mb-3">
-                    <label>Suspension Reason <span style="color:var(--danger);">*</span></label>
+                    <label>Suspension Reason <span class="required-mark">*</span></label>
                     <textarea name="suspension_reason" id="suspensionReason" class="form-control" rows="4" required
                               placeholder="Explain why this competition is being suspended..."></textarea>
                     <div class="error-msg" id="sus-err-suspension_reason"></div>
                 </div>
                 <div class="modal-footer mt-4">
-                    <button type="button" class="btn-admin-secondary" onclick="adminComp.closeSuspendModal()">Cancel</button>
-                    <button type="button" class="btn-danger" id="suspendSubmitBtn" onclick="adminComp.submitSuspend()">
-                        <i class="fas fa-ban"></i> Suspend & Refund
+                    <button type="button" class="btn-admin-secondary" data-action="close-modal" data-modal="suspendModal">Cancel</button>
+                    <button type="button" class="btn-danger" id="suspendSubmitBtn" data-action="submit-suspend">
+                        <i class="fas fa-ban"></i> Suspend &amp; Refund
                     </button>
                 </div>
             </form>
@@ -665,10 +673,10 @@
 
 {# Edit Prizes Modal #}
 <div class="admin-modal-overlay" id="editPrizesModal">
-    <div class="admin-modal" style="max-width:680px;">
+    <div class="admin-modal admin-modal--md">
         <div class="modal-header">
             <h3><i class="fas fa-gift"></i> Edit Prize Details</h3>
-            <button class="modal-close" onclick="adminComp.closeEditPrizesModal()"><i class="fas fa-times"></i></button>
+            <button type="button" class="modal-close" data-action="close-modal" data-modal="editPrizesModal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
             <form id="editPrizesForm">
@@ -692,13 +700,13 @@
                 </div>
                 <div class="form-group mb-3">
                     <label>Prize Type</label>
-                    <select name="prize_type" id="editPrizeType" class="form-control" onchange="adminComp.onEditPrizeTypeChange(this)">
+                    <select name="prize_type" id="editPrizeType" class="form-control">
                         <option value="points" {% if competition.prize_type == 'points' %}selected{% endif %}>XP Points</option>
                         <option value="money" {% if competition.prize_type == 'money' or competition.prize_type == 'money_points' %}selected{% endif %}>Cash + Points</option>
                         <option value="gift" {% if competition.prize_type == 'gift' or competition.prize_type == 'gift_points' %}selected{% endif %}>Gift + Points</option>
                     </select>
                 </div>
-                <div id="editPointsFields">
+                <div id="editPointsFields" class="prize-panel">
                     <div class="form-grid mb-3">
                         <div class="form-group"><label>1st Place XP</label><input type="number" name="points_1st" class="form-control" value="{{ competition.points_1st }}"></div>
                         <div class="form-group"><label>2nd Place XP</label><input type="number" name="points_2nd" class="form-control" value="{{ competition.points_2nd }}"></div>
@@ -707,7 +715,7 @@
                         <div class="form-group"><label>11th+ XP</label><input type="number" name="points_beyond_10" class="form-control" value="{{ competition.points_beyond_10 }}"></div>
                     </div>
                 </div>
-                <div id="editMoneyFields" style="display:none;">
+                <div id="editMoneyFields" class="prize-panel" style="display:none;">
                     <div class="form-group mb-3"><label>Total Prize Pool (KES)</label><input type="number" name="prize_money_total" class="form-control" value="{{ competition.prize_money_total }}"></div>
                     <div class="form-grid mb-3">
                         <div class="form-group"><label>1st %</label><input type="number" name="prize_money_1st_pct" class="form-control" value="{{ competition.prize_money_1st_pct }}"></div>
@@ -715,12 +723,12 @@
                         <div class="form-group"><label>3rd %</label><input type="number" name="prize_money_3rd_pct" class="form-control" value="{{ competition.prize_money_3rd_pct }}"></div>
                     </div>
                 </div>
-                <div id="editGiftFields" style="display:none;">
+                <div id="editGiftFields" class="prize-panel" style="display:none;">
                     <div class="form-group mb-3"><label>Gift Description</label><textarea name="prize_gift_description" class="form-control" rows="3">{{ competition.prize_gift_description }}</textarea></div>
                 </div>
                 <div class="modal-footer mt-4">
-                    <button type="button" class="btn-admin-secondary" onclick="adminComp.closeEditPrizesModal()">Cancel</button>
-                    <button type="button" class="btn-admin-primary" id="editPrizesSubmitBtn" onclick="adminComp.submitEditPrizes()">
+                    <button type="button" class="btn-admin-secondary" data-action="close-modal" data-modal="editPrizesModal">Cancel</button>
+                    <button type="button" class="btn-admin-primary" id="editPrizesSubmitBtn" data-action="submit-edit-prizes">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
                 </div>
@@ -729,50 +737,56 @@
     </div>
 </div>
 
+{# Edit Results Modal — a real, pre-built modal (populated by JS), not a runtime-built overlay #}
+<div class="admin-modal-overlay" id="editResultsModal">
+    <div class="admin-modal admin-modal--md">
+        <div class="modal-header">
+            <h3><i class="fas fa-list-ol"></i> Edit Results</h3>
+            <button type="button" class="modal-close" data-action="close-modal" data-modal="editResultsModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="text-muted mb-3">Adjust rank or mark a gamer as a no-show, then save to re-notify affected gamers.</p>
+            <div class="hub-table-wrap">
+                <table class="modern-table" id="editResultsTable">
+                    <thead>
+                        <tr>
+                            <th>Gamer</th>
+                            <th>Rank</th>
+                            <th>No-show</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editResultsTableBody">
+                        {# populated by admin_competition_detail.js #}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer mt-4">
+                <button type="button" class="btn-admin-secondary" data-action="close-modal" data-modal="editResultsModal">Cancel</button>
+                <button type="button" class="btn-admin-primary" id="editResultsSubmitBtn" data-action="submit-edit-results">
+                    <i class="fas fa-save"></i> Save &amp; Notify Gamers
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Results data island — plain JSON, not executable logic. Read by the JS file. #}
+<script id="resultsData" type="application/json">
+[
+    {% for result in results %}
+    {
+        "gamer_id": "{{ result.gamer_id }}",
+        "username": "{{ result.gamer.custom_username|default:result.gamer.first_name|escapejs }}",
+        "rank": {{ result.rank|default:"null" }},
+        "is_no_show": {{ result.is_no_show|yesno:"true,false" }},
+        "points_awarded": {{ result.points_awarded }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-    const ADMIN_COMP_CONFIG = {
-        approveUrl: "{% url 'admin_panel:competition_approve' competition.slug %}",
-        rejectUrl: "{% url 'admin_panel:competition_reject' competition.slug %}",
-        suspendUrl: "{% url 'admin_panel:competition_suspend' competition.slug %}",
-        editPrizesUrl: "{% url 'admin_panel:competition_edit_prizes' competition.slug %}",
-        editResultsUrl: "{% url 'admin_panel:competition_edit_results' competition.slug %}",
-        confirmCheckinsUrl: "{% url 'admin_panel:competition_confirm_checkins' competition.slug %}",
-        verifyResultsUrl: "{% url 'admin_panel:competition_verify_results' competition.slug %}",
-        csrfToken: "{{ csrf_token }}",
-        status: "{{ competition.status }}",
-        resultsData: [
-            {% for result in results %}
-            {
-                gamer_id: "{{ result.gamer_id }}",
-                username: "{{ result.gamer.custom_username|default:result.gamer.first_name|escapejs }}",
-                rank: {{ result.rank|default:"null" }},
-                is_no_show: {{ result.is_no_show|yesno:"true,false" }},
-                points_awarded: {{ result.points_awarded }}
-            }{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ],
-    };
-</script>
-<script>
-    // Ensure prize fields visibility is correct on load and hook select element
-    document.addEventListener('DOMContentLoaded', function() {
-        const prizeSelect = document.getElementById('approvePrizeType');
-        if (prizeSelect) {
-            adminComp.onPrizeTypeChange(prizeSelect);
-        }
-        // Auto-open modal when arriving from list quick actions
-        try {
-            const params = new URLSearchParams(window.location.search);
-            const action = params.get('action');
-            if (action === 'approve') adminComp.openApproveModal();
-            if (action === 'reject') adminComp.openRejectModal();
-        } catch (e) {
-            console.warn('Auto-open action parse failed', e);
-        }
-    });
-</script>
-<script src="{% static 'admin_panel/js/competitions/admin_competition_detail.js' %}"></script>
+    <script src="{% static 'admin_panel/js/competitions/admin_competition_detail.js' %}"></script>
 {% endblock %}

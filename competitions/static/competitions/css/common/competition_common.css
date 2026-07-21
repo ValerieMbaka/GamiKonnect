@@ -4,6 +4,101 @@
  * Imported into: competition_list.css, competition_detail.css, competition_results.css
  */
 /* ============================================================================
+   Shared Utilities
+   ============================================================================ */
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pulse-dot {
+    animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+/* ============================================================================
+   Competition Status Badge
+   Shared "chip" used to show a competition's current status. Used on the
+   browse grid, the my-competitions list, and the detail page. Add
+   `.comp-status-badge--floating` when it needs to sit over a card image.
+   ============================================================================ */
+
+.comp-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: var(--font-bold, 700);
+    white-space: nowrap;
+}
+
+.comp-status-badge--floating {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 6px 12px;
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-sm);
+    z-index: 2;
+}
+
+.comp-status--registration,
+.comp-status--registration_open,
+.comp-status--approved {
+    background: rgba(95, 211, 179, 0.15);
+    color: #0f5132;
+}
+
+.comp-status-badge--floating.comp-status--registration,
+.comp-status-badge--floating.comp-status--registration_open,
+.comp-status-badge--floating.comp-status--approved {
+    background: rgba(95, 211, 179, 0.95);
+    color: #000;
+}
+
+.comp-status--ongoing,
+.comp-status--checkin_submitted,
+.comp-status--results_pending,
+.comp-status--results_submitted,
+.comp-status--pending_prize_verification {
+    background: rgba(240, 53, 75, 0.12);
+    color: #b3202f;
+}
+
+.comp-status-badge--floating.comp-status--ongoing,
+.comp-status-badge--floating.comp-status--checkin_submitted,
+.comp-status-badge--floating.comp-status--results_pending,
+.comp-status-badge--floating.comp-status--results_submitted,
+.comp-status-badge--floating.comp-status--pending_prize_verification {
+    background: rgba(240, 53, 75, 0.95);
+    color: #fff;
+}
+
+.comp-status--completed {
+    background: rgba(16, 185, 129, 0.15);
+    color: #0f5132;
+}
+
+.comp-status-badge--floating.comp-status--completed {
+    background: rgba(16, 185, 129, 0.95);
+    color: #fff;
+}
+
+.comp-status--pending,
+.comp-status--draft {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text-secondary);
+}
+
+/* ============================================================================
    Status Pills & Badges
    ============================================================================ */
 

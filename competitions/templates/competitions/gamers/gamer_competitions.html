@@ -4,7 +4,8 @@
 {% block title %}My Competitions · {{ project_detail.title }}{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'competitions/css/gamer_competitions.css' %}">
+    <link rel="stylesheet" href="{% static 'competitions/css/common/competition_common.css' %}">
+    <link rel="stylesheet" href="{% static 'competitions/css/gamers/gamer_competitions.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -116,7 +117,7 @@
                 {# Center: Details #}
                 <div class="my-comp-card-body">
                     <div class="my-comp-card-top">
-                        <div class="my-comp-status-badge my-comp-status--{{ reg.competition.status }}">
+                        <div class="comp-status-badge comp-status--{{ reg.competition.status }}">
                             {% if reg.competition.status == 'registration' %}
                                 <i class="fas fa-circle pulse-dot"></i> Registration
                             {% elif reg.competition.status == 'ongoing' %}
@@ -250,7 +251,7 @@
                 {# Center: Details #}
                 <div class="my-comp-card-body">
                     <div class="my-comp-card-top">
-                        <div class="my-comp-status-badge my-comp-status--{{ reg.competition.status }}">
+                        <div class="comp-status-badge comp-status--{{ reg.competition.status }}">
                             {% if reg.competition.status == 'completed' %}
                                 <i class="fas fa-flag-checkered"></i> Completed
                             {% elif reg.competition.status == 'ongoing' %}
@@ -361,5 +362,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="{% static 'competitions/js/gamer_competitions.js' %}"></script>
+<script src="{% static 'competitions/js/common/competition_common.js' %}"></script>
+<script src="{% static 'competitions/js/gamers/gamer_competitions.js' %}"></script>
 {% endblock %}

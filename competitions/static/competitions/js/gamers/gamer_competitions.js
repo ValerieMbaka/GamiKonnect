@@ -42,22 +42,7 @@ const myCompetitions = (() => {
         const codeEl = document.getElementById(elementId);
         if (!codeEl) return;
 
-        const code = codeEl.textContent.trim();
-
-        navigator.clipboard.writeText(code).then(() => {
-            showToast('success', 'Registration code copied to clipboard!');
-        }).catch(() => {
-            // Fallback
-            const textarea = document.createElement('textarea');
-            textarea.value = code;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showToast('success', 'Code copied!');
-        });
+        CompetitionCommon.copyToClipboard(codeEl.textContent.trim(), 'Registration code copied to clipboard!');
     }
 
     // ------------------------------------------------------------------

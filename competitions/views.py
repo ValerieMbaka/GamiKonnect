@@ -127,7 +127,7 @@ def competition_list(request):
         'gamer': gamer,
         'now': now,
     }
-    return render(request, 'competitions/competition_list.html', context)
+    return render(request, 'competitions/gamers/competition_list.html', context)
 
 
 def competition_detail(request, slug):
@@ -208,7 +208,7 @@ def competition_detail(request, slug):
         'profile_complete': gamer.profile_completed if gamer else False,
         'has_owner_access': shop_owner is not None,
     }
-    return render(request, 'competitions/competition_detail.html', context)
+    return render(request, 'competitions/gamers/competition_detail.html', context)
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +227,7 @@ def competition_register(request, slug):
             raise Competition.DoesNotExist
     except Competition.DoesNotExist:
         if request.method == 'GET':
-            return render(request, 'competitions/competition_list.html', {'message': 'Competition not found'}, status=404)
+            return render(request, 'competitions/gamers/competition_list.html', {'message': 'Competition not found'}, status=404)
         return JsonResponse({'success': False, 'message': 'Competition not found.'}, status=404)
     
     # GET: Return the registration modal HTML
@@ -252,7 +252,7 @@ def competition_register(request, slug):
             'existing_registration': existing_registration,
             'pending_payment': bool(existing_registration and existing_registration.payment_status != 'completed'),
         }
-        return render(request, 'competitions/competition_registration.html', context)
+        return render(request, 'competitions/gamers/competition_registration.html', context)
     
     # POST: Process the registration
     if request.method == 'POST':
@@ -482,7 +482,7 @@ def gamer_competitions(request):
         'upcoming_registrations': upcoming,
         'past_registrations': past,
     }
-    return render(request, 'competitions/gamer_competitions.html', context)
+    return render(request, 'competitions/gamers/gamer_competitions.html', context)
 
 
 def gamer_competition_result(request, slug):
@@ -514,7 +514,7 @@ def gamer_competition_result(request, slug):
         'result': result,
         'results': results,
     }
-    return render(request, 'competitions/competition_results.html', context)
+    return render(request, 'competitions/gamers/competition_results.html', context)
 
 
 # ---------------------------------------------------------------------------
@@ -553,7 +553,7 @@ def shop_owner_competitions(request):
             is_active=True, is_verified=True
         ).prefetch_related('supported_platforms').order_by('name'),
     }
-    return render(request, 'competitions/shop_owner_competitions.html', context)
+    return render(request, 'competitions/shop owners/shop_owner_competitions.html', context)
 
 
 @csrf_exempt
@@ -601,7 +601,7 @@ def shop_owner_competition_create(request):
             'shop_games_data': shop_games_data,
             'shop_consoles_data': shop_consoles_data,
         }
-        return render(request, 'competitions/create_competition.html', context)
+        return render(request, 'competitions/shop owners/create_competition.html', context)
 
     if request.method == 'POST':
         import logging
@@ -796,7 +796,7 @@ def shop_owner_competition_detail(request, slug):
         'registered_count': competition.registered_count(),
         'is_shop_owner_of_competition': True,
     }
-    return render(request, 'competitions/shop_owner_competition_detail.html', context)
+    return render(request, 'competitions/shop owners/shop_owner_competition_detail.html', context)
 
 
 @csrf_exempt

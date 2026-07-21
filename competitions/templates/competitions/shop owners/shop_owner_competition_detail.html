@@ -4,8 +4,8 @@
 {% block title %}{{ competition.name }} · {{ project_detail.title }}{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'competitions/css/competition_common.css' %}">
-    <link rel="stylesheet" href="{% static 'competitions/css/competition_detail.css' %}">
+    <link rel="stylesheet" href="{% static 'competitions/css/common/competition_common.css' %}">
+    <link rel="stylesheet" href="{% static 'competitions/css/gamers/competition_detail.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -487,5 +487,5 @@
         status: "{{ competition.status }}",
     };
 </script>
-<script src="{% static 'competitions/js/competition_detail.js' %}"></script>
+<script src="{% static 'competitions/js/gamers/competition_detail.js' %}"></script>
 {% endblock %}

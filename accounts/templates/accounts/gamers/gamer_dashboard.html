@@ -228,7 +228,7 @@
                 <div class="card-header component-card-header">
                     <h2>
                         <i class="fas fa-calendar-check"></i>
-                        <span>Upcoming Events</span>
+                        <span>Upcoming Competitions</span>
                     </h2>
                     <a href="{% url 'competitions:gamer_competitions' %}" class="view-all-link">View All</a>
                 </div>
@@ -250,7 +250,7 @@
                         {% empty %}
                             <div class="empty-state-inline">
                                 <i class="fas fa-calendar-day"></i>
-                                <p>No upcoming events. Join a competition to see it here.</p>
+                                <p>No upcoming competitions.</p>
                             </div>
                         {% endfor %}
                     </div>
@@ -333,13 +333,6 @@
             </div>
         </div>
 	</div>
-
-	{# ================================================================== #}
-{# REPLACEMENT: competitions tab in gamer_dashboard.html             #}
-{# Replace the entire block:                                         #}
-{#   <div class="profile-tab-content" id="competitions"> ... </div>  #}
-{# with the following:                                               #}
-{# ================================================================== #}
 
 <div class="profile-tab-content" id="competitions">
     <section class="profile-card component-card gradient-header hoverable anim-fade-in">

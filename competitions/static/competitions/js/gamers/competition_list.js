@@ -132,13 +132,7 @@ class CompetitionList {
     }
 
     closeRegistrationModal() {
-        const modalBackdrop = document.getElementById('modalBackdrop');
-        const registrationModal = document.getElementById('registrationModal');
-        
-        if (modalBackdrop) modalBackdrop.classList.add('hidden');
-        if (registrationModal) registrationModal.classList.add('hidden');
-        document.body.classList.remove('modal-open');
-        
+        CompetitionCommon.closeOpenModal();
         this.activeCompetitionId = null;
         this.activeCompetitionName = null;
     }

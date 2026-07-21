@@ -287,6 +287,10 @@
     .search-toolbar .btn-search-reset { flex: 1; text-align: center; }
 }
 
+.admin-hub-shell > .admin-page-header.flex-between {
+    align-items: flex-start;
+}
+
 /* ------------------------------------------------------------------
    Table Containment — wide tables (Achievements: 8 cols, Player
    Progression: 14 cols) must scroll *within* their own wrapper, not
@@ -317,93 +321,24 @@
 }
 
 /* ------------------------------------------------------------------
-   Hub Header Action Group — the contextual Seed / Add controls in
-   the top-right of the Progression Hub. "Contextual" means their
-   label/target swap based on whichever tab (Levels / Achievements /
-   Player Progression) is currently active — see
-   admin_progression_hub.js. Seed is a split button: the main face
-   runs the contextually-relevant seed command, the caret opens a
-   menu with all seed options so any of them stay reachable from any
-   tab.
+   Hub Header Actions — the two static "Add New Level" / "Add New
+   Achievement" buttons in the top-right of the Progression Hub,
+   stacked vertically. These are the same on every tab; they don't
+   change based on which tab is active.
    ------------------------------------------------------------------ */
 .hub-header-actions {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-}
-
-.hub-split-btn {
-    display: inline-flex;
-    position: relative;
-}
-
-.hub-split-btn .btn-seed-main {
-    display: inline-flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
-    padding: 9px 16px;
-    border-radius: 8px 0 0 8px;
-    border: 1px solid var(--primary, #009ef7);
-    border-right: none;
-    background: transparent;
-    color: var(--primary, #009ef7);
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.hub-split-btn .btn-seed-main:hover {
-    background: var(--primary, #009ef7);
-    color: #ffffff;
-}
-
-.hub-split-btn .btn-seed-caret {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    border-radius: 0 8px 8px 0;
-    border: 1px solid var(--primary, #009ef7);
-    background: transparent;
-    color: var(--primary, #009ef7);
-    cursor: pointer;
-    font-size: 0.75rem;
-    transition: all 0.2s ease;
-}
-
-.hub-split-btn .btn-seed-caret:hover {
-    background: var(--primary, #009ef7);
-    color: #ffffff;
-}
-
-.hub-split-btn .dropdown-menu {
-    min-width: 200px;
-    padding: 6px;
-    border-radius: 10px;
-    border: 1px solid var(--border-color, #eef0f4);
-    box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, 0.1));
-}
-
-.hub-split-btn .dropdown-item {
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-dark, #181c32);
-    cursor: pointer;
-}
-
-.hub-split-btn .dropdown-item:hover {
-    background: var(--bg-secondary, #f5f8fa);
-    color: var(--primary, #009ef7);
+    flex-shrink: 0;
+    min-width: 190px;
 }
 
 .hub-header-actions .btn-hub-add {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 9px 18px;
     border-radius: 8px;
@@ -421,18 +356,14 @@
     opacity: 0.9;
 }
 
-.hub-header-actions .btn-hub-add.is-hidden {
-    display: none;
+.hub-header-actions .btn-hub-add.btn-hub-add-alt {
+    background: var(--accent-violet, #7239ea);
 }
 
 @media (max-width: 640px) {
     .hub-header-actions {
         width: 100%;
-        flex-wrap: wrap;
-    }
-    .hub-split-btn,
-    .hub-header-actions .btn-hub-add {
-        flex: 1 1 auto;
+        min-width: 0;
     }
 }
 

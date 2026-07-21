@@ -89,31 +89,9 @@
                         <td>{{ row.login_streak_days }}</td>
                         <td>{{ row.updated_at|date:'M d, Y H:i' }}</td>
                         <td>
-                            <form method="POST" action="{% url 'admin_panel:progression_stats_action' row.id %}" class="quick-actions-form">
-                                {% csrf_token %}
-                                <input type="hidden" name="q" value="{{ query }}">
-                                <input type="hidden" name="page" value="{{ stats.number }}">
-                                <select name="metric" class="form-select form-select-sm">
-                                    <option value="communities_joined">communities_joined</option>
-                                    <option value="gamers_invited">gamers_invited</option>
-                                    <option value="comments_made">comments_made</option>
-                                    <option value="posts_made">posts_made</option>
-                                    <option value="posts_with_10_likes">posts_with_10_likes</option>
-                                    <option value="posts_with_25_likes">posts_with_25_likes</option>
-                                    <option value="posts_with_75_likes">posts_with_75_likes</option>
-                                    <option value="competitions_joined">competitions_joined</option>
-                                    <option value="competitions_won">competitions_won</option>
-                                    <option value="leagues_joined">leagues_joined</option>
-                                    <option value="leagues_won">leagues_won</option>
-                                    <option value="login_streak_days">login_streak_days</option>
-                                </select>
-                                <input type="number" name="amount" class="form-control form-control-sm" value="1" min="1">
-                                <div class="qa-buttons">
-                                    <button name="operation" value="increment" type="submit" class="btn btn-outline-success">+</button>
-                                    <button name="operation" value="decrement" type="submit" class="btn btn-outline-warning">−</button>
-                                    <button name="operation" value="reset" type="submit" class="btn btn-outline-danger">Reset</button>
-                                </div>
-                            </form>
+                            <button type="button" class="btn-adjust-trigger" onclick="openStatsAdjustModal('{{ row.id }}', '{{ row.gamer.custom_username|default:row.gamer.get_full_name|escapejs }}')">
+                                <i class="fas fa-sliders-h"></i> Adjust
+                            </button>
                         </td>
                     </tr>
                     {% empty %}
@@ -140,4 +118,56 @@
         {% endif %}
     </section>
 </div>
+
+<!-- Shared Adjust Stats Modal — one modal reused for every row; the
+     trigger button on each row sets the target gamer via JS before
+     opening it (see openStatsAdjustModal in admin_progression_stats.js). -->
+<div class="modal fade" id="statsAdjustModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" id="statsAdjustForm" action="{% url 'admin_panel:progression_stats_action' '00000000-0000-0000-0000-000000000000' %}" data-url-template="{% url 'admin_panel:progression_stats_action' '00000000-0000-0000-0000-000000000000' %}">
+            {% csrf_token %}
+            <input type="hidden" name="q" value="{{ query }}">
+            <input type="hidden" name="page" value="{{ stats.number }}">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adjust Stats — <span id="statsAdjustGamerName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Metric</label>
+                        <select name="metric" class="form-select">
+                            <option value="communities_joined">communities_joined</option>
+                            <option value="gamers_invited">gamers_invited</option>
+                            <option value="comments_made">comments_made</option>
+                            <option value="posts_made">posts_made</option>
+                            <option value="posts_with_10_likes">posts_with_10_likes</option>
+                            <option value="posts_with_25_likes">posts_with_25_likes</option>
+                            <option value="posts_with_75_likes">posts_with_75_likes</option>
+                            <option value="competitions_joined">competitions_joined</option>
+                            <option value="competitions_won">competitions_won</option>
+                            <option value="leagues_joined">leagues_joined</option>
+                            <option value="leagues_won">leagues_won</option>
+                            <option value="login_streak_days">login_streak_days</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <input type="number" name="amount" class="form-control" value="1" min="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button name="operation" value="decrement" type="submit" class="btn btn-outline-warning">− Decrement</button>
+                    <button name="operation" value="reset" type="submit" class="btn btn-outline-danger">Reset</button>
+                    <button name="operation" value="increment" type="submit" class="btn btn-primary">+ Increment</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'admin_panel/js/progression/progression_common.js' %}"></script>
+<script src="{% static 'admin_panel/js/progression/admin_progression_stats.js' %}"></script>
 {% endblock %}

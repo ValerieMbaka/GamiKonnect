@@ -19,27 +19,11 @@
             <p class="page-subtitle text-muted mt-1">Manage levels, achievements, and player progression from one place.</p>
         </div>
         <div class="hub-header-actions">
-            <!-- Seed split button: main face runs whichever seed command
-                 matches the active tab; caret opens all three options. -->
-            <div class="hub-split-btn">
-                <form method="POST" action="{% url 'admin_panel:progression_seed' %}" id="hubSeedForm">
-                    {% csrf_token %}
-                    <input type="hidden" name="seed_action" id="hubSeedActionInput" value="levels">
-                    <button type="submit" class="btn-seed-main" id="hubSeedMainBtn">
-                        <i class="fas fa-seedling"></i> Run seed_levels
-                    </button>
-                </form>
-                <button type="button" class="btn-seed-caret" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><button type="button" class="dropdown-item" onclick="submitHubSeed('levels')">Run seed_levels</button></li>
-                    <li><button type="button" class="dropdown-item" onclick="submitHubSeed('achievements')">Run seed_achievements</button></li>
-                    <li><button type="button" class="dropdown-item" onclick="submitHubSeed('all')">Run All Seeds</button></li>
-                </ul>
-            </div>
-            <button type="button" class="btn-hub-add" id="hubAddBtn" data-bs-toggle="modal" data-bs-target="#levelModal" onclick="resetLevelForm()">
-                <i class="fas fa-plus"></i> <span id="hubAddBtnLabel">Add New Level</span>
+            <button type="button" class="btn-hub-add" data-bs-toggle="modal" data-bs-target="#levelModal" onclick="resetLevelForm()">
+                <i class="fas fa-plus"></i> Add New Level
+            </button>
+            <button type="button" class="btn-hub-add btn-hub-add-alt" data-bs-toggle="modal" data-bs-target="#achievementModal" onclick="resetAchievementForm()">
+                <i class="fas fa-plus"></i> Add New Achievement
             </button>
         </div>
     </div>
@@ -223,31 +207,9 @@
                                 <td>{{ row.login_streak_days }}</td>
                                 <td>{{ row.updated_at|date:'M d, Y H:i' }}</td>
                                 <td>
-                                    <form method="POST" action="{% url 'admin_panel:progression_stats_action' row.id %}" class="quick-actions-form">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="q" value="{{ query }}">
-                                        <input type="hidden" name="page" value="{{ stats.number }}">
-                                        <select name="metric" class="form-select form-select-sm">
-                                            <option value="communities_joined">communities_joined</option>
-                                            <option value="gamers_invited">gamers_invited</option>
-                                            <option value="comments_made">comments_made</option>
-                                            <option value="posts_made">posts_made</option>
-                                            <option value="posts_with_10_likes">posts_with_10_likes</option>
-                                            <option value="posts_with_25_likes">posts_with_25_likes</option>
-                                            <option value="posts_with_75_likes">posts_with_75_likes</option>
-                                            <option value="competitions_joined">competitions_joined</option>
-                                            <option value="competitions_won">competitions_won</option>
-                                            <option value="leagues_joined">leagues_joined</option>
-                                            <option value="leagues_won">leagues_won</option>
-                                            <option value="login_streak_days">login_streak_days</option>
-                                        </select>
-                                        <input type="number" name="amount" class="form-control form-control-sm" value="1" min="1">
-                                        <div class="qa-buttons">
-                                            <button name="operation" value="increment" type="submit" class="btn btn-outline-success">+</button>
-                                            <button name="operation" value="decrement" type="submit" class="btn btn-outline-warning">−</button>
-                                            <button name="operation" value="reset" type="submit" class="btn btn-outline-danger">Reset</button>
-                                        </div>
-                                    </form>
+                                    <button type="button" class="btn-adjust-trigger" onclick="openStatsAdjustModal('{{ row.id }}', '{{ row.gamer.custom_username|default:row.gamer.get_full_name|escapejs }}')">
+                                        <i class="fas fa-sliders-h"></i> Adjust
+                                    </button>
                                 </td>
                             </tr>
                             {% empty %}
@@ -388,11 +350,57 @@
         </form>
     </div>
 </div>
+<!-- Shared Adjust Stats Modal — one modal reused for every row on the
+     Player Progression tab; see openStatsAdjustModal in
+     admin_progression_stats.js. -->
+<div class="modal fade" id="statsAdjustModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" id="statsAdjustForm" action="{% url 'admin_panel:progression_stats_action' '00000000-0000-0000-0000-000000000000' %}" data-url-template="{% url 'admin_panel:progression_stats_action' '00000000-0000-0000-0000-000000000000' %}">
+            {% csrf_token %}
+            <input type="hidden" name="q" value="{{ query }}">
+            <input type="hidden" name="page" value="{{ stats.number }}">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adjust Stats — <span id="statsAdjustGamerName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Metric</label>
+                        <select name="metric" class="form-select">
+                            <option value="communities_joined">communities_joined</option>
+                            <option value="gamers_invited">gamers_invited</option>
+                            <option value="comments_made">comments_made</option>
+                            <option value="posts_made">posts_made</option>
+                            <option value="posts_with_10_likes">posts_with_10_likes</option>
+                            <option value="posts_with_25_likes">posts_with_25_likes</option>
+                            <option value="posts_with_75_likes">posts_with_75_likes</option>
+                            <option value="competitions_joined">competitions_joined</option>
+                            <option value="competitions_won">competitions_won</option>
+                            <option value="leagues_joined">leagues_joined</option>
+                            <option value="leagues_won">leagues_won</option>
+                            <option value="login_streak_days">login_streak_days</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <input type="number" name="amount" class="form-control" value="1" min="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button name="operation" value="decrement" type="submit" class="btn btn-outline-warning">− Decrement</button>
+                    <button name="operation" value="reset" type="submit" class="btn btn-outline-danger">Reset</button>
+                    <button name="operation" value="increment" type="submit" class="btn btn-primary">+ Increment</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script src="{% static 'admin_panel/js/progression/progression_common.js' %}"></script>
 <script src="{% static 'admin_panel/js/progression/admin_level_list.js' %}"></script>
 <script src="{% static 'admin_panel/js/progression/admin_achievement_list.js' %}"></script>
-<script src="{% static 'admin_panel/js/progression/admin_progression_hub.js' %}"></script>
+<script src="{% static 'admin_panel/js/progression/admin_progression_stats.js' %}"></script>
 {% endblock %}

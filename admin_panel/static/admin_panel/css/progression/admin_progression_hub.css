@@ -4,48 +4,61 @@
    Player Progression tabs). Extends progression_common.css.
    ========================================================================== */
 
-.progression-tabs .nav-tabs {
-    border-bottom: 2px solid var(--border-color, #eef0f4);
-    gap: 4px;
+.progression-tabs #progressionTabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px;
+    margin-bottom: 24px;
+    background: var(--bg-secondary, #f5f8fa);
+    border: 1px solid var(--border-color, #eef0f4);
+    border-radius: 14px;
+    border-bottom: 1px solid var(--border-color, #eef0f4);
 }
 
 .progression-tabs .nav-tabs .nav-link {
+    display: inline-flex;
+    align-items: center;
     border: none;
     color: var(--text-muted, #5e6278);
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 12px 20px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    padding: 11px 22px;
     position: relative;
     background: transparent;
-    border-radius: 8px 8px 0 0;
-    transition: color 0.2s ease, background 0.2s ease;
+    border-radius: 9px;
+    transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.progression-tabs .nav-tabs .nav-link i {
+    font-size: 1rem;
+    color: var(--text-muted, #a1a5b7);
+    transition: color 0.2s ease;
 }
 
 .progression-tabs .nav-tabs .nav-link:hover {
     color: var(--primary, #009ef7);
-    background: var(--bg-secondary, #f5f8fa);
+    background: rgba(0, 158, 247, 0.1);
     border: none;
+}
+
+.progression-tabs .nav-tabs .nav-link:hover i {
+    color: var(--primary, #009ef7);
 }
 
 .progression-tabs .nav-tabs .nav-link.active {
-    color: var(--primary, #009ef7);
-    background: transparent;
+    color: #ffffff;
+    background: var(--primary, #009ef7);
     border: none;
+    box-shadow: 0 4px 12px rgba(0, 158, 247, 0.35);
 }
 
-.progression-tabs .nav-tabs .nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--primary, #009ef7);
-    border-radius: 3px 3px 0 0;
+.progression-tabs .nav-tabs .nav-link.active i {
+    color: #ffffff;
 }
 
 .progression-tabs .tab-content {
-    padding-top: 20px;
+    padding-top: 4px;
 }
 
 .progression-tabs .tab-pane {

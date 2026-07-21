@@ -6,8 +6,10 @@
    This table has 14 columns, so the two biggest usability wins are:
    1. A sticky first column ("Gamer") so you know whose row you're
       looking at while scrolling horizontally.
-   2. A compact, single-row Quick Actions widget instead of a tall
-      stacked form, so rows stay a reasonable height.
+   2. A single compact "Adjust" trigger per row (opens a shared modal)
+      instead of a full inline form -- that one change removes ~300px
+      from the widest column and is what keeps the table from forcing
+      the whole page wider than the viewport.
    ========================================================================== */
 
 .stats-table-wrap {
@@ -17,6 +19,8 @@
 .stats-table th,
 .stats-table td {
     white-space: nowrap;
+    padding: 10px 12px;
+    font-size: 0.83rem;
 }
 
 .stats-table thead th:first-child,
@@ -35,7 +39,7 @@
 
 .stats-table tbody td:first-child {
     white-space: normal;
-    min-width: 200px;
+    min-width: 190px;
 }
 
 .gamer-cell-name {
@@ -52,78 +56,27 @@
 }
 
 /* ------------------------------------------------------------------
-   Quick Actions — compact single-row layout. Field names, option
-   values, and button name/value pairs are unchanged; only the layout
-   is condensed.
+   Adjust trigger -- single compact button per row. Opens the shared
+   #statsAdjustModal (see admin_progression_hub.html /
+   admin_progression_stats.html + admin_progression_stats.js).
    ------------------------------------------------------------------ */
-.quick-actions-form {
-    display: flex;
+.btn-adjust-trigger {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    min-width: 320px;
-}
-
-.quick-actions-form select.form-select-sm {
-    flex: 1 1 150px;
-    min-width: 130px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--primary, #009ef7);
+    background: transparent;
+    color: var(--primary, #009ef7);
     font-size: 0.78rem;
-    padding: 5px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color, #eef0f4);
-    background: var(--bg-secondary, #f5f8fa);
-}
-
-.quick-actions-form input.form-control-sm {
-    width: 60px;
-    flex: 0 0 60px;
-    font-size: 0.78rem;
-    padding: 5px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color, #eef0f4);
-    background: var(--bg-secondary, #f5f8fa);
-}
-
-.quick-actions-form .qa-buttons {
-    display: flex;
-    gap: 4px;
-    flex: 0 0 auto;
-}
-
-.quick-actions-form .qa-buttons .btn {
-    padding: 5px 9px;
-    font-size: 0.72rem;
     font-weight: 700;
-    border-radius: 6px;
     cursor: pointer;
     white-space: nowrap;
+    transition: all 0.2s ease;
 }
 
-.quick-actions-form .btn-outline-success {
-    background: transparent;
-    border: 1px solid var(--success, #50cd89);
-    color: var(--success, #50cd89);
-}
-.quick-actions-form .btn-outline-success:hover {
-    background: var(--success, #50cd89);
-    color: #ffffff;
-}
-
-.quick-actions-form .btn-outline-warning {
-    background: transparent;
-    border: 1px solid var(--warning, #f5a623);
-    color: var(--warning, #f5a623);
-}
-.quick-actions-form .btn-outline-warning:hover {
-    background: var(--warning, #f5a623);
-    color: #ffffff;
-}
-
-.quick-actions-form .btn-outline-danger {
-    background: transparent;
-    border: 1px solid var(--danger, #f1416c);
-    color: var(--danger, #f1416c);
-}
-.quick-actions-form .btn-outline-danger:hover {
-    background: var(--danger, #f1416c);
+.btn-adjust-trigger:hover {
+    background: var(--primary, #009ef7);
     color: #ffffff;
 }

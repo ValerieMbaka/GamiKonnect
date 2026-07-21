@@ -58,11 +58,6 @@
                 <div class="profile-cover-section">
                     <div class="profile-cover-container">
                         <img src="{% static 'core/images/gameroom1.jpeg' %}" alt="Profile Cover" class="profile-cover-image">
-                        <div class="profile-actions-container">
-                            <button class="btn btn-icon btn-action" title="More options">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                        </div>
                     </div>
                 </div>
 
@@ -128,10 +123,6 @@
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Overview</span>
             </button>
-            <button class="profile-tab {% if not profile_complete %}profile-restricted{% endif %}" data-tab="games" {% if not profile_complete %}data-restricted="true"{% endif %}>
-                <i class="fas fa-gamepad"></i>
-                <span>My Games <span class="badge">{{ gamer.games_count }}</span></span>
-            </button>
             <button class="profile-tab {% if not profile_complete %}profile-restricted{% endif %}" data-tab="competitions" {% if not profile_complete %}data-restricted="true"{% endif %}>
                 <i class="fas fa-trophy"></i>
                 <span>Competitions <span class="badge">2</span></span>
@@ -175,17 +166,6 @@
             </div>
             <div class="card-body">
                 <div class="action-buttons">
-                    <a href="{% url 'progression:leaderboard_global' %}"
-                       class="action-btn btn btn-light btn-shimmer">
-                        <div class="action-icon"><i class="fas fa-crown"></i></div>
-                        <span>Leaderboard</span>
-                    </a>
-
-                    <a href="{% url 'progression:gamer_progression' %}"
-                       class="action-btn btn btn-light btn-shimmer">
-                        <div class="action-icon"><i class="fas fa-chart-line"></i></div>
-                        <span>My Progression</span>
-                    </a>
                     {% if profile_complete %}
                     <a href="" class="action-btn btn btn-light btn-shimmer" data-tooltip="Join a competition">
                         <div class="action-icon">
@@ -193,6 +173,15 @@
                         </div>
                         <span>Join Competition</span>
                     </a>
+                    {% endif %}
+
+                    <a href="{% url 'progression:gamer_progression' %}"
+                       class="action-btn btn btn-light btn-shimmer">
+                        <div class="action-icon"><i class="fas fa-chart-line"></i></div>
+                        <span>My Progression</span>
+                    </a>
+
+                    {% if profile_complete %}
                     <a href="" class="action-btn btn btn-light btn-shimmer" data-tooltip="View activity feeds and updates">
                         <div class="action-icon">
                             <i class="fas fa-newspaper"></i>
@@ -200,6 +189,13 @@
                         <span>View Feeds</span>
                     </a>
                     {% endif %}
+
+                    <a href="{% url 'progression:leaderboard_global' %}"
+                       class="action-btn btn btn-light btn-shimmer">
+                        <div class="action-icon"><i class="fas fa-crown"></i></div>
+                        <span>Leaderboard</span>
+                    </a>
+
                     <a href="{% url 'accounts:gamer_public_profile' %}" class="action-btn btn btn-light btn-shimmer" data-tooltip="View your public profile">
 	                    <div class="action-icon">
 		                    <i class="fas fa-user"></i>
@@ -234,100 +230,117 @@
                 </div>
             </div>
 
-            <div class="recent-achievements-column anim-fade-in">
-                <section class="profile-card component-card gradient-header hoverable anim-fade-in">
-                    <div class="card-header component-card-header">
-                        <h2>
-                            <i class="fas fa-trophy"></i>
-                            <span>Recent Achievements</span>
-                        </h2>
-                        <a href="" class="view-all-link">View All</a>
-                    </div>
-                    <div class="card-body component-card-body">
-                        <div class="achievements-list">
-                            {% for ga in recent_achievements %}
-                                <div class="achievement-item">
-                                    <div class="achievement-badge">
-                                        {% if ga.achievement.badge_icon %}
-                                            <img src="{{ ga.achievement.badge_icon.url }}" alt="{{ ga.achievement.name }} badge" class="badge-img badge-img-md">
-                                        {% else %}
-                                            <i class="fas fa-medal"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="achievement-details">
-                                        <h4 class="achievement-title">{{ ga.achievement.name }}</h4>
-                                        <p class="achievement-date">{{ ga.earned_at|date:'M d, Y' }}</p>
-                                        <div class="achievement-xp">+{{ ga.achievement.xp }} XP</div>
-                                    </div>
+            <div class="profile-card component-card gradient-header hoverable anim-fade-in">
+                <div class="card-header component-card-header">
+                    <h2>
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Upcoming Events</span>
+                    </h2>
+                    <a href="{% url 'competitions:gamer_competitions' %}" class="view-all-link">View All</a>
+                </div>
+                <div class="card-body component-card-body">
+                    <div class="upcoming-events-list">
+                        {% for reg in dashboard_comp_registrations %}
+                            {% if reg.competition.status == 'registration_open' or reg.competition.status == 'registration_closed' or reg.competition.status == 'ongoing' %}
+                            <a href="{% url 'competitions:detail' reg.competition.slug %}" class="upcoming-event-item">
+                                <div class="upcoming-event-date">
+                                    <span class="upcoming-event-day">{{ reg.competition.scheduled_time|date:"d" }}</span>
+                                    <span class="upcoming-event-month">{{ reg.competition.scheduled_time|date:"M" }}</span>
                                 </div>
-                            {% empty %}
-                                <div>No achievements yet.</div>
-                            {% endfor %}
-                        </div>
-                        {% if level_badge %}
-                        <div class="level-badge-section">
-                            <span>Current Level Badge:</span>
-                            <img src="{{ level_badge }}" alt="Level Badge" class="badge-img-lg">
-                        </div>
-                        {% endif %}
-                    </div>
-                </section>
-            </div>
-        </div>
-	</div>
-
-    <div class="profile-tab-content" id="games">
-        <section class="profile-card component-card gradient-header hoverable anim-fade-in">
-            <div class="card-header component-card-header">
-                <h2>
-                    <i class="fas fa-gamepad"></i>
-                    <span>My Games</span>
-                </h2>
-            </div>
-            <div class="card-body">
-                {% if gamer.games.all %}
-                    <div class="game-carousel">
-                        {% for game in gamer.games.all %}
-                             <div class="game-card" data-game-id="{{ game.id }}">
-                                 <div class="game-status">Active</div>
-                                 <div class="platform-badges">
-                                     {% for platform in gamer.platforms %}
-                                         <span class="platform-badge">{{ platform }}</span>
-                                     {% empty %}
-                                         <span class="platform-badge">Multi-Platform</span>
-                                     {% endfor %}
-                                 </div>
-                                 <img src="" alt="{{ game.name }}" data-game="{{ game.name }}" class="game-image">
-                                 <div class="game-info">
-                                     <h4>{{ game.name }}</h4>
-		                            <div class="game-stats">
-			                            <div class="stat-item hours" title="Total hours played">
-				                            <span class="stat-value play-time-stat">0h</span>
-				                            <span class="stat-label">Play Time</span>
-			                            </div>
-			                            <div class="stat-item win-rate" title="Win rate percentage">
-				                            <span class="stat-value win-rate-stat">0%</span>
-				                            <span class="stat-label">Win Rate</span>
-			                            </div>
-			                            <div class="stat-item last-played" title="Last time played">
-				                            <span class="stat-value last-played-stat">Never</span>
-				                            <span class="stat-label">Last Played</span>
-			                            </div>
-		                            </div>
-	                            </div>
-                             </div>
+                                <div class="upcoming-event-info">
+                                    <h4>{{ reg.competition.name }}</h4>
+                                    <p><i class="fas fa-clock"></i> {{ reg.competition.scheduled_time|date:"g:i A" }} · <i class="fas fa-store"></i> {{ reg.competition.shop.name }}</p>
+                                </div>
+                            </a>
+                            {% endif %}
+                        {% empty %}
+                            <div class="empty-state-inline">
+                                <i class="fas fa-calendar-day"></i>
+                                <p>No upcoming events. Join a competition to see it here.</p>
+                            </div>
                         {% endfor %}
                     </div>
-                {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-gamepad"></i>
-                        <h3>No games added yet</h3>
-                        <p>Add your favorite games to see them here</p>
-                        <button class="btn btn-primary mt-3" id="openProfileModalBtn3">Add Games</button>
-                    </div>
-                {% endif %}
+                </div>
             </div>
-        </section>
+        </div>
+
+        <div class="dashboard-two-column anim-fade-in">
+            <div class="profile-card component-card gradient-header hoverable anim-fade-in">
+                <div class="card-header component-card-header">
+                    <h2>
+                        <i class="fas fa-trophy"></i>
+                        <span>Recent Achievements</span>
+                    </h2>
+                    <a href="" class="view-all-link">View All</a>
+                </div>
+                <div class="card-body component-card-body">
+                    <div class="achievements-list">
+                        {% for ga in recent_achievements %}
+                            <div class="achievement-item">
+                                <div class="achievement-badge">
+                                    {% if ga.achievement.badge_icon %}
+                                        <img src="{{ ga.achievement.badge_icon.url }}" alt="{{ ga.achievement.name }} badge" class="badge-img badge-img-md">
+                                    {% else %}
+                                        <i class="fas fa-medal"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="achievement-details">
+                                    <h4 class="achievement-title">{{ ga.achievement.name }}</h4>
+                                    <p class="achievement-date">{{ ga.earned_at|date:'M d, Y' }}</p>
+                                    <div class="achievement-xp">+{{ ga.achievement.xp }} XP</div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div>No achievements yet.</div>
+                        {% endfor %}
+                    </div>
+                    {% if level_badge %}
+                    <div class="level-badge-section">
+                        <span>Current Level Badge:</span>
+                        <img src="{{ level_badge }}" alt="Level Badge" class="badge-img-lg">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-card component-card gradient-header hoverable anim-fade-in">
+                <div class="card-header component-card-header">
+                    <h2>
+                        <i class="fas fa-fire"></i>
+                        <span>Top Games</span>
+                    </h2>
+                </div>
+                <div class="card-body component-card-body">
+                    {# NOTE: dummy placeholder data — wire to real per-game stats when available #}
+                    <div class="top-games-list">
+                        <div class="top-game-item">
+                            <span class="top-game-rank">1</span>
+                            <div class="top-game-icon"><i class="fas fa-gamepad"></i></div>
+                            <div class="top-game-info">
+                                <h4>EA Sports FC 26</h4>
+                                <p>18h played · 62% win rate</p>
+                            </div>
+                        </div>
+                        <div class="top-game-item">
+                            <span class="top-game-rank">2</span>
+                            <div class="top-game-icon"><i class="fas fa-gamepad"></i></div>
+                            <div class="top-game-info">
+                                <h4>Call of Duty: MW3</h4>
+                                <p>12h played · 54% win rate</p>
+                            </div>
+                        </div>
+                        <div class="top-game-item">
+                            <span class="top-game-rank">3</span>
+                            <div class="top-game-icon"><i class="fas fa-gamepad"></i></div>
+                            <div class="top-game-info">
+                                <h4>Tekken 8</h4>
+                                <p>7h played · 48% win rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 	</div>
 
 	{# ================================================================== #}

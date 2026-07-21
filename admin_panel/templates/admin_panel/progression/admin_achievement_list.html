@@ -3,6 +3,11 @@
 
 {% block title %}Achievements | Admin Panel{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/progression_common.css' %}">
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/admin_achievement_list.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="admin-hub-shell">
     <div class="admin-page-header flex-between mb-4">
@@ -10,7 +15,7 @@
             <h1 class="page-title m-0">Achievements</h1>
             <p class="page-subtitle text-muted mt-1">Define progression rewards and unlock conditions.</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 seed-actions">
             <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
                 {% csrf_token %}
                 <input type="hidden" name="seed_action" value="achievements">
@@ -27,11 +32,35 @@
         </div>
     </div>
 
-    <section class="hub-summary-grid mb-4">
-        <div class="hub-summary-card"><div class="hub-summary-icon"><i class="fas fa-award"></i></div><div class="hub-summary-copy"><h3>{{ achievements|length }}</h3><p>Total achievements</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon alt"><i class="fas fa-key"></i></div><div class="hub-summary-copy"><h3>Rules Engine</h3><p>Metric-driven unlocks</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon success"><i class="fas fa-badge-check"></i></div><div class="hub-summary-copy"><h3>Live</h3><p>Available rewards</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon warning"><i class="fas fa-star"></i></div><div class="hub-summary-copy"><h3>Tiered</h3><p>Category progression</p></div></div>
+    <section class="stats-grid">
+        <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-award"></i></span>
+                <span class="gk-stat-label">Total achievements</span>
+            </div>
+            <div class="gk-stat-value">{{ achievements|length }}</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-key"></i></span>
+                <span class="gk-stat-label">Metric-driven unlocks</span>
+            </div>
+            <div class="gk-stat-value">Rules Engine</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-badge-check"></i></span>
+                <span class="gk-stat-label">Available rewards</span>
+            </div>
+            <div class="gk-stat-value">Live</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-star"></i></span>
+                <span class="gk-stat-label">Category progression</span>
+            </div>
+            <div class="gk-stat-value">Tiered</div>
+        </div>
     </section>
 
     <section class="admin-card hub-section hub-table-shell">
@@ -52,15 +81,17 @@
                 <tbody>
                     {% for achievement in achievements %}
                     <tr>
-                        <td>{% if achievement.badge_image %}<img src="{{ achievement.badge_image.url }}" alt="{{ achievement.name }}" class="hub-avatar">{% else %}<span class="hub-summary-icon" style="width:40px;height:40px;"><i class="fas fa-award"></i></span>{% endif %}</td>
+                        <td>{% if achievement.badge_image %}<img src="{{ achievement.badge_image.url }}" alt="{{ achievement.name }}" class="hub-avatar">{% else %}<span class="table-icon-fallback"><i class="fas fa-award"></i></span>{% endif %}</td>
                         <td><p class="hub-cell-title m-0">{{ achievement.name }}</p></td>
                         <td>{{ achievement.get_category_display }}</td>
                         <td><span class="status-badge success">{{ achievement.xp_reward }} XP</span></td>
-                        <td><code>{{ achievement.metric_key }}</code> >= {{ achievement.target_value }}</td>
-                        <td>{{ achievement.description|truncatechars:80 }}</td>
+                        <td><span class="rule-pill"><code>{{ achievement.metric_key }}</code> &ge; {{ achievement.target_value }}</span></td>
+                        <td><span class="achievement-desc-cell">{{ achievement.description|truncatechars:80 }}</span></td>
                         <td>
-                            {% if achievement.is_active %}<span class="status-badge success">Active</span>{% else %}<span class="status-badge warning">Inactive</span>{% endif %}
-                            {% if achievement.is_hidden %}<span class="status-badge ms-1">Hidden</span>{% endif %}
+                            <span class="achievement-status-cell">
+                                {% if achievement.is_active %}<span class="status-badge success">Active</span>{% else %}<span class="status-badge warning">Inactive</span>{% endif %}
+                                {% if achievement.is_hidden %}<span class="status-badge neutral">Hidden</span>{% endif %}
+                            </span>
                         </td>
                         <td><button class="btn-link" onclick="editAchievement('{{ achievement.id }}', '{{ achievement.name|escapejs }}', '{{ achievement.description|escapejs }}', '{{ achievement.category }}', '{{ achievement.metric_key|default_if_none:''|escapejs }}', {{ achievement.target_value }}, {{ achievement.xp_reward }}, {{ achievement.is_active|yesno:'true,false' }}, {{ achievement.is_hidden|yesno:'true,false' }})"><i class="fas fa-pen me-1"></i> Edit</button></td>
                     </tr>
@@ -142,34 +173,9 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
-<script>
-function resetAchievementForm() {
-    document.getElementById('achievement_id').value = '';
-    document.getElementById('achievement_name').value = '';
-    document.getElementById('achievement_desc').value = '';
-    document.getElementById('achievement_category').selectedIndex = 0;
-    document.getElementById('achievement_key').value = '';
-    document.getElementById('achievement_target').value = '1';
-    document.getElementById('achievement_xp').value = '0';
-    document.getElementById('achievement_active').checked = true;
-    document.getElementById('achievement_hidden').checked = false;
-    document.getElementById('achievementModalLabel').innerText = 'Add Achievement';
-}
-
-function editAchievement(id, name, desc, category, key, target, xp, isActive, isHidden) {
-    document.getElementById('achievement_id').value = id;
-    document.getElementById('achievement_name').value = name;
-    document.getElementById('achievement_desc').value = desc;
-    document.getElementById('achievement_category').value = category;
-    document.getElementById('achievement_key').value = key;
-    document.getElementById('achievement_target').value = target;
-    document.getElementById('achievement_xp').value = xp;
-    document.getElementById('achievement_active').checked = !!isActive;
-    document.getElementById('achievement_hidden').checked = !!isHidden;
-    document.getElementById('achievementModalLabel').innerText = 'Edit Achievement';
-    var myModal = new bootstrap.Modal(document.getElementById('achievementModal'));
-    myModal.show();
-}
-</script>
+{% block extra_scripts %}
+<script src="{% static 'admin_panel/js/progression/progression_common.js' %}"></script>
+<script src="{% static 'admin_panel/js/progression/admin_achievement_list.js' %}"></script>
 {% endblock %}

@@ -3,6 +3,11 @@
 
 {% block title %}Levels Management | Admin Panel{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/progression_common.css' %}">
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/admin_level_list.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="admin-hub-shell">
     <div class="admin-page-header flex-between mb-4">
@@ -10,23 +15,41 @@
             <h1 class="page-title m-0">Progression Levels</h1>
             <p class="page-subtitle text-muted mt-1">Define the level ladder and the XP required to advance.</p>
         </div>
-        <div class="d-flex gap-2">
-            <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
-                {% csrf_token %}
-                <input type="hidden" name="seed_action" value="levels">
-                <button type="submit" class="btn btn-outline-primary">Run seed_levels</button>
-            </form>
-            <button type="button" class="btn-admin-primary" data-bs-toggle="modal" data-bs-target="#levelModal" onclick="resetLevelForm()">
+        <div class="d-flex gap-2 seed-actions">
                 <i class="fas fa-plus"></i> Add New Level
             </button>
         </div>
     </div>
 
-    <section class="hub-summary-grid mb-4">
-        <div class="hub-summary-card"><div class="hub-summary-icon"><i class="fas fa-medal"></i></div><div class="hub-summary-copy"><h3>{{ levels|length }}</h3><p>Total levels</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon alt"><i class="fas fa-arrow-up"></i></div><div class="hub-summary-copy"><h3>{{ levels.last.min_xp|default:0 }}</h3><p>Top XP requirement</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon success"><i class="fas fa-layer-group"></i></div><div class="hub-summary-copy"><h3>{{ levels.first.order|default:0 }}</h3><p>Starting order</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon warning"><i class="fas fa-shield-alt"></i></div><div class="hub-summary-copy"><h3>Badge-ready</h3><p>Visual progression</p></div></div>
+    <section class="stats-grid">
+        <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-medal"></i></span>
+                <span class="gk-stat-label">Total levels</span>
+            </div>
+            <div class="gk-stat-value">{{ levels|length }}</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-arrow-up"></i></span>
+                <span class="gk-stat-label">Top XP requirement</span>
+            </div>
+            <div class="gk-stat-value">{{ levels.last.min_xp|default:0 }}</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-layer-group"></i></span>
+                <span class="gk-stat-label">Starting order</span>
+            </div>
+            <div class="gk-stat-value">{{ levels.first.order|default:0 }}</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-shield-alt"></i></span>
+                <span class="gk-stat-label">Visual progression</span>
+            </div>
+            <div class="gk-stat-value">Badge-ready</div>
+        </div>
     </section>
 
     <section class="admin-card hub-section hub-table-shell">
@@ -36,11 +59,16 @@
                 <tbody>
                     {% for level in levels %}
                     <tr>
-                        <td>{% if level.badge_image %}<img src="{{ level.badge_image.url }}" alt="{{ level.name }}" class="hub-avatar">{% else %}<span class="hub-summary-icon" style="width:40px;height:40px;"><i class="fas fa-medal"></i></span>{% endif %}</td>
+                        <td>{% if level.badge_image %}<img src="{{ level.badge_image.url }}" alt="{{ level.name }}" class="hub-avatar">{% else %}<span class="table-icon-fallback"><i class="fas fa-medal"></i></span>{% endif %}</td>
                         <td>{{ level.name }}</td>
                         <td>{{ level.order }}</td>
                         <td>{{ level.min_xp }}</td>
-                        <td><span class="status-badge" style="background: {{ level.color_hex }}; color: #111;">{{ level.color_hex }}</span></td>
+                        <td>
+                            <span class="level-color-badge">
+                                <span class="level-color-swatch" style="--swatch-color: {{ level.color_hex }};"></span>
+                                {{ level.color_hex }}
+                            </span>
+                        </td>
                         <td><button class="btn-link" onclick="editLevel('{{ level.id }}', '{{ level.name|escapejs }}', {{ level.min_xp }}, {{ level.order }}, '{{ level.color_hex|escapejs }}')"><i class="fas fa-pen me-1"></i> Edit</button></td>
                     </tr>
                     {% empty %}
@@ -93,26 +121,9 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
-<script>
-function resetLevelForm() {
-    document.getElementById('level_id').value = '';
-    document.getElementById('level_name').value = '';
-    document.getElementById('level_points').value = '';
-    document.getElementById('level_order').value = '';
-    document.getElementById('level_color').value = '#35A8F0';
-    document.getElementById('levelModalLabel').innerText = 'Add New Level';
-}
-
-function editLevel(id, name, points, order, colorHex) {
-    document.getElementById('level_id').value = id;
-    document.getElementById('level_name').value = name;
-    document.getElementById('level_points').value = points;
-    document.getElementById('level_order').value = order;
-    document.getElementById('level_color').value = colorHex || '#35A8F0';
-    document.getElementById('levelModalLabel').innerText = 'Edit Level';
-    var myModal = new bootstrap.Modal(document.getElementById('levelModal'));
-    myModal.show();
-}
-</script>
+{% block extra_scripts %}
+<script src="{% static 'admin_panel/js/progression/progression_common.js' %}"></script>
+<script src="{% static 'admin_panel/js/progression/admin_level_list.js' %}"></script>
 {% endblock %}

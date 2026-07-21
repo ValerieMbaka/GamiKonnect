@@ -4,48 +4,11 @@
 {% block title %}Progression Hub | Admin Panel{% endblock %}
 
 {% block extra_css %}
-<style>
-    .progression-tabs .nav-tabs {
-        border-bottom: 2px solid var(--border-color, #e0e0e0);
-    }
-    .progression-tabs .nav-tabs .nav-link {
-        border: none;
-        color: var(--text-muted, #6c757d);
-        font-weight: 500;
-        padding: 0.75rem 1.5rem;
-        position: relative;
-        background: transparent;
-    }
-    .progression-tabs .nav-tabs .nav-link:hover {
-        color: var(--primary-color, #4361ee);
-        border: none;
-    }
-    .progression-tabs .nav-tabs .nav-link.active {
-        color: var(--primary-color, #4361ee);
-        background: transparent;
-        border: none;
-    }
-    .progression-tabs .nav-tabs .nav-link.active::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--primary-color, #4361ee);
-        border-radius: 3px 3px 0 0;
-    }
-    .progression-tabs .tab-content {
-        padding-top: 1.5rem;
-    }
-    .progression-tabs .tab-pane {
-        animation: fadeIn 0.3s ease-in-out;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/progression_common.css' %}">
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/admin_progression_hub.css' %}">
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/admin_level_list.css' %}">
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/admin_achievement_list.css' %}">
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/admin_progression_stats.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -81,7 +44,7 @@
         <div class="tab-pane fade show active" id="levels-pane" role="tabpanel" aria-labelledby="levels-tab">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <p class="text-muted mb-0">Define the level ladder and the XP required to advance.</p>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 seed-actions">
                     <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
                         {% csrf_token %}
                         <input type="hidden" name="seed_action" value="levels">
@@ -93,11 +56,35 @@
                 </div>
             </div>
 
-            <section class="hub-summary-grid mb-4">
-                <div class="hub-summary-card"><div class="hub-summary-icon"><i class="fas fa-medal"></i></div><div class="hub-summary-copy"><h3>{{ levels|length }}</h3><p>Total levels</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon alt"><i class="fas fa-arrow-up"></i></div><div class="hub-summary-copy"><h3>{{ levels.last.min_xp|default:0 }}</h3><p>Top XP requirement</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon success"><i class="fas fa-layer-group"></i></div><div class="hub-summary-copy"><h3>{{ levels.first.order|default:0 }}</h3><p>Starting order</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon warning"><i class="fas fa-shield-alt"></i></div><div class="hub-summary-copy"><h3>Badge-ready</h3><p>Visual progression</p></div></div>
+            <section class="stats-grid">
+                <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-medal"></i></span>
+                        <span class="gk-stat-label">Total levels</span>
+                    </div>
+                    <div class="gk-stat-value">{{ levels|length }}</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-arrow-up"></i></span>
+                        <span class="gk-stat-label">Top XP requirement</span>
+                    </div>
+                    <div class="gk-stat-value">{{ levels.last.min_xp|default:0 }}</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-layer-group"></i></span>
+                        <span class="gk-stat-label">Starting order</span>
+                    </div>
+                    <div class="gk-stat-value">{{ levels.first.order|default:0 }}</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="gk-stat-label">Visual progression</span>
+                    </div>
+                    <div class="gk-stat-value">Badge-ready</div>
+                </div>
             </section>
 
             <section class="admin-card hub-section hub-table-shell">
@@ -107,11 +94,16 @@
                         <tbody>
                             {% for level in levels %}
                             <tr>
-                                <td>{% if level.badge_image %}<img src="{{ level.badge_image.url }}" alt="{{ level.name }}" class="hub-avatar">{% else %}<span class="hub-summary-icon" style="width:40px;height:40px;"><i class="fas fa-medal"></i></span>{% endif %}</td>
+                                <td>{% if level.badge_image %}<img src="{{ level.badge_image.url }}" alt="{{ level.name }}" class="hub-avatar">{% else %}<span class="table-icon-fallback"><i class="fas fa-medal"></i></span>{% endif %}</td>
                                 <td>{{ level.name }}</td>
                                 <td>{{ level.order }}</td>
                                 <td>{{ level.min_xp }}</td>
-                                <td><span class="status-badge" style="background: {{ level.color_hex }}; color: #111;">{{ level.color_hex }}</span></td>
+                                <td>
+                                    <span class="level-color-badge">
+                                        <span class="level-color-swatch" style="--swatch-color: {{ level.color_hex }};"></span>
+                                        {{ level.color_hex }}
+                                    </span>
+                                </td>
                                 <td><button class="btn-link" onclick="editLevel('{{ level.id }}', '{{ level.name|escapejs }}', {{ level.min_xp }}, {{ level.order }}, '{{ level.color_hex|escapejs }}')"><i class="fas fa-pen me-1"></i> Edit</button></td>
                             </tr>
                             {% empty %}
@@ -127,7 +119,7 @@
         <div class="tab-pane fade" id="achievements-pane" role="tabpanel" aria-labelledby="achievements-tab">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <p class="text-muted mb-0">Define progression rewards and unlock conditions.</p>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 seed-actions">
                     <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
                         {% csrf_token %}
                         <input type="hidden" name="seed_action" value="achievements">
@@ -144,11 +136,35 @@
                 </div>
             </div>
 
-            <section class="hub-summary-grid mb-4">
-                <div class="hub-summary-card"><div class="hub-summary-icon"><i class="fas fa-award"></i></div><div class="hub-summary-copy"><h3>{{ achievements|length }}</h3><p>Total achievements</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon alt"><i class="fas fa-key"></i></div><div class="hub-summary-copy"><h3>Rules Engine</h3><p>Metric-driven unlocks</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon success"><i class="fas fa-badge-check"></i></div><div class="hub-summary-copy"><h3>Live</h3><p>Available rewards</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon warning"><i class="fas fa-star"></i></div><div class="hub-summary-copy"><h3>Tiered</h3><p>Category progression</p></div></div>
+            <section class="stats-grid">
+                <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-award"></i></span>
+                        <span class="gk-stat-label">Total achievements</span>
+                    </div>
+                    <div class="gk-stat-value">{{ achievements|length }}</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-key"></i></span>
+                        <span class="gk-stat-label">Metric-driven unlocks</span>
+                    </div>
+                    <div class="gk-stat-value">Rules Engine</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-badge-check"></i></span>
+                        <span class="gk-stat-label">Available rewards</span>
+                    </div>
+                    <div class="gk-stat-value">Live</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-star"></i></span>
+                        <span class="gk-stat-label">Category progression</span>
+                    </div>
+                    <div class="gk-stat-value">Tiered</div>
+                </div>
             </section>
 
             <section class="admin-card hub-section hub-table-shell">
@@ -169,15 +185,17 @@
                         <tbody>
                             {% for achievement in achievements %}
                             <tr>
-                                <td>{% if achievement.badge_image %}<img src="{{ achievement.badge_image.url }}" alt="{{ achievement.name }}" class="hub-avatar">{% else %}<span class="hub-summary-icon" style="width:40px;height:40px;"><i class="fas fa-award"></i></span>{% endif %}</td>
+                                <td>{% if achievement.badge_image %}<img src="{{ achievement.badge_image.url }}" alt="{{ achievement.name }}" class="hub-avatar">{% else %}<span class="table-icon-fallback"><i class="fas fa-award"></i></span>{% endif %}</td>
                                 <td><p class="hub-cell-title m-0">{{ achievement.name }}</p></td>
                                 <td>{{ achievement.get_category_display }}</td>
                                 <td><span class="status-badge success">{{ achievement.xp_reward }} XP</span></td>
-                                <td><code>{{ achievement.metric_key }}</code> >= {{ achievement.target_value }}</td>
-                                <td>{{ achievement.description|truncatechars:80 }}</td>
+                                <td><span class="rule-pill"><code>{{ achievement.metric_key }}</code> &ge; {{ achievement.target_value }}</span></td>
+                                <td><span class="achievement-desc-cell">{{ achievement.description|truncatechars:80 }}</span></td>
                                 <td>
-                                    {% if achievement.is_active %}<span class="status-badge success">Active</span>{% else %}<span class="status-badge warning">Inactive</span>{% endif %}
-                                    {% if achievement.is_hidden %}<span class="status-badge ms-1">Hidden</span>{% endif %}
+                                    <span class="achievement-status-cell">
+                                        {% if achievement.is_active %}<span class="status-badge success">Active</span>{% else %}<span class="status-badge warning">Inactive</span>{% endif %}
+                                        {% if achievement.is_hidden %}<span class="status-badge neutral">Hidden</span>{% endif %}
+                                    </span>
                                 </td>
                                 <td><button class="btn-link" onclick="editAchievement('{{ achievement.id }}', '{{ achievement.name|escapejs }}', '{{ achievement.description|escapejs }}', '{{ achievement.category }}', '{{ achievement.metric_key|default_if_none:''|escapejs }}', {{ achievement.target_value }}, {{ achievement.xp_reward }}, {{ achievement.is_active|yesno:'true,false' }}, {{ achievement.is_hidden|yesno:'true,false' }})"><i class="fas fa-pen me-1"></i> Edit</button></td>
                             </tr>
@@ -194,7 +212,7 @@
         <div class="tab-pane fade" id="stats-pane" role="tabpanel" aria-labelledby="stats-tab">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <p class="text-muted mb-0">Monitor the counters used by the progression rules engine.</p>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 seed-actions">
                     <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
                         {% csrf_token %}
                         <input type="hidden" name="seed_action" value="levels">
@@ -213,29 +231,53 @@
                 </div>
             </div>
 
-            <section class="hub-summary-grid mb-4">
-                <div class="hub-summary-card"><div class="hub-summary-icon"><i class="fas fa-users"></i></div><div class="hub-summary-copy"><h3>{{ total_gamers_with_stats }}</h3><p>Gamers tracked</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon alt"><i class="fas fa-database"></i></div><div class="hub-summary-copy"><h3>Live</h3><p>Rule source data</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon success"><i class="fas fa-bolt"></i></div><div class="hub-summary-copy"><h3>Optimized</h3><p>No heavy count queries</p></div></div>
-                <div class="hub-summary-card"><div class="hub-summary-icon warning"><i class="fas fa-shield-alt"></i></div><div class="hub-summary-copy"><h3>Trusted</h3><p>Backed by DB records</p></div></div>
+            <section class="stats-grid">
+                <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-users"></i></span>
+                        <span class="gk-stat-label">Gamers tracked</span>
+                    </div>
+                    <div class="gk-stat-value">{{ total_gamers_with_stats }}</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-database"></i></span>
+                        <span class="gk-stat-label">Rule source data</span>
+                    </div>
+                    <div class="gk-stat-value">Live</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-bolt"></i></span>
+                        <span class="gk-stat-label">No heavy count queries</span>
+                    </div>
+                    <div class="gk-stat-value">Optimized</div>
+                </div>
+                <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
+                    <div class="gk-stat-card-header">
+                        <span class="gk-stat-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="gk-stat-label">Backed by DB records</span>
+                    </div>
+                    <div class="gk-stat-value">Trusted</div>
+                </div>
             </section>
 
             <section class="admin-card hub-section mb-4">
-                <form method="GET" class="row g-2 align-items-end">
-                    <div class="col-md-8">
-                        <label class="form-label">Search Gamer</label>
-                        <input type="text" class="form-control" name="q" value="{{ query }}" placeholder="Username, name, or email">
+                <form method="GET" class="search-toolbar">
+                    <div class="search-field">
+                        <label>Search Gamer</label>
+                        <input type="text" name="q" value="{{ query }}" placeholder="Username, name, or email">
                     </div>
-                    <div class="col-md-4 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary w-100">Search</button>
-                        <a href="{% url 'admin_panel:progression_hub' %}" class="btn btn-outline-secondary w-100">Reset</a>
+                    <div class="search-actions">
+                        <button type="submit" class="btn-search-submit">Search</button>
+                        <a href="{% url 'admin_panel:progression_hub' %}" class="btn-search-reset">Reset</a>
                     </div>
                 </form>
             </section>
 
             <section class="admin-card hub-section hub-table-shell">
-                <div class="hub-table-wrap">
-                    <table class="hub-data-table">
+                <div class="hub-table-wrap stats-table-wrap">
+                    <table class="hub-data-table stats-table">
                         <thead>
                             <tr>
                                 <th>Gamer</th>
@@ -258,8 +300,8 @@
                             {% for row in stats %}
                             <tr>
                                 <td>
-                                    <strong>{{ row.gamer.custom_username|default:row.gamer.get_full_name }}</strong><br>
-                                    <small class="text-muted">{{ row.gamer.email }}</small>
+                                    <span class="gamer-cell-name">{{ row.gamer.custom_username|default:row.gamer.get_full_name }}</span>
+                                    <span class="gamer-cell-email">{{ row.gamer.email }}</span>
                                 </td>
                                 <td>{{ row.communities_joined }}</td>
                                 <td>{{ row.comments_made }}</td>
@@ -274,7 +316,7 @@
                                 <td>{{ row.login_streak_days }}</td>
                                 <td>{{ row.updated_at|date:'M d, Y H:i' }}</td>
                                 <td>
-                                    <form method="POST" action="{% url 'admin_panel:progression_stats_action' row.id %}" class="d-flex flex-column gap-2">
+                                    <form method="POST" action="{% url 'admin_panel:progression_stats_action' row.id %}" class="quick-actions-form">
                                         {% csrf_token %}
                                         <input type="hidden" name="q" value="{{ query }}">
                                         <input type="hidden" name="page" value="{{ stats.number }}">
@@ -293,10 +335,10 @@
                                             <option value="login_streak_days">login_streak_days</option>
                                         </select>
                                         <input type="number" name="amount" class="form-control form-control-sm" value="1" min="1">
-                                        <div class="d-flex gap-1">
-                                            <button name="operation" value="increment" type="submit" class="btn btn-sm btn-outline-success">+ Add</button>
-                                            <button name="operation" value="decrement" type="submit" class="btn btn-sm btn-outline-warning">- Sub</button>
-                                            <button name="operation" value="reset" type="submit" class="btn btn-sm btn-outline-danger">Reset</button>
+                                        <div class="qa-buttons">
+                                            <button name="operation" value="increment" type="submit" class="btn btn-outline-success">+</button>
+                                            <button name="operation" value="decrement" type="submit" class="btn btn-outline-warning">−</button>
+                                            <button name="operation" value="reset" type="submit" class="btn btn-outline-danger">Reset</button>
                                         </div>
                                     </form>
                                 </td>
@@ -311,14 +353,14 @@
                 </div>
 
                 {% if stats.paginator.num_pages > 1 %}
-                <div class="mt-3 d-flex justify-content-between align-items-center">
-                    <div class="text-muted small">Page {{ stats.number }} of {{ stats.paginator.num_pages }}</div>
-                    <div class="d-flex gap-2">
+                <div class="pagination-wrapper">
+                    <span class="page-info">Page {{ stats.number }} of {{ stats.paginator.num_pages }}</span>
+                    <div class="page-actions">
                         {% if stats.has_previous %}
-                            <a class="btn btn-sm btn-outline-secondary" href="?q={{ query|urlencode }}&page={{ stats.previous_page_number }}">Previous</a>
+                            <a class="btn-page" href="?q={{ query|urlencode }}&page={{ stats.previous_page_number }}">&laquo; Previous</a>
                         {% endif %}
                         {% if stats.has_next %}
-                            <a class="btn btn-sm btn-outline-secondary" href="?q={{ query|urlencode }}&page={{ stats.next_page_number }}">Next</a>
+                            <a class="btn-page" href="?q={{ query|urlencode }}&page={{ stats.next_page_number }}">Next &raquo;</a>
                         {% endif %}
                     </div>
                 </div>
@@ -439,54 +481,10 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
-<script>
-function resetLevelForm() {
-    document.getElementById('level_id').value = '';
-    document.getElementById('level_name').value = '';
-    document.getElementById('level_points').value = '';
-    document.getElementById('level_order').value = '';
-    document.getElementById('level_color').value = '#35A8F0';
-    document.getElementById('levelModalLabel').innerText = 'Add New Level';
-}
-
-function editLevel(id, name, points, order, colorHex) {
-    document.getElementById('level_id').value = id;
-    document.getElementById('level_name').value = name;
-    document.getElementById('level_points').value = points;
-    document.getElementById('level_order').value = order;
-    document.getElementById('level_color').value = colorHex || '#35A8F0';
-    document.getElementById('levelModalLabel').innerText = 'Edit Level';
-    var myModal = new bootstrap.Modal(document.getElementById('levelModal'));
-    myModal.show();
-}
-
-function resetAchievementForm() {
-    document.getElementById('achievement_id').value = '';
-    document.getElementById('achievement_name').value = '';
-    document.getElementById('achievement_desc').value = '';
-    document.getElementById('achievement_category').selectedIndex = 0;
-    document.getElementById('achievement_key').value = '';
-    document.getElementById('achievement_target').value = '1';
-    document.getElementById('achievement_xp').value = '0';
-    document.getElementById('achievement_active').checked = true;
-    document.getElementById('achievement_hidden').checked = false;
-    document.getElementById('achievementModalLabel').innerText = 'Add Achievement';
-}
-
-function editAchievement(id, name, desc, category, key, target, xp, isActive, isHidden) {
-    document.getElementById('achievement_id').value = id;
-    document.getElementById('achievement_name').value = name;
-    document.getElementById('achievement_desc').value = desc;
-    document.getElementById('achievement_category').value = category;
-    document.getElementById('achievement_key').value = key;
-    document.getElementById('achievement_target').value = target;
-    document.getElementById('achievement_xp').value = xp;
-    document.getElementById('achievement_active').checked = !!isActive;
-    document.getElementById('achievement_hidden').checked = !!isHidden;
-    document.getElementById('achievementModalLabel').innerText = 'Edit Achievement';
-    var myModal = new bootstrap.Modal(document.getElementById('achievementModal'));
-    myModal.show();
-}
-</script>
+{% block extra_scripts %}
+<script src="{% static 'admin_panel/js/progression/progression_common.js' %}"></script>
+<script src="{% static 'admin_panel/js/progression/admin_level_list.js' %}"></script>
+<script src="{% static 'admin_panel/js/progression/admin_achievement_list.js' %}"></script>
 {% endblock %}

@@ -1,0 +1,321 @@
+/* ==========================================================================
+   progression_common.css
+   Shared styles for the Progression Hub, Levels, Achievements, and
+   Player Progression Stats admin pages. Load this BEFORE each page's
+   own stylesheet.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------------
+   KPI Summary Cards
+   Replaces `.hub-summary-grid` / `.hub-summary-card`, which were used
+   on every one of these pages but never actually defined anywhere in
+   the codebase (same bug found and fixed on the Competitions page) —
+   the cards were rendering as unstyled stacked blocks. Rebuilt on the
+   gk-stat-card system shared with Users / Staff / Audit / Competitions.
+   ------------------------------------------------------------------ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.gk-stat-card {
+    position: relative;
+    background: var(--bg-card, #ffffff);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #eef0f4);
+    border-left: 4px solid var(--card-accent, var(--primary, #009ef7));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    max-width: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gk-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, 0.07));
+}
+
+.gk-stat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.gk-stat-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    background: var(--card-tint, rgba(0, 158, 247, 0.12));
+    color: var(--card-accent, var(--primary, #009ef7));
+}
+
+.gk-stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-dark, #181c32);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gk-stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted, #a1a5b7);
+    font-weight: 500;
+}
+
+@media (max-width: 992px) {
+    .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 576px) {
+    .stats-grid { grid-template-columns: minmax(0, 1fr); }
+    .gk-stat-card { padding: 14px 16px; }
+}
+
+/* ------------------------------------------------------------------
+   Seed Action Buttons — the "Run seed_x" / "Run All Seeds" button
+   rows repeated across all four pages. Scoped to `.seed-actions` so
+   it only touches buttons in that row, not Bootstrap's `.btn-*`
+   classes elsewhere in the app.
+   ------------------------------------------------------------------ */
+.seed-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.seed-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.seed-actions .btn-outline-primary {
+    background: transparent;
+    border-color: var(--primary, #009ef7);
+    color: var(--primary, #009ef7);
+}
+
+.seed-actions .btn-outline-primary:hover {
+    background: var(--primary, #009ef7);
+    color: #ffffff;
+}
+
+.seed-actions .btn-outline-secondary {
+    background: transparent;
+    border-color: var(--border-color, #d8dce3);
+    color: var(--text-muted, #5e6278);
+}
+
+.seed-actions .btn-outline-secondary:hover {
+    background: var(--bg-secondary, #f5f8fa);
+    color: var(--text-dark, #181c32);
+}
+
+.seed-actions .btn-primary {
+    background: var(--primary, #009ef7);
+    border-color: var(--primary, #009ef7);
+    color: #ffffff;
+}
+
+.seed-actions .btn-primary:hover { opacity: 0.9; }
+
+/* ------------------------------------------------------------------
+   Table Icon Fallback — the 40x40 rounded placeholder icon shown in
+   the Badge column when a level/achievement has no uploaded image.
+   ------------------------------------------------------------------ */
+.table-icon-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary, #f5f8fa);
+    color: var(--text-muted, #a1a5b7);
+    font-size: 1rem;
+}
+
+/* ------------------------------------------------------------------
+   Status Badge Extras
+   ------------------------------------------------------------------ */
+.status-badge.neutral {
+    background: var(--bg-secondary, #f5f8fa);
+    color: var(--text-muted, #5e6278);
+}
+
+/* ------------------------------------------------------------------
+   Section Sub-header — the small "description + action buttons" row
+   that sits above each table/section across these pages.
+   ------------------------------------------------------------------ */
+.section-subheader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.section-subheader p {
+    margin: 0;
+    color: var(--text-muted, #7e8299);
+    font-size: 0.88rem;
+}
+
+/* ------------------------------------------------------------------
+   Search / Filter Bar (Player Progression search form)
+   ------------------------------------------------------------------ */
+.search-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.search-toolbar .search-field {
+    flex: 1 1 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.search-toolbar label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted, #5e6278);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.search-toolbar input[type="text"] {
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #eef0f4);
+    background: var(--bg-secondary, #f5f8fa);
+    font-size: 0.88rem;
+    color: var(--text-dark, #181c32);
+}
+
+.search-toolbar input[type="text"]:focus {
+    outline: none;
+    background: var(--bg-card, #ffffff);
+    border-color: var(--primary, #009ef7);
+    box-shadow: 0 0 0 3px rgba(0, 158, 247, 0.15);
+}
+
+.search-toolbar .search-actions {
+    display: flex;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.search-toolbar .btn-search-submit {
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary, #009ef7);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+.search-toolbar .btn-search-submit:hover { opacity: 0.9; }
+
+.search-toolbar .btn-search-reset {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #d8dce3);
+    background: transparent;
+    color: var(--text-muted, #5e6278);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.search-toolbar .btn-search-reset:hover {
+    background: var(--bg-secondary, #f5f8fa);
+    color: var(--text-dark, #181c32);
+}
+
+@media (max-width: 640px) {
+    .search-toolbar { flex-direction: column; align-items: stretch; }
+    .search-toolbar .search-actions { width: 100%; }
+    .search-toolbar .btn-search-submit,
+    .search-toolbar .btn-search-reset { flex: 1; text-align: center; }
+}
+
+/* ------------------------------------------------------------------
+   Pagination — consistent with the pattern used on Users/Audit pages.
+   ------------------------------------------------------------------ */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 16px;
+}
+
+.pagination-wrapper .page-info {
+    color: var(--text-muted, #7e8299);
+    font-size: 0.85rem;
+}
+
+.pagination-wrapper .page-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-page {
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: var(--bg-secondary, #f5f8fa);
+    color: var(--text-muted, #5e6278);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-page:hover {
+    background: var(--primary, #009ef7);
+    color: #ffffff;
+}

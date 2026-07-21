@@ -1,0 +1,58 @@
+/* ==========================================================================
+   admin_progression_hub.css
+   Page-specific styles for the Progression Hub (Levels / Achievements /
+   Player Progression tabs). Extends progression_common.css.
+   ========================================================================== */
+
+.progression-tabs .nav-tabs {
+    border-bottom: 2px solid var(--border-color, #eef0f4);
+    gap: 4px;
+}
+
+.progression-tabs .nav-tabs .nav-link {
+    border: none;
+    color: var(--text-muted, #5e6278);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 12px 20px;
+    position: relative;
+    background: transparent;
+    border-radius: 8px 8px 0 0;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.progression-tabs .nav-tabs .nav-link:hover {
+    color: var(--primary, #009ef7);
+    background: var(--bg-secondary, #f5f8fa);
+    border: none;
+}
+
+.progression-tabs .nav-tabs .nav-link.active {
+    color: var(--primary, #009ef7);
+    background: transparent;
+    border: none;
+}
+
+.progression-tabs .nav-tabs .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary, #009ef7);
+    border-radius: 3px 3px 0 0;
+}
+
+.progression-tabs .tab-content {
+    padding-top: 20px;
+}
+
+.progression-tabs .tab-pane {
+    animation: progressionFadeIn 0.3s ease-in-out;
+}
+
+@keyframes progressionFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}

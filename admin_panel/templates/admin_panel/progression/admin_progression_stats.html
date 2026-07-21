@@ -3,6 +3,11 @@
 
 {% block title %}Gamer Stats | Admin Panel{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/progression_common.css' %}">
+<link rel="stylesheet" href="{% static 'admin_panel/css/progression/admin_progression_stats.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="admin-hub-shell">
     <div class="admin-page-header flex-between mb-4">
@@ -12,15 +17,39 @@
         </div>
     </div>
 
-    <section class="hub-summary-grid mb-4">
-        <div class="hub-summary-card"><div class="hub-summary-icon"><i class="fas fa-users"></i></div><div class="hub-summary-copy"><h3>{{ total_gamers_with_stats }}</h3><p>Gamers tracked</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon alt"><i class="fas fa-database"></i></div><div class="hub-summary-copy"><h3>Live</h3><p>Rule source data</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon success"><i class="fas fa-bolt"></i></div><div class="hub-summary-copy"><h3>Optimized</h3><p>No heavy count queries</p></div></div>
-        <div class="hub-summary-card"><div class="hub-summary-icon warning"><i class="fas fa-shield-alt"></i></div><div class="hub-summary-copy"><h3>Trusted</h3><p>Backed by DB records</p></div></div>
+    <section class="stats-grid">
+        <div class="gk-stat-card" style="--card-accent: var(--primary, #009ef7); --card-tint: rgba(0, 158, 247, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-users"></i></span>
+                <span class="gk-stat-label">Gamers tracked</span>
+            </div>
+            <div class="gk-stat-value">{{ total_gamers_with_stats }}</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--accent-violet, #7239ea); --card-tint: rgba(114, 57, 234, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-database"></i></span>
+                <span class="gk-stat-label">Rule source data</span>
+            </div>
+            <div class="gk-stat-value">Live</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--success, #50cd89); --card-tint: rgba(80, 205, 137, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-bolt"></i></span>
+                <span class="gk-stat-label">No heavy count queries</span>
+            </div>
+            <div class="gk-stat-value">Optimized</div>
+        </div>
+        <div class="gk-stat-card" style="--card-accent: var(--warning, #f5a623); --card-tint: rgba(245, 166, 35, 0.12);">
+            <div class="gk-stat-card-header">
+                <span class="gk-stat-icon"><i class="fas fa-shield-alt"></i></span>
+                <span class="gk-stat-label">Backed by DB records</span>
+            </div>
+            <div class="gk-stat-value">Trusted</div>
+        </div>
     </section>
 
     <section class="admin-card hub-section mb-4">
-        <div class="d-flex flex-wrap gap-2 mb-3">
+        <div class="d-flex flex-wrap gap-2 mb-3 seed-actions">
             <form method="POST" action="{% url 'admin_panel:progression_seed' %}">
                 {% csrf_token %}
                 <input type="hidden" name="seed_action" value="levels">
@@ -38,21 +67,21 @@
             </form>
         </div>
 
-        <form method="GET" class="row g-2 align-items-end">
-            <div class="col-md-8">
-                <label class="form-label">Search Gamer</label>
-                <input type="text" class="form-control" name="q" value="{{ query }}" placeholder="Username, name, or email">
+        <form method="GET" class="search-toolbar">
+            <div class="search-field">
+                <label>Search Gamer</label>
+                <input type="text" name="q" value="{{ query }}" placeholder="Username, name, or email">
             </div>
-            <div class="col-md-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100">Search</button>
-                <a href="{% url 'admin_panel:progression_stats' %}" class="btn btn-outline-secondary w-100">Reset</a>
+            <div class="search-actions">
+                <button type="submit" class="btn-search-submit">Search</button>
+                <a href="{% url 'admin_panel:progression_stats' %}" class="btn-search-reset">Reset</a>
             </div>
         </form>
     </section>
 
     <section class="admin-card hub-section hub-table-shell">
-        <div class="hub-table-wrap">
-            <table class="hub-data-table">
+        <div class="hub-table-wrap stats-table-wrap">
+            <table class="hub-data-table stats-table">
                 <thead>
                     <tr>
                         <th>Gamer</th>
@@ -75,8 +104,8 @@
                     {% for row in stats %}
                     <tr>
                         <td>
-                            <strong>{{ row.gamer.custom_username|default:row.gamer.get_full_name }}</strong><br>
-                            <small class="text-muted">{{ row.gamer.email }}</small>
+                            <span class="gamer-cell-name">{{ row.gamer.custom_username|default:row.gamer.get_full_name }}</span>
+                            <span class="gamer-cell-email">{{ row.gamer.email }}</span>
                         </td>
                         <td>{{ row.communities_joined }}</td>
                         <td>{{ row.comments_made }}</td>
@@ -91,7 +120,7 @@
                         <td>{{ row.login_streak_days }}</td>
                         <td>{{ row.updated_at|date:'M d, Y H:i' }}</td>
                         <td>
-                            <form method="POST" action="{% url 'admin_panel:progression_stats_action' row.id %}" class="d-flex flex-column gap-2">
+                            <form method="POST" action="{% url 'admin_panel:progression_stats_action' row.id %}" class="quick-actions-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="q" value="{{ query }}">
                                 <input type="hidden" name="page" value="{{ stats.number }}">
@@ -110,10 +139,10 @@
                                     <option value="login_streak_days">login_streak_days</option>
                                 </select>
                                 <input type="number" name="amount" class="form-control form-control-sm" value="1" min="1">
-                                <div class="d-flex gap-1">
-                                    <button name="operation" value="increment" type="submit" class="btn btn-sm btn-outline-success">+ Add</button>
-                                    <button name="operation" value="decrement" type="submit" class="btn btn-sm btn-outline-warning">- Sub</button>
-                                    <button name="operation" value="reset" type="submit" class="btn btn-sm btn-outline-danger">Reset</button>
+                                <div class="qa-buttons">
+                                    <button name="operation" value="increment" type="submit" class="btn btn-outline-success">+</button>
+                                    <button name="operation" value="decrement" type="submit" class="btn btn-outline-warning">−</button>
+                                    <button name="operation" value="reset" type="submit" class="btn btn-outline-danger">Reset</button>
                                 </div>
                             </form>
                         </td>
@@ -128,14 +157,14 @@
         </div>
 
         {% if stats.paginator.num_pages > 1 %}
-        <div class="mt-3 d-flex justify-content-between align-items-center">
-            <div class="text-muted small">Page {{ stats.number }} of {{ stats.paginator.num_pages }}</div>
-            <div class="d-flex gap-2">
+        <div class="pagination-wrapper">
+            <span class="page-info">Page {{ stats.number }} of {{ stats.paginator.num_pages }}</span>
+            <div class="page-actions">
                 {% if stats.has_previous %}
-                    <a class="btn btn-sm btn-outline-secondary" href="?q={{ query|urlencode }}&page={{ stats.previous_page_number }}">Previous</a>
+                    <a class="btn-page" href="?q={{ query|urlencode }}&page={{ stats.previous_page_number }}">&laquo; Previous</a>
                 {% endif %}
                 {% if stats.has_next %}
-                    <a class="btn btn-sm btn-outline-secondary" href="?q={{ query|urlencode }}&page={{ stats.next_page_number }}">Next</a>
+                    <a class="btn-page" href="?q={{ query|urlencode }}&page={{ stats.next_page_number }}">Next &raquo;</a>
                 {% endif %}
             </div>
         </div>

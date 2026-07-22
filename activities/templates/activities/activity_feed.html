@@ -1,6 +1,6 @@
 {% comment %}Reusable activity feed include. Expects one of: `activity_feed`, `recent_activity_feed`, or `recent_activities` in context.{% endcomment %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'accounts/css/common/../../static/activities/css/activity_feed.css' %}">
+<link rel="stylesheet" href="{% static 'activities/css/activity_feed.css' %}">
 {% with feed=activity_feed|default:recent_activity_feed %}
 <div class="activity-feed-component">
     {% if feed %}

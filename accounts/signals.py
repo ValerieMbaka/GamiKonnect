@@ -46,7 +46,7 @@ def on_user_profile_completed(sender, instance, created, update_fields, **kwargs
         # Create recipient for this user
         if not NotificationRecipient.objects.filter(
             notification=notification,
-            user=instance
+            gamer=instance
         ).exists():
             send_notification_to_users(notification, [instance], send_email=True)
         

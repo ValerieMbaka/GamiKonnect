@@ -148,7 +148,7 @@ class EmailManager:
             'gamer_name': username,
             'dashboard_link': f"{site_url}/accounts/gamer-dashboard/"
         }
-        return cls._send_html_email(subject, 'gamers/profile_completion_email.html', context, [email])
+        return cls._send_html_email(subject, 'gamers/profile/profile_completion_email.html', context, [email])
     
     # Arena Owner emails
     @classmethod
@@ -182,10 +182,10 @@ class EmailManager:
         
         if approved:
             subject = f"Arena Approved - {settings.PROJECT_NAME}"
-            return cls._send_html_email(subject, 'shop_owners/shop_approved.html', context, owners_emails)
+            return cls._send_html_email(subject, 'shop_owners/shops/shop_approved.html', context, owners_emails)
         else:
             subject = f"Arena Application Update - {settings.PROJECT_NAME}"
-            return cls._send_html_email(subject, 'shop_owners/shop_rejected.html', context, owners_emails)
+            return cls._send_html_email(subject, 'shop_owners/shops/shop_rejected.html', context, owners_emails)
     
     # Admin emails
     @classmethod
@@ -210,7 +210,7 @@ class EmailManager:
             'quick_approve_url': quick_approve_url,
             'quick_reject_url': quick_reject_url
         }
-        return cls._send_html_email(subject, 'admin/admin_new_shop.html', context, [admin_email])
+        return cls._send_html_email(subject, 'admin/shops/admin_new_shop.html', context, [admin_email])
     
     @classmethod
     def send_admin_account_deletion(cls, email, username=None, account_type=None):
@@ -223,7 +223,7 @@ class EmailManager:
             'deletion_date': django.utils.timezone.now(),
             'site_url': cls._get_site_url()
         }
-        return cls._send_html_email(subject, 'admin/admin_account_deletion.html', context, [admin_email])
+        return cls._send_html_email(subject, 'admin/accounts/admin_account_deletion.html', context, [admin_email])
     
     @classmethod
     def send_competition_result_notification(cls, competition_result):
@@ -239,7 +239,7 @@ class EmailManager:
             'summary': competition_result.results_summary,
             'admin_dashboard_url': f"{site_url}/admin/"
         }
-        return cls._send_html_email(subject, 'admin/admin_competition_result.html', context, [admin_email])
+        return cls._send_html_email(subject, 'admin/competitions/admin_competition_results.html', context, [admin_email])
     
     
 

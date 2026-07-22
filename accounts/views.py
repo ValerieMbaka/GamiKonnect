@@ -777,16 +777,7 @@ def delete_account(request):
     return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 
-# Gamer Views
-# -----------------------------------------------------------------------
-# Update the gamer_dashboard view in accounts/views.py
-# Add these imports at the top of the file if not already present:
-# -----------------------------------------------------------------------
 
-
-# -----------------------------------------------------------------------
-# Replace the existing gamer_dashboard view with this updated version:
-# -----------------------------------------------------------------------
 
 @require_gamer_role
 def gamer_dashboard(request):

@@ -150,9 +150,9 @@ def error_404(request, exception):
     return render(request, 'core/errors/404.html', context, status=404)
 
 
-# def error_500(request):
-#     context = base_site_context()
-#     return render(request, 'core/errors/500.html', context, status=500)
+def error_500(request):
+    context = base_site_context()
+    return render(request, 'core/errors/500.html', context, status=500)
 
 
 @require_POST

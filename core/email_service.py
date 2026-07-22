@@ -37,21 +37,21 @@ class EmailManager:
             
             # Check if template_path already contains the prefix or should be handled specially
             if template_path.startswith('notifications/'):
-                 # Try directly first, then with the fallback
-                 full_template_path = template_path
+                # Try directly first, then with the fallback
+                full_template_path = template_path
             else:
-                 full_template_path = f'accounts/email_templates/{template_path}'
-
+                full_template_path = f'accounts/email_templates/{template_path}'
+            
             # Render the raw HTML
             try:
                 html_message = render_to_string(full_template_path, context)
             except TemplateDoesNotExist:
                 # If notifications path failed, try adding the accounts prefix just in case
                 if not full_template_path.startswith('accounts/'):
-                     html_message = render_to_string(f'accounts/email_templates/{template_path}', context)
+                    html_message = render_to_string(f'accounts/email_templates/{template_path}', context)
                 else:
-                     raise
-
+                    raise
+            
             # Use premailer to automatically convert <style> tags to inline CSS
             html_message = transform(html_message)
             
@@ -239,14 +239,13 @@ class EmailManager:
             'summary': competition_result.results_summary,
             'admin_dashboard_url': f"{site_url}/admin/"
         }
-        return cls._send_html_email(subject, 'admin/competitions/admin_competition_results.html', context, [admin_email])
+        return cls._send_html_email(subject, 'admin/competitions/admin_competition_results.html', context,
+                                    [admin_email])
     
-    
-
-# -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Competition Emails — Arena Owner
     # -----------------------------------------------------------------------
-
+    
     @classmethod
     def send_competition_submission_confirmation(cls, shop_owner, competition, is_resubmission=False):
         """Confirms to arena owner that their competition has been submitted/resubmitted for review."""
@@ -264,7 +263,7 @@ class EmailManager:
             context,
             [shop_owner.email]
         )
-
+    
     @classmethod
     def send_competition_approved(cls, competition):
         """Notifies arena owner that their competition has been approved and moved into registration."""
@@ -283,7 +282,7 @@ class EmailManager:
             context,
             recipients
         )
-
+    
     @classmethod
     def send_competition_rejected(cls, competition):
         """Notifies arena owner that their competition has been rejected, with the rejection reason."""
@@ -303,7 +302,7 @@ class EmailManager:
             context,
             recipients
         )
-
+    
     @classmethod
     def send_competition_registration_opened(cls, competition):
         """Notifies arena owner that registration for their competition is now open."""
@@ -322,7 +321,7 @@ class EmailManager:
             context,
             recipients
         )
-
+    
     @classmethod
     def send_competition_registration_closed(cls, competition, participant_count):
         """Notifies arena owner that registration has closed, with final participant count."""
@@ -342,7 +341,7 @@ class EmailManager:
             context,
             recipients
         )
-
+    
     @classmethod
     def send_competition_checkins_confirmed(cls, competition):
         """Notifies arena owner that admin has confirmed the check-in list and results can now be submitted."""
@@ -361,7 +360,7 @@ class EmailManager:
             context,
             recipients
         )
-
+    
     @classmethod
     def send_competition_results_verified(cls, competition):
         """Notifies arena owner that the admin has verified and published the competition results."""
@@ -380,7 +379,7 @@ class EmailManager:
             context,
             recipients
         )
-
+    
     @classmethod
     def send_competition_ended_prompt(cls, competition):
         """Prompts arena owner to submit check-ins now that the competition end time has passed."""
@@ -399,11 +398,11 @@ class EmailManager:
             context,
             recipients
         )
-
+    
     # -----------------------------------------------------------------------
     # Competition Emails — Gamer
     # -----------------------------------------------------------------------
-
+    
     @classmethod
     def send_competition_registration(cls, gamer, competition, registration):
         """Sends registration confirmation and unique code to gamer."""
@@ -423,7 +422,7 @@ class EmailManager:
             context,
             [gamer.email]
         )
-
+    
     @classmethod
     def send_competition_reminder(cls, gamer, competition, registration):
         """Sends a day-before reminder to gamers with their unique code."""
@@ -442,7 +441,7 @@ class EmailManager:
             context,
             [gamer.email]
         )
-
+    
     @classmethod
     def send_competition_result_to_gamer(cls, gamer, competition, result):
         """Sends competition result and points awarded to individual gamer."""
@@ -462,11 +461,11 @@ class EmailManager:
             context,
             [gamer.email]
         )
-
+    
     # -----------------------------------------------------------------------
     # Competition Emails — Admin
     # -----------------------------------------------------------------------
-
+    
     @classmethod
     def send_competition_submitted(cls, competition):
         """Notifies admin of a new competition submission pending review."""
@@ -484,7 +483,7 @@ class EmailManager:
             context,
             [admin_email]
         )
-
+    
     @classmethod
     def send_competition_resubmitted(cls, competition):
         """Notifies admin that a previously rejected competition has been resubmitted."""
@@ -502,7 +501,7 @@ class EmailManager:
             context,
             [admin_email]
         )
-
+    
     @classmethod
     def send_competition_checkins_submitted(cls, competition, checked_in_count, registered_count):
         """Notifies admin that the arena owner has submitted the check-in list."""
@@ -522,7 +521,7 @@ class EmailManager:
             context,
             [admin_email]
         )
-
+    
     @classmethod
     def send_competition_results_submitted(cls, competition):
         """Notifies admin that results have been submitted and further verification may be needed."""
@@ -539,7 +538,7 @@ class EmailManager:
             context,
             [admin_email]
         )
-
+    
     @classmethod
     def send_competition_results_auto_completed(cls, competition):
         """Notifies admin that a points-based competition has auto-completed and points were allocated."""
@@ -556,7 +555,7 @@ class EmailManager:
             context,
             [admin_email]
         )
-
+    
     @classmethod
     def send_competition_prize_allocations(cls, competition, allocations):
         """Sends admin a summary of prize allocations after verification.
@@ -571,18 +570,19 @@ class EmailManager:
             'allocations': allocations,
             'admin_review_link': f"{site_url}/management/competitions/{competition.slug}/",
         }
-        return cls._send_html_email(subject, 'admin/competitions/admin_competition_prize_allocations.html', context, [admin_email])
-
+        return cls._send_html_email(subject, 'admin/competitions/admin_competition_prize_allocations.html', context,
+                                    [admin_email])
+    
     @classmethod
     def send_competition_announced_to_gamers(cls, competition):
         """Notify eligible gamers by email about a newly deployed competition."""
         from accounts.models import Gamer
-
+        
         site_url = cls._get_site_url()
         eligible = competition.get_eligible_gamers()
         if not eligible.exists():
             return 0
-
+        
         subject = f"New Competition: {competition.name} — {settings.PROJECT_NAME}"
         context = {
             'competition': competition,
@@ -602,7 +602,7 @@ class EmailManager:
             except Exception:
                 logger.exception('Failed to announce competition to %s', gamer.email)
         return sent
-
+    
     @classmethod
     def send_competition_suspended(cls, competition, refund_results=None):
         """Notify shop owner, admin, and registered gamers that a competition was suspended."""
@@ -613,7 +613,7 @@ class EmailManager:
             'refund_results': refund_results or {},
             'suspension_reason': competition.suspension_reason,
         }
-
+        
         recipients = [owner.email for owner in competition.shop.owners.all()]
         if recipients:
             cls._send_html_email(
@@ -622,14 +622,14 @@ class EmailManager:
                 context,
                 recipients,
             )
-
+        
         cls._send_html_email(
             f"Competition Suspended: {competition.name} — {settings.PROJECT_NAME}",
             'admin/competitions/admin_competition_suspended.html',
             context,
             [admin_email],
         )
-
+        
         registrations = competition.registrations.filter(is_cancelled=False).select_related('gamer')
         for registration in registrations:
             cls._send_html_email(

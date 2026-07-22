@@ -306,6 +306,12 @@ PUSHER_CLIENT = pusher.Pusher(
     ssl=True
 )
 
+# Logging
+# By default, Django only sends request-error tracebacks to a console handler
+# when DEBUG=True. Since DEBUG is forced to False on Render (see 'RENDER' in
+# os.environ check above), those tracebacks were being silently dropped instead
+# of reaching stdout, which is why they never showed up in the Render log tail.
+# This config makes them print to stdout unconditionally, so Render captures them.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

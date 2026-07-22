@@ -1,0 +1,136 @@
+/* =========================================
+   Box-sizing reset (scoped to this page's stylesheet)
+   Prevents padding/border from pushing elements past
+   their container width and causing horizontal overflow.
+   ========================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   Table card wrapper
+   ========================================= */
+.table-card {
+    background: var(--bg-card, #ffffff);
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #eef0f4);
+    box-shadow: var(--shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.04));
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* =========================================
+   Admin table
+   ========================================= */
+.admin-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: var(--bg-secondary, #fcfcfc);
+    color: var(--text-muted, #a1a5b7);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color, #eef0f4);
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 14px 18px;
+    font-size: 0.88rem;
+    color: var(--text-primary, #1a1a2e);
+    border-bottom: 1px solid var(--border-color, #eef0f4);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+    background-color: var(--bg-secondary, #fcfcfc);
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: var(--card-tint, rgba(0, 158, 247, 0.12));
+    color: var(--primary, #009ef7);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-action:hover {
+    background: var(--primary, #009ef7);
+    color: #ffffff;
+}
+
+/* =========================================
+   Pagination
+   ========================================= */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-top: 1px solid var(--border-color, #eef0f4);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.page-info {
+    font-size: 0.82rem;
+    color: var(--text-muted, #a1a5b7);
+}
+
+.page-links {
+    display: flex;
+    gap: 8px;
+}
+
+.page-links a {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #eef0f4);
+    color: var(--text-primary, #1a1a2e);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.page-links a:hover {
+    border-color: var(--primary, #009ef7);
+    color: var(--primary, #009ef7);
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+@media (max-width: 576px) {
+    .pagination {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

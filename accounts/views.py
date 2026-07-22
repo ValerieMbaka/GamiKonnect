@@ -52,7 +52,6 @@ from .view_utils import (
 
 logger = logging.getLogger(__name__)
 
-
 REGISTER_EMAIL_WINDOW_SECONDS = 15 * 60
 REGISTER_IP_WINDOW_SECONDS = 15 * 60
 REGISTER_EMAIL_MAX_ATTEMPTS = 1
@@ -83,7 +82,7 @@ def get_client_ip(request):
     forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
     if forwarded_for:
         return forwarded_for.split(',')[0].strip()
-
+    
     return request.META.get('REMOTE_ADDR', 'unknown')
 
 
@@ -91,42 +90,42 @@ def is_rate_limited(action, identifier, max_attempts, window_seconds):
     normalized_identifier = re.sub(r'[^a-z0-9]+', '_', (identifier or '').strip().lower())
     if not normalized_identifier:
         normalized_identifier = 'unknown'
-
+    
     bucket = int(timezone.now().timestamp() // window_seconds)
     cache_key = f'email-rate:{action}:{normalized_identifier}:{bucket}'
-
+    
     current_attempts = cache.get(cache_key, 0)
     if current_attempts >= max_attempts:
         return True
-
+    
     cache.set(cache_key, current_attempts + 1, timeout=window_seconds)
     return False
 
 
 def registration_email_rate_limited(request, email):
     client_ip = get_client_ip(request)
-
+    
     # Stricter IP-based rate limiting for registration attempts
     # Limit to 3 registrations per IP per hour
     if is_rate_limited('register-ip', client_ip, 3, 3600):
         logger.warning(f"Registration IP rate limit exceeded: {client_ip}")
         return True
-
+    
     if is_rate_limited('register-email', email, REGISTER_EMAIL_MAX_ATTEMPTS, REGISTER_EMAIL_WINDOW_SECONDS):
         return True
-
+    
     return False
 
 
 def resend_email_rate_limited(request, email):
     client_ip = get_client_ip(request)
-
+    
     if is_rate_limited('resend-email', email, RESEND_EMAIL_MAX_ATTEMPTS, RESEND_EMAIL_WINDOW_SECONDS):
         return True
-
+    
     if is_rate_limited('resend-ip', client_ip, RESEND_IP_MAX_ATTEMPTS, RESEND_IP_WINDOW_SECONDS):
         return True
-
+    
     return False
 
 
@@ -139,7 +138,7 @@ def get_conflicting_account(pending):
     """Return an account that conflicts with pending email/phone for a different Firebase UID."""
     if not pending:
         return None
-
+    
     return Account.objects.filter(
         models.Q(email__iexact=pending.email) | models.Q(phone=pending.phone)
     ).exclude(uid=pending.uid).first()
@@ -153,7 +152,7 @@ def get_request_payload(request):
             return json.loads(request.body.decode('utf-8') or '{}')
         except json.JSONDecodeError:
             return {}
-
+    
     return request.POST
 
 
@@ -167,12 +166,12 @@ def provision_account_from_pending(pending):
             if existing_gamer:
                 pending.delete()
                 return existing_gamer
-
+            
             existing_shop_owner = ShopOwner.objects.filter(uid=pending.uid).first()
             if existing_shop_owner and pending.role == 'shop_owner':
                 pending.delete()
                 return existing_shop_owner
-
+            
             conflicting_account = get_conflicting_account(pending)
             if conflicting_account:
                 conflict_field = 'phone number' if conflicting_account.phone == pending.phone else 'email'
@@ -180,17 +179,17 @@ def provision_account_from_pending(pending):
                     f"This {conflict_field} is already linked to another account. "
                     "Please use a different one or login with the existing account."
                 )
-
+            
             if pending.role == 'gamer':
                 existing_account = Account.objects.filter(uid=pending.uid).first()
-
+                
                 if existing_account:
                     existing_account.email = pending.email
                     existing_account.first_name = pending.first_name
                     existing_account.last_name = pending.last_name
                     existing_account.phone = pending.phone
                     existing_account.save(update_fields=['email', 'first_name', 'last_name', 'phone'])
-
+                    
                     gamer = Gamer.objects.filter(account_ptr_id=existing_account.id).first()
                     if not gamer:
                         gamer = Gamer(
@@ -303,15 +302,15 @@ def register_submit(request):
             last_name = (request.POST.get('last_name') or '').strip()
             phone = (request.POST.get('phone_number') or '').strip()
             role = 'gamer'
-
+            
             # Honey-pot bot detection
             if request.POST.get('username_field'):
                 logger.warning(f"Bot detected: Honey-pot field filled. IP: {get_client_ip(request)}")
                 return JsonResponse({'success': False, 'message': 'Registration successful. Please check your email.'})
-
+            
             if not uid or not email or not first_name or not last_name or not phone:
                 return JsonResponse({'success': False, 'message': 'All required fields must be provided'})
-
+            
             # Email validation (basic regex + common spam domains check)
             email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
             if not re.match(email_regex, email):
@@ -320,19 +319,19 @@ def register_submit(request):
             spam_domains = ['mailinator.com', '10minutemail.com', 'temp-mail.org', 'guerrillamail.com']
             if any(domain in email for domain in spam_domains):
                 return JsonResponse({'success': False, 'message': 'Please use a permanent email address.'})
-
+            
             if registration_email_rate_limited(request, email):
                 return JsonResponse({
                     'success': False,
                     'message': 'Please wait a few minutes before requesting another verification email.'
                 })
-
+            
             if Account.objects.filter(uid=uid).exists():
                 return JsonResponse({'success': False, 'message': 'Account already exists. Please login.'})
             
             if Account.objects.filter(email=email).exists():
                 return JsonResponse({'success': False, 'message': 'Email already registered'})
-
+            
             if Account.objects.filter(phone=phone).exists():
                 return JsonResponse({'success': False, 'message': 'Phone number already in use'})
             
@@ -345,12 +344,13 @@ def register_submit(request):
                 if PendingRegistration.objects.filter(phone=phone).exists():
                     return JsonResponse(
                         {'success': False, 'message': 'Phone number already in use'})
-
+            
             conflicting_pending_account = Account.objects.filter(
                 models.Q(email__iexact=email) | models.Q(phone=phone)
             ).exclude(uid=uid).first()
             if conflicting_pending_account:
-                return JsonResponse({'success': False, 'message': 'Email or phone is already linked to an existing account'})
+                return JsonResponse(
+                    {'success': False, 'message': 'Email or phone is already linked to an existing account'})
             
             if pending:
                 pending.email = email
@@ -364,7 +364,7 @@ def register_submit(request):
                     uid=uid, email=email, first_name=first_name,
                     last_name=last_name, phone=phone, role=role,
                 )
-
+            
             try:
                 ActivityLog.objects.create(
                     action_type=ActivityLog.ActionTypes.CREATE,
@@ -443,12 +443,12 @@ def session_login(request):
                             request.session['show_resend'] = pending.email
                             return JsonResponse(
                                 {'success': False, 'message': 'Please verify your account first to login'})
-
+                        
                         try:
                             account = provision_account_from_pending(pending)
                         except ProvisioningError as pe:
                             return JsonResponse({'success': False, 'message': str(pe)})
-
+                        
                         if account:
                             if isinstance(account, Gamer):
                                 role = 'gamer'
@@ -519,7 +519,7 @@ def session_login(request):
                     success_message = 'Login successful, loading dashboard'
                 else:
                     success_message = 'Login successful, please upload your arena details to continue'
-
+            
             return JsonResponse({'success': True, 'message': success_message, 'role': role, 'next': next_url})
         
         except Exception as e:
@@ -570,10 +570,10 @@ def resend_verification(request):
     if request.method == 'POST':
         try:
             email = (request.POST.get('email') or '').strip().lower()
-
+            
             if not email:
                 return JsonResponse({'success': False, 'message': 'Invalid request'})
-
+            
             if resend_email_rate_limited(request, email):
                 return JsonResponse({
                     'success': False,
@@ -604,13 +604,13 @@ def resend_verification(request):
                             'success': False,
                             'message': 'No verification record was found for that email.'
                         })
-
+                
                 firebase_user = firebase_auth.get_user_by_email(email)
                 if firebase_user.email_verified:
                     return JsonResponse({'success': False, 'message': 'Email already verified'})
-
+                
                 role = 'gamer' if isinstance(account, Gamer) else 'shop_owner'
-
+                
                 email_sent = EmailManager.send_verification(email, firebase_user.uid, role)
                 if not email_sent:
                     return JsonResponse(
@@ -649,7 +649,7 @@ def logout_view(request):
 
 def forgot_password(request):
     """
-    Renders the forgot password page where users can enter their email 
+    Renders the forgot password page where users can enter their email
     to receive a password reset link via Firebase.
     """
     context = base_site_context()
@@ -740,7 +740,7 @@ def delete_account(request):
                     description="Account has been permanently deleted",
                     metadata={'reason': 'user_request', 'email': user_email}
                 )
-
+            
             try:
                 ActivityLog.objects.create(
                     actor=account,
@@ -777,31 +777,29 @@ def delete_account(request):
     return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 
-
-
 @require_gamer_role
 def gamer_dashboard(request):
     try:
         gamer = get_current_gamer(request)
-
+        
         # Check if they have been approved as a shop owner behind the scenes
         shop_owner = ShopOwner.objects.filter(uid=gamer.uid).first()
         if shop_owner and not request.session.get('gamer_mode'):
             request.session['role'] = 'shop_owner'
             request.session['user_id'] = shop_owner.id
             return redirect('accounts:shop_owner_dashboard')
-
+        
         profile_complete = gamer.profile_completed
         if not profile_complete:
             messages.info(request, 'Please complete your profile to access full dashboard features')
-
+        
         has_pending_or_approved_shops = Shop.objects.filter(submitted_by_uid=gamer.uid).exists()
-
+        
         # ---------------------------------------------------------------
         # Competition Tab Data — max 3 preview registrations
         # ---------------------------------------------------------------
         now = timezone.now()
-
+        
         all_registrations = CompetitionRegistration.objects.filter(
             gamer=gamer,
             is_cancelled=False
@@ -812,13 +810,13 @@ def gamer_dashboard(request):
         ).prefetch_related(
             'competition__results__gamer'
         ).order_by('-competition__scheduled_time')
-
+        
         # Preview: 3 most recent (mix of upcoming + past)
         dashboard_comp_registrations = all_registrations[:3]
-
+        
         # Stats
         total_comps = all_registrations.count()
-
+        
         completed_results = CompetitionResult.objects.filter(
             gamer=gamer,
             verified=True,
@@ -827,13 +825,13 @@ def gamer_dashboard(request):
         total_participated = completed_results.count()
         wins = completed_results.filter(rank__lte=3).count()
         win_rate = round((wins / total_participated * 100), 1) if total_participated > 0 else 0
-
+        
         dashboard_comp_stats = {
             'total': total_comps,
             'wins': wins,
             'win_rate': win_rate,
         }
-
+        
         # ---------------------------------------------------------------
         # Performance Stats - Play time and XP
         # ---------------------------------------------------------------
@@ -843,7 +841,7 @@ def gamer_dashboard(request):
             if hours:
                 total_play_time += hours
         total_play_time = round(total_play_time, 1)
-
+        
         # ---------------------------------------------------------------
         # Game Statistics - per game stats for dashboard
         # ---------------------------------------------------------------
@@ -874,7 +872,7 @@ def gamer_dashboard(request):
                 'total_competitions': game_total,
                 'last_played': last_played,
             }
-
+        
         # ---------------------------------------------------------------
         # Recent Activities
         # ---------------------------------------------------------------
@@ -882,13 +880,13 @@ def gamer_dashboard(request):
             recent_activity_feed = ActivityFeedService.get_gamer_feed(gamer, limit=5)
         except:
             recent_activity_feed = []
-
+        
         # Progression Context
         try:
             gamer_level = GamerLevel.objects.select_related('level').get(gamer=gamer)
         except GamerLevel.DoesNotExist:
             gamer_level = None
-
+        
         # Convert game_stats dates to ISO format for JSON serialization
         game_stats_serializable = {}
         for game_id, stats in game_stats.items():
@@ -898,7 +896,7 @@ def gamer_dashboard(request):
                 'total_competitions': stats['total_competitions'],
                 'last_played': stats['last_played'].isoformat() if stats['last_played'] else None,
             }
-
+        
         # ---------------------------------------------------------------
         # Notifications - sorted by importance (critical/high first), then newest
         # ---------------------------------------------------------------
@@ -917,7 +915,7 @@ def gamer_dashboard(request):
         ).select_related('notification').annotate(
             importance_rank=importance_order
         ).order_by('importance_rank', '-created_at')[:3]
-
+        
         context = {
             **base_site_context(),
             'gamer': gamer,
@@ -949,7 +947,7 @@ def gamer_dashboard(request):
             'pusher_cluster': os.environ.get('PUSHER_CLUSTER', ''),
         }
         return render(request, 'accounts/gamers/gamer_dashboard.html', context)
-
+    
     except Gamer.DoesNotExist:
         messages.error(request, 'Gamer profile not found.')
         return redirect('core:home')
@@ -988,7 +986,7 @@ def gamer_profile_completion(request):
                 location = get_val('location', '').strip()
                 if not location:
                     errors['location'] = 'Location is required'
-
+                
                 gender = get_val('gender', '').strip()
                 if not gender:
                     errors['gender'] = 'Gender is required'
@@ -996,7 +994,7 @@ def gamer_profile_completion(request):
                     errors['gender'] = 'Invalid gender selection'
                 
                 is_gwds = get_val('is_gwds') == True or get_val('is_gwds') == 'true' or get_val('is_gwds') == 'on'
-
+                
                 date_of_birth_raw = get_val('date_of_birth', '')
                 date_of_birth = parse_date(date_of_birth_raw) if date_of_birth_raw else None
                 if not date_of_birth:
@@ -1197,12 +1195,12 @@ def gamer_settings(request):
 @require_gamer_role
 def gamer_public_profile(request, username=None):
     gamer = get_object_or_404(Gamer, custom_username=username) if username else get_current_gamer(request)
-
+    
     from progression.models import GamerAchievement
     earned_achievements = GamerAchievement.objects.filter(
         gamer=gamer
     ).select_related('achievement').order_by('-earned_at')[:6]
-
+    
     context = {
         **base_site_context(),
         'gamer': gamer,
@@ -1312,7 +1310,7 @@ def create_shop(request):
                                 )
                     except Exception as e:
                         logger.error(f"Error parsing pricing: {e}")
-                        
+                
                 ActivityLog.objects.create(
                     actor=account_obj,
                     action_type=ActivityLog.ActionTypes.CREATE,
@@ -1585,7 +1583,7 @@ def shop_owner_profile_edit(request):
                     shop_owner.phone = phone
                 
                 shop_owner.save()
-
+                
                 try:
                     ActivityLog.objects.create(
                         actor=shop_owner,
@@ -1717,7 +1715,7 @@ def edit_shop(request, pk):
                             )
                             games_to_add.append(game)
                 shop.games_available.set(games_to_add)
-
+                
                 try:
                     ActivityLog.objects.create(
                         actor=shop_owner,
@@ -1725,7 +1723,8 @@ def edit_shop(request, pk):
                         target=shop,
                         description=f"Updated venue settings for {shop.name}",
                         meta_data={
-                            'description_changed': shop.description != request.POST.get('description', shop.description),
+                            'description_changed': shop.description != request.POST.get('description',
+                                                                                        shop.description),
                             'opening_hours': shop.opening_hours,
                             'closing_hours': shop.closing_hours,
                             'screen_number': shop.screen_number,
@@ -1789,7 +1788,7 @@ def edit_shop(request, pk):
 def quick_approve_shop(request, token):
     # Handles 1-click approvals directly from the admin email
     signer = TimestampSigner()
-    template_name = 'accounts/admin_shop_action.html'
+    template_name = 'accounts/email_templates/admin/shops/admin_shop_action.html'
     
     try:
         data = signer.unsign_object(token, max_age=604800)  # 7-day expiry
@@ -1846,7 +1845,7 @@ def quick_approve_shop(request, token):
 def quick_reject_shop(request, token):
     # Handles 1-click rejections directly from the admin email
     signer = TimestampSigner()
-    template_name = 'accounts/admin_shop_action.html'
+    template_name = 'accounts/email_templates/admin/shops/admin_shop_action.html'
     
     try:
         data = signer.unsign_object(token, max_age=604800)

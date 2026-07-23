@@ -1,1 +1,0 @@
-"""Notifications app for GamiKonnect."""

@@ -63,3 +63,13 @@ venv/
 /django-4c5e9-firebase-adminsdk.json
 /debug_accounts.py
 /gamikonnect-34d65-firebase-adminsdk-fbsvc-d3e3498b9f.json
+feeds
+admin_panel
+payments
+progression
+notifications
+competitions
+activities
+accounts/templates/*
+accounts/static/*
+accounts/*.py
